@@ -1,0 +1,39 @@
+{
+  "name": "food-data-collaboration",
+  "type": "module",
+  "version": "0.0.1",
+  "main": "web/index.js",
+  "license": "UNLICENSED",
+  "scripts": {
+    "shopify": "shopify",
+    "build": "shopify app build",
+    "dev": "shopify app dev",
+    "info": "shopify app info",
+    "generate": "shopify app generate",
+    "deploy": "shopify app deploy",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@datafoodconsortium/connector": "^1.0.0-alpha.2",
+    "@shopify/app": "3.39.0",
+    "@shopify/cli": "3.39.0",
+    "@shopify/react-form": "^2.5.0",
+    "axios": "^1.4.0",
+    "body-parser": "^1.20.2",
+    "connect-ensure-login": "^0.1.1",
+    "connect-sqlite3": "^0.9.13",
+    "crypto": "^1.0.1",
+    "dayjs": "^1.11.7",
+    "dotenv": "^16.0.3",
+    "express-session": "^1.17.3",
+    "node-localstorage": "^2.2.1",
+    "node-persist": "^3.1.3",
+    "passport": "^0.6.0",
+    "passport-openidconnect": "^0.1.1",
+    "raw-body": "^2.5.2",
+    "vitest": "^0.32.2",
+    "yup": "^1.0.2",
+    "yup-env": "^2.0.0"
+  },
+  "author": "user"
+}
