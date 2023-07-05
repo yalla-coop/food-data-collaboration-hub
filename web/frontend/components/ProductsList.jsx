@@ -11,7 +11,7 @@ import {
 import { DiamondAlertMajor, ImageMajor } from "@shopify/polaris-icons";
 
 /* useMedia is used to support multiple screen sizes */
-import { useMedia } from "@shopify/react-hooks";
+//import { useMedia } from "@shopify/react-hooks";
 
 /* dayjs is used to capture and format the date a QR code was created or modified */
 import dayjs from "dayjs";
@@ -74,7 +74,8 @@ export function ProductsList({ Products, loading }) {
   const navigate = useNavigate();
 
   /* Check if screen is small */
-  const isSmallScreen = useMedia("(max-width: 640px)");
+  //const isSmallScreen = useMedia("(max-width: 640px)");
+  const isSmallScreen = false
 
   /* Map over Products for small screen */
   const smallScreenMarkup = Products.map((Product) => (
