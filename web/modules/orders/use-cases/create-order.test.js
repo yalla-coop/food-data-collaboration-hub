@@ -1,6 +1,6 @@
 import {beforeAll, expect, test, vi} from 'vitest';
 import createOrder from './create-order.js';
-import {connector} from '../../../../connector/index.js';
+import {connector} from '../../../connector/index.js';
 
 let order;
 const json = `{"@context":"http://static.datafoodconsortium.org/ontologies/context.json","@id":"820982911946154500","@type":"dfc-b:Order","dfc-b:belongsTo":{"@id":"saleSessionId"},"dfc-b:date":"2023-07-03T10:08:34-04:00","dfc-b:hasPart":[{"@id":"487817672276298560"},{"@id":"976318377106520300"}],"dfc-b:orderNumber":"820982911946154500","dfc-b:orderedBy":{"@id":"115310627314723950"}}`;
