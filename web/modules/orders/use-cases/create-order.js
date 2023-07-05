@@ -6,7 +6,7 @@ import {
   OrderLine,
   SaleSession,
   Order
-} from '../../../../connector/index.js';
+} from '../../../connector/index.js';
 
 const createOrder = async (shopifyOrderBody) => {
 
