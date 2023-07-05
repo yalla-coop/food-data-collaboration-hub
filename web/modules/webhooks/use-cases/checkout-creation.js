@@ -1,4 +1,4 @@
-import { connector } from '../../../../connector/index.js';
+import { connector } from '../../../connector/index.js';
 
 const checkoutCreation = async ({ body }) => {
   
