@@ -1,3 +1,4 @@
-import getProducts from './get-products.js';
+import getShopifyProducts from './get-shopify-products.js';
+import getFDCProducts from './get-fdc-products.js';
 
-export default {getProducts};
+export default {getFDCProducts, getShopifyProducts};

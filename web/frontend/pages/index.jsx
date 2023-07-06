@@ -42,7 +42,7 @@ export default function HomePage() {
       */
       isRefetching,
     } = useAppQuery({
-      url: "/api/products",
+      url: "/api/fdc-products",
     });
   
     console.log('Products data is', Products)

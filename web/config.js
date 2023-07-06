@@ -11,7 +11,8 @@ const schema = yup
     SHOPIFY_WEBHOOK_SECRET: yup.string(),
     OIDC_CLIENT_ID: yup.string(),
     OIDC_CLIENT_SECRET: yup.string(),
-    FDC_API_URL: yup.string()
+    FDC_API_URL: yup.string(),
+    HOST: yup.string()
   })
   .required();
 
@@ -32,7 +33,8 @@ const createConfig = () => {
     SHOPIFY_WEBHOOK_SECRET: envVars.SHOPIFY_WEBHOOK_SECRET,
     OIDC_CLIENT_ID: envVars.OIDC_CLIENT_ID,
     OIDC_CLIENT_SECRET: envVars.OIDC_CLIENT_SECRET,
-    FDC_API_URL: envVars.FDC_API_URL
+    FDC_API_URL: envVars.FDC_API_URL,
+    HOST: envVars.HOST
   };
 };
 

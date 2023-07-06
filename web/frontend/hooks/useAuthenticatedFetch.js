@@ -19,6 +19,7 @@ export function useAuthenticatedFetch() {
   const fetchFunction = authenticatedFetch(app);
 
   return async (uri, options) => {
+    console.log('Fetching', uri, options)
     const response = await fetchFunction(uri, options);
     checkHeadersForReauthorization(response.headers, app);
     return response;

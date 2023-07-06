@@ -1,11 +1,26 @@
-import {BillingInterval} from '@shopify/shopify-api';
+import '@shopify/shopify-api/adapters/node';
+import {} from '@shopify/shopify-api';
+import {BillingInterval, LATEST_API_VERSION} from '@shopify/shopify-api';
+import sqlite3 from 'sqlite3';
+
+import Shopify from 'shopify-api-node';
 import {shopifyApp} from '@shopify/shopify-app-express';
 import {SQLiteSessionStorage} from '@shopify/shopify-app-session-storage-sqlite';
 import {restResources} from '@shopify/shopify-api/rest/admin/2023-01';
-
 import {config} from './config.js';
 
-const DB_PATH = `${process.cwd()}/database.sqlite`;
+const DB_PATH =
+  process.env.NODE_ENV === 'test'
+    ? `${process.cwd()}/web/test-database.sqlite`
+    : `${process.cwd()}/database.sqlite`;
+
+import {DB} from './db.js';
+
+const database = new sqlite3.Database(DB_PATH);
+
+// Initialize SQLite DB
+DB.db = database;
+DB.init();
 
 // The transactions with Shopify will always be marked as test transactions, unless NODE_ENV is production.
 // See the ensureBilling helper to learn more about billing in this template.
@@ -18,16 +33,26 @@ const billingConfig = {
   }
 };
 
+export const getShopifyApiNodeByShopNameAndAccessToken = ({
+  shopName,
+  accessToken
+}) => {
+  return Shopify({
+    shopName,
+    accessToken
+  });
+};
+
+
+
 const shopify = shopifyApp({
   api: {
-    apiVersion: '2023-01',
+    apiVersion: LATEST_API_VERSION,
     restResources,
-    billing: undefined, // or replace with billingConfig above to enable example billing
-    //apiKey: '',
-    //apiSecretKey: '',
-
+    billing: undefined,
     accessToken: config.SHOPIFY_ACCESS_TOKEN,
-    scopes: ['write_products', 'read_products', 'write_orders', 'read_orders']
+    //hostName: config.HOST,
+    scopes: ['write_products', 'read_products', 'write_draft_orders']
   },
   auth: {
     path: '/api/auth',
@@ -36,7 +61,6 @@ const shopify = shopifyApp({
   webhooks: {
     path: '/api/webhooks'
   },
-  // This should be replaced with your preferred storage strategy
   sessionStorage: new SQLiteSessionStorage(DB_PATH)
 });
 

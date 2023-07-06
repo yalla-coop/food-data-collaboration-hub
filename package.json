@@ -15,8 +15,8 @@
   },
   "dependencies": {
     "@datafoodconsortium/connector": "^1.0.0-alpha.2",
-    "@shopify/app": "3.39.0",
-    "@shopify/cli": "3.39.0",
+    "@shopify/app": "3.47.3",
+    "@shopify/cli": "3.47.3",
     "@shopify/react-form": "^2.5.0",
     "@shopify/react-hooks": "^3.0.5",
     "axios": "^1.4.0",
@@ -32,6 +32,7 @@
     "passport": "^0.6.0",
     "passport-openidconnect": "^0.1.1",
     "raw-body": "^2.5.2",
+    "shopify-api-node": "^3.12.5",
     "vitest": "^0.32.2",
     "yup": "^1.0.2",
     "yup-env": "^2.0.0"
