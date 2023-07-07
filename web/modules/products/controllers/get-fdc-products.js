@@ -4,6 +4,9 @@ import {getOfflineAccessTokenByShopName} from '../../../repositories/shopify/get
 const getFDCProducts = async (req, res, next) => {
   console.log('getFDCProducts----------------------------------');
 
+  return res.status(200).json({products: 'products'});
+
+  /*
   try {
     const {order, shopName} = req.fdc;
 
@@ -32,6 +35,7 @@ const getFDCProducts = async (req, res, next) => {
   } catch (error) {
     return next(error);
   }
+  */
 };
 
 export default getFDCProducts;

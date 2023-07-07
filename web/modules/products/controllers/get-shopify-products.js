@@ -9,7 +9,8 @@ const getShopifyProducts = async (req, res, next) => {
 
   res.locals.products = products;
 
-  next();
+  // return a 200 response with the products
+  return res.status(200).json({products: 'products'});
 };
 
 export default getShopifyProducts;

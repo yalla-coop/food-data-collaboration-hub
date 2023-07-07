@@ -5,7 +5,7 @@ import getShopifyProducts from './get-shopify-products.js';
 
 const products = Router();
 
-products.get('/fdc-products', getFDCProducts, convertResponseToGraphData);
-products.get('/shopify-products', getShopifyProducts, convertResponseToGraphData);
+products.get('/fdc', getFDCProducts, convertResponseToGraphData);
+products.get('/shopify', getShopifyProducts, convertResponseToGraphData);
 
 export default products;
