@@ -6,6 +6,7 @@ import serveStatic from 'serve-static';
 import apiRouters from './api-routers.js';
 import shopify from './shopify.js';
 import GDPRWebhookHandlers from './gdpr.js';
+import addSessionShopToReqParams from './middleware/addSessionShopToReqParameters.js';
 
 const STATIC_PATH =
   process.env.NODE_ENV === 'production'
@@ -22,6 +23,8 @@ app.get(
 );
 
 app.use('/api/*', shopify.validateAuthenticatedSession());
+
+app.use('/*', addSessionShopToReqParams);
 
 app.use(express.json());
 app.use('/api', apiRouters);
