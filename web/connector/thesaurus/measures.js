@@ -1,6 +1,6 @@
-{
+export default `{
   "@context": {
-    "dfc-m": "http://static.datafoodconsortium.org/data/measures.rdf#",
+    "dfc-m": "https://github.com/datafoodconsortium/taxonomies/releases/latest/download/measures.rdf#",
     "skos": "http://www.w3.org/2004/02/skos/core#",
     "rdf": "http://www.w3.org/2000/01/rdf-schema#"
   },
@@ -2592,4 +2592,4 @@
       "@value" : "tube"
     } ]
   } ]
-}
+}`

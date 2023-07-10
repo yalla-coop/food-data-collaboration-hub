@@ -10,16 +10,20 @@ import {
   OrderLine,
   Order,
   PhysicalCharacteristic
+//} from "../dependencies/connector-typescript/lib/index.js"
 } from "@datafoodconsortium/connector"
-import facets from "./thesaurus/facets.json" assert { type: 'json' }
-import measures from './thesaurus/measures.json' assert { type: 'json' }
-import productTypes from './thesaurus/productTypes.json' assert { type: 'json' }
+//import facets from "./thesaurus/facets.json" assert { type: 'json' }
+//import measures from './thesaurus/measures.json' assert { type: 'json' }
+//import productTypes from './thesaurus/productTypes.json' assert { type: 'json' }
+import facets from './thesaurus/facets.js'
+import measures from './thesaurus/measures.js'
+import productTypes from './thesaurus/productTypes.js'
 
 const connector = new Connector()
 
-connector.loadFacets(JSON.stringify(facets))
-connector.loadMeasures(JSON.stringify(measures))
-connector.loadProductTypes(JSON.stringify(productTypes))
+connector.loadFacets(JSON.stringify(JSON.parse(facets)))
+connector.loadMeasures(JSON.stringify(JSON.parse(measures)))
+connector.loadProductTypes(JSON.stringify(JSON.parse(productTypes)))
 
 function createSuppliedProduct(product) {
 
