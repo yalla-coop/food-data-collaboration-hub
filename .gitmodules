@@ -1,0 +1,3 @@
+[submodule "web/dependencies/connector-typescript"]
+	path = web/dependencies/connector-typescript
+	url = git@github.com:yalla-coop/connector-typescript.git
