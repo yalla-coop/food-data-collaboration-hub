@@ -37,9 +37,9 @@ passport.deserializeUser(function(user, cb) {
   });
 });
 
-app.get('/ofn/login', passport.authenticate('openidconnect'));
+oidcRouter.get('/ofn/login', passport.authenticate('openidconnect'));
 
-app.get('/ofn/oauth2/redirect', passport.authenticate('openidconnect', {
+oidcRouter.get('/ofn/oauth2/redirect', passport.authenticate('openidconnect', {
   successReturnToOrRedirect: 'http://localhost:3001/',
   failureRedirect: '/login'
 }));
@@ -48,7 +48,7 @@ app.get('/ofn/oauth2/redirect', passport.authenticate('openidconnect', {
 //  console.log('/oidc/callback req', req)
 //});
 
-app.post('/ofn/logout', function(req, res, next) {
+oidcRouter.post('/ofn/logout', function(req, res, next) {
   req.logout()
   res.redirect('/ofn')
 });
