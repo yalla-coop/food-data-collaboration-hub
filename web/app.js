@@ -15,6 +15,8 @@ const STATIC_PATH =
 
 const app = express();
 
+app.use(serveStatic(`${process.cwd()}/mock-catalog`, {index: false}));
+
 app.get(shopify.config.auth.path, shopify.auth.begin());
 app.get(
   shopify.config.auth.callbackPath,
@@ -44,7 +46,6 @@ app.post(
 );
 
 app.use(serveStatic(STATIC_PATH, {index: false}));
-app.use(serveStatic(`${process.cwd()}/mock-catalog`, {index: false}));
 
 app.use((err, _req, res, _next) => {
   console.error(err);
