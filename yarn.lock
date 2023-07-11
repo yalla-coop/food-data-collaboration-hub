@@ -686,17 +686,17 @@
   dependencies:
     "@types/node" "*"
 
-"@shopify/app@3.47.3":
-  version "3.47.3"
-  resolved "https://registry.yarnpkg.com/@shopify/app/-/app-3.47.3.tgz#86292ee6a20302a2ef062354d6275686357cc676"
-  integrity sha512-QT6nL7xwVwCyM4kV95Lrdh7JuxLgzH3ntgXQwmvJTX9n1jsnRr7GYb6ca22rk229YxkmiQTaEpmJ9jj5L/aLaQ==
+"@shopify/app@3.47.5":
+  version "3.47.5"
+  resolved "https://registry.yarnpkg.com/@shopify/app/-/app-3.47.5.tgz#e35886e4fe423e4a33e8cfa3032735ece761733c"
+  integrity sha512-LeFf5hC2jrH5XdL49Y++BGLg+rzDomjvd3gX7/umNrj+ITQ2VCypMk7mg0KN7lWPcLyBhmI0sQrBdgGiI9v4tw==
   dependencies:
     "@luckycatfactory/esbuild-graphql-loader" "3.8.1"
     "@oclif/core" "2.8.5"
-    "@shopify/cli-kit" "3.47.3"
+    "@shopify/cli-kit" "3.47.5"
     "@shopify/function-runner" "4.1.0"
-    "@shopify/plugin-cloudflare" "3.47.3"
-    "@shopify/plugin-ngrok" "3.47.3"
+    "@shopify/plugin-cloudflare" "3.47.5"
+    "@shopify/plugin-ngrok" "3.47.5"
     abort-controller "3.0.0"
     chokidar "3.5.3"
     diff "5.1.0"
@@ -708,10 +708,10 @@
     serve-static "1.15.0"
     ws "8.13.0"
 
-"@shopify/cli-kit@3.47.3":
-  version "3.47.3"
-  resolved "https://registry.yarnpkg.com/@shopify/cli-kit/-/cli-kit-3.47.3.tgz#9f63960c2678f545d4aa9ea4916afe8408c4fdba"
-  integrity sha512-SJcKhT/8s2LhvsQvfQfT1L4ZZe7hYNiuVg2wX+S8zXo8sf8Ai08+49G3le7CIxZN855Y+TrLWA7oxzGv1xoMag==
+"@shopify/cli-kit@3.47.5":
+  version "3.47.5"
+  resolved "https://registry.yarnpkg.com/@shopify/cli-kit/-/cli-kit-3.47.5.tgz#8fded0b5135cad3491bb96397a7ad4b6adeddc1d"
+  integrity sha512-YCXKwd7boa2hHfuDqKsAubhNFUomrUmLVdmZsniKZmjU0uiucE+o20kDFOALaZlE1NaaaCKwdbFObBfTrelT/Q==
   dependencies:
     "@bugsnag/js" "7.20.2"
     "@iarna/toml" "2.2.5"
@@ -772,17 +772,17 @@
     unique-string "3.0.0"
     zod "3.21.4"
 
-"@shopify/cli@3.47.3":
-  version "3.47.3"
-  resolved "https://registry.yarnpkg.com/@shopify/cli/-/cli-3.47.3.tgz#692f7c526684d9ba6f5f1ceb2c55f031e5322a53"
-  integrity sha512-G2dc8IytuC0LFykJkRcZmZlCo2ttn1YTIcT5fI3HfMotNYH2qBiyXb1LXbHWldUKsnRl+kvnCqRdu5wn6aEYoQ==
+"@shopify/cli@3.47.5":
+  version "3.47.5"
+  resolved "https://registry.yarnpkg.com/@shopify/cli/-/cli-3.47.5.tgz#ee025a29f5973116fa427dc6fbe5b70f5dcab613"
+  integrity sha512-4RPUJ9EXVfGauoYgTzgKoRn0ESkidAAPXeARsHTjCA4YwPf1R3Yww3pWVshmiB962l4R3Rd5ePr/DHU91VLsNQ==
   dependencies:
     "@oclif/core" "2.8.5"
     "@oclif/plugin-commands" "2.2.15"
     "@oclif/plugin-help" "5.2.9"
     "@oclif/plugin-plugins" "2.4.7"
-    "@shopify/cli-kit" "3.47.3"
-    "@shopify/plugin-did-you-mean" "3.47.3"
+    "@shopify/cli-kit" "3.47.5"
+    "@shopify/plugin-did-you-mean" "3.47.5"
     zod-to-json-schema "3.21.1"
 
 "@shopify/function-runner@4.1.0":
@@ -807,32 +807,32 @@
   optionalDependencies:
     hpagent "^0.1.2"
 
-"@shopify/plugin-cloudflare@3.47.3":
-  version "3.47.3"
-  resolved "https://registry.yarnpkg.com/@shopify/plugin-cloudflare/-/plugin-cloudflare-3.47.3.tgz#d74f639ac50d9b424f19308c599d8ea2dad79eee"
-  integrity sha512-vhNtOazwCv/mqEtCdIFSoNa3P6NkqYq+DFcV5cUEluVYn3HqKxcrmtMKEOsf2KRAx+f0uYDF+SFZBiaNicDHOQ==
+"@shopify/plugin-cloudflare@3.47.5":
+  version "3.47.5"
+  resolved "https://registry.yarnpkg.com/@shopify/plugin-cloudflare/-/plugin-cloudflare-3.47.5.tgz#9a2641bc6db9316fe82a91fe0854091440fbc93f"
+  integrity sha512-5l1wdcUpW08C7EUL238RzW0+yI3mdRlZhGU40yDzVmbXf5RT0tlQyNAt3AHpoG4tSr4c10Np/xvMjRSeRZMygQ==
   dependencies:
     "@oclif/core" "2.8.5"
-    "@shopify/cli-kit" "3.47.3"
+    "@shopify/cli-kit" "3.47.5"
     node-fetch "3.3.1"
     semver "7.5.1"
 
-"@shopify/plugin-did-you-mean@3.47.3":
-  version "3.47.3"
-  resolved "https://registry.yarnpkg.com/@shopify/plugin-did-you-mean/-/plugin-did-you-mean-3.47.3.tgz#4579178bfde00a066d296ee6d8c58ff1d818fc36"
-  integrity sha512-JY+UqxsQr+BJzi31499VJxxzvDvMhQm5+oKuR6y+DrCX5dlUma9AEDCi922096jfrM0kpvNhkfTVmwKwC/i/MQ==
+"@shopify/plugin-did-you-mean@3.47.5":
+  version "3.47.5"
+  resolved "https://registry.yarnpkg.com/@shopify/plugin-did-you-mean/-/plugin-did-you-mean-3.47.5.tgz#31e77aae37a29378734255dfdefc6d5de4c5d188"
+  integrity sha512-MgcMM9M3OgU/rK38zX6j1A/H9+/7JoSaw5pkgRlIHv3A21QG7YmE22zMHvd3nppbXNN4qQ+/oRdT5Ms4aKEMyw==
   dependencies:
     "@oclif/core" "2.8.5"
-    "@shopify/cli-kit" "3.47.3"
+    "@shopify/cli-kit" "3.47.5"
     n-gram "2.0.2"
 
-"@shopify/plugin-ngrok@3.47.3":
-  version "3.47.3"
-  resolved "https://registry.yarnpkg.com/@shopify/plugin-ngrok/-/plugin-ngrok-3.47.3.tgz#545cdf8f3dbf55f0d679ab4223b95c4b535155e5"
-  integrity sha512-NBKOpx1VmLjo+UxeOiVURB3xipzraj3N94hNH1XGjK/Citc1bWhhwFiX/Z6YUVMoQApw7FxjyZYbPUdYrkkNEg==
+"@shopify/plugin-ngrok@3.47.5":
+  version "3.47.5"
+  resolved "https://registry.yarnpkg.com/@shopify/plugin-ngrok/-/plugin-ngrok-3.47.5.tgz#e986df9b45ac257071cfc63f0e6a02b406c97209"
+  integrity sha512-48xZVOgC1q1Gc6O5b9oDvUZX6RNo2c4bqXbrDX4B69x1ho6AenYBVU6iV+B8o8MsHF6Lsv2JEc3eytDLcjpAZw==
   dependencies:
     "@oclif/core" "2.8.5"
-    "@shopify/cli-kit" "3.47.3"
+    "@shopify/cli-kit" "3.47.5"
     "@shopify/ngrok" "4.3.2"
 
 "@shopify/predicates@^3.0.1":
