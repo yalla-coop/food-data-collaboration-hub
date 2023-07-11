@@ -1,0 +1,16 @@
+{
+    "@context": "https://www.datafoodconsortium.org",
+    "@id": "http://myplatform.com/catalog1",
+    "@type": "dfc-b:Catalog",
+    "dfc-b:lists": [
+        {
+            "@id": "https://gist.githubusercontent.com/remaininlight/c8d4820f0a3e11668c2a54fe7c61aa17/raw/cd6ef5d0c5284f34c1f4b7811e8c737101b939ab/catalogItem1"
+        },
+        {
+            "@id": "http://myplatform.com/catalogItem2"
+        }
+    ],
+    "dfc-b:maintainedBy": {
+        "@id": "http://myplatform.com/enterprise1"
+    }
+}

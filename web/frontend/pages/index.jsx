@@ -49,9 +49,16 @@ export default function HomePage() {
 
     console.log('FDCCatalog is', FDCCatalog)
 
-    const FDCProducts = FDCCatalog && FDCCatalog['dfc-b:lists']
+    //const FDCProducts = FDCCatalog && FDCCatalog['dfc-b:lists']
     
-    console.log('FDCProducts 1 is', FDCProducts)
+    let FDCProducts
+    useEffect(async () => {
+      let catalogs = FDCCatalog && await connector.import(JSON.stringify(FDCCatalog))
+      FDCProducts = catalogs && catalogs[0]
+      window.catalog = FDCProducts
+      global.catalog = FDCProducts
+      console.log('FDCProducts 1 is', FDCProducts)
+    }, [FDCCatalog]);
 
     //useEffect(async () => {
     //  FDCProducts = FDCProducts && await connector.import(FDCProducts)

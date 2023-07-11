@@ -71,10 +71,10 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@datafoodconsortium/connector@^1.0.0-alpha.3":
-  version "1.0.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/@datafoodconsortium/connector/-/connector-1.0.0-alpha.3.tgz#c25c0b0e919d8a1b23ca0706ee97b6e21189861f"
-  integrity sha512-BoQxM4Br6wgtFQcMjTQZjkTm/1lR4EXsPr/cTAQZmonCo61AYuyTt/wst1y5A0uSTGqubcTHQ6oifIwRpvNAIw==
+"@datafoodconsortium/connector@^1.0.0-alpha.4":
+  version "1.0.0-alpha.4"
+  resolved "https://registry.yarnpkg.com/@datafoodconsortium/connector/-/connector-1.0.0-alpha.4.tgz#dda13633fde0041e4bfeec75e8f0ee7147799d58"
+  integrity sha512-eY5+8FBDArjPC8h4Vdil0k9pJnQaRKyxJzgG3M3rMz/6/3mHC9tcnzsrM9c8LbGZ0a0WrIGifTA+lzl9ZgEV/w==
   dependencies:
     "@rdfjs/serializer-jsonld-ext" "^4.0.0"
     "@virtual-assembly/semantizer" "^1.0.0-alpha.2"

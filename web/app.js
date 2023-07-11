@@ -44,6 +44,7 @@ app.post(
 );
 
 app.use(serveStatic(STATIC_PATH, {index: false}));
+app.use(serveStatic(`${process.cwd()}/mock-catalog`, {index: false}));
 
 app.use((err, _req, res, _next) => {
   console.error(err);

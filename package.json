@@ -14,7 +14,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@datafoodconsortium/connector": "^1.0.0-alpha.3",
+    "@datafoodconsortium/connector": "^1.0.0-alpha.4",
     "@shopify/app": "3.47.3",
     "@shopify/cli": "3.47.3",
     "@shopify/react-form": "^2.5.0",
