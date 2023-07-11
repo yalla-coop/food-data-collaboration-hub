@@ -4,7 +4,7 @@ const oidcRouter = Router();
 
 import passport from 'passport'
 import OpenIDConnectStrategy from 'passport-openidconnect'
-import config from './config.js'
+import { config } from './config.js'
 
 console.log('config.OIDC_CLIENT_ID', config.OIDC_CLIENT_ID)
 console.log('config.OIDC_CLIENT_SECRET', config.OIDC_CLIENT_SECRET)
@@ -19,6 +19,7 @@ passport.use(new OpenIDConnectStrategy({
   callbackURL: 'https://remaininlight.eu.ngrok.io/ofn/callback'
   //scope: [ 'profile' ]
 }, function verify(issuer, profile, cb) {
+  console.log('Passport verify issuer, profile', issuer, profile)
   return cb(null, profile);
 }));
 
