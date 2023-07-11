@@ -4,6 +4,7 @@ import {readFileSync} from 'fs';
 import express from 'express';
 import serveStatic from 'serve-static';
 import apiRouters from './api-routers.js';
+import oidcRouter from './oidc-router.js';
 import shopify from './shopify.js';
 import GDPRWebhookHandlers from './gdpr.js';
 import addSessionShopToReqParams from './middleware/addSessionShopToReqParameters.js';
@@ -30,6 +31,7 @@ app.use('/*', addSessionShopToReqParams);
 
 app.use(express.json());
 app.use('/api', apiRouters);
+app.use('/oidc', oidcRouter);
 
 app.use('/*', shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
   return res
