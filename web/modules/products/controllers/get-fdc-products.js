@@ -1,4 +1,4 @@
-import FDC from '../../../repositories/fdc/index.js';
+import UseCases from '../use-cases/index.js';
 import {getOfflineAccessTokenByShopName} from '../../../repositories/shopify/get-offline-access-token-by-shop-name.js';
 import { config } from '../../../config.js';
 
@@ -8,9 +8,8 @@ const getFDCProducts = async (req, res, next) => {
   //return res.status(200).json({products: 'products'});
 
   try {
-    const products = await FDC.getProducts({
-      fdcAPIURL: config.FDC_API_URL
-    })
+    const products = await UseCases.getFDCProducts();
+    console.log('getFDCProducts products', products)
     // retuen products string
     res.set('content-type', 'application/ld+json');
     return res.status(200).send(products);

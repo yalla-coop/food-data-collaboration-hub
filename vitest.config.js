@@ -6,6 +6,8 @@ export default defineConfig({
     exclude:[
       ...configDefaults.exclude, 
       'web/dependencies/**'
-    ]
+    ],
+    globals: true,
+    environment: 'jsdom',
   },
 });

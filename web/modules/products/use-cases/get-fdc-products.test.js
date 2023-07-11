@@ -1,14 +1,31 @@
 import {beforeAll, expect, test, vi} from 'vitest';
 import {connector} from '../../../connector/index.js';
+import FDC from '../../../repositories/fdc/index.js';
+import getFDCProducts from './get-fdc-products.js';
 
-let catalog;
-//const json = `{"@context":"http://static.datafoodconsortium.org/ontologies/context.json","@id":"820982911946154500","@type":"dfc-b:Order","dfc-b:belongsTo":{"@id":"saleSessionId"},"dfc-b:date":"2023-07-03T10:08:34-04:00","dfc-b:hasPart":[{"@id":"487817672276298560"},{"@id":"976318377106520300"}],"dfc-b:orderNumber":"820982911946154500","dfc-b:orderedBy":{"@id":"115310627314723950"}}`;
-const json = `{"@context":"https://www.datafoodconsortium.org","@id":"http://myplatform.com/catalog1","@type":"dfc-b:Catalog","dfc-b:lists":{"@id":"http://myplatform.com/catalogItem1"},"dfc-b:maintainedBy":{"@id":"http://myplatform.com/enterprise1"}}`;
+const json = `{
+  "@context": "https://www.datafoodconsortium.org",
+  "@id": "https://food-data-collaboration-hub-82234d1e2fc5.herokuapp.com/catalog/catalog.json",
+  "@type": "dfc-b:Catalog",
+  "dfc-b:lists": [
+      {
+          "@id": "https://food-data-collaboration-hub-82234d1e2fc5.herokuapp.com/catalog/catalogItem1.json"
+      },
+      {
+          "@id": "https://food-data-collaboration-hub-82234d1e2fc5.herokuapp.com/catalog/catalogItem2"
+      }
+  ],
+  "dfc-b:maintainedBy": {
+      "@id": "https://food-data-collaboration-hub-82234d1e2fc5.herokuapp.com/catalog/enterprise1.json"
+  }
+}`
+
+vi.mock('../../../repositories/fdc/index.js')
 
 beforeAll(async () => {
 
-  catalog = await createCatalog();
   /*
+  catalog = await createCatalog();
   const data = {
     id: 'semanticId_1',
     clientId: 'personId_1',
@@ -27,6 +44,11 @@ beforeAll(async () => {
 });
 
 test('import catalog', async () => {
+
+  FDC.getProducts.mockResolvedValue(json)
+
+  let products = await getFDCProducts();
+  console.log('getFDCProducts test products', products)
 
   //const serialized = await connector.export([order]);
   //expect(serialized).toStrictEqual(json);

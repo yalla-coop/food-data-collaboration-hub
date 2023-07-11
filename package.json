@@ -37,5 +37,8 @@
     "yup": "^1.0.2",
     "yup-env": "^2.0.0"
   },
-  "author": "user"
+  "author": "user",
+  "devDependencies": {
+    "jsdom": "^22.1.0"
+  }
 }
