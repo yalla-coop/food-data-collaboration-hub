@@ -1,7 +1,8 @@
 import { useNavigate } from "@shopify/app-bridge-react";
+import {useCallback} from 'react';
 import {
   Card,
-  Icon,
+  Checkbox,
   IndexTable,
   Stack,
   TextStyle,
@@ -69,8 +70,7 @@ function SmallScreenCard({
   );
 }
 
-export function ProductsList({ Products, loading }) {
-  console.log('ProductsList', Products)
+function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
   const navigate = useNavigate();
 
   /* Check if screen is small */
@@ -78,7 +78,7 @@ export function ProductsList({ Products, loading }) {
   const isSmallScreen = false
 
   /* Map over Products for small screen */
-  const smallScreenMarkup = Products.map((Product) => (
+  const smallScreenMarkup = FDCProducts.map((Product) => (
     <SmallScreenCard key={Product.id} navigate={navigate} {...Product} />
   ));
 
@@ -89,11 +89,24 @@ export function ProductsList({ Products, loading }) {
 
   console.log('ProductsList')
 
-  const rowMarkup = Products.map(
-    ({ id, title, product, discountCode, scans, createdAt }, index) => {
-      const deletedProduct = product.title.includes("Deleted product");
+  const rowMarkup = FDCProducts.map(
+    (fdcProduct, index) => {
+    //({ id, title, product, discountCode, scans, createdAt }, index) => {
+      //let shopifyProduct = ShopifyProducts.find(
+      //  (shopifyProduct) => shopifyProduct.id === fdcProduct.shopifyProductId
+      //);
+      let shopifyProduct = {};
 
-      /* The form layout, created using Polaris components. Includes the QR code data set above. */
+      let id = fdcProduct['@id'];
+      let title = fdcProduct.title || "Title";
+      let createdAt = fdcProduct.createdAt || "2020-01-01T00:00:00.000Z";
+
+      const handleToggleShopifyListing = useCallback(
+        (newChecked) => console.log('handleListToShopify', newChecked),
+        [],
+      )
+
+      /* The form layout, created using Polaris components */
       return (
         <IndexTable.Row
           id={id}
@@ -104,33 +117,18 @@ export function ProductsList({ Products, loading }) {
           }}
         >
           <IndexTable.Cell>
-            <Thumbnail
-              source={product?.images?.edges[0]?.node?.url || ImageMajor}
-              alt="placeholder"
-              color="base"
-              size="small"
-            />
+            {truncate(title, 25)}
           </IndexTable.Cell>
-          <IndexTable.Cell>
-            <UnstyledLink data-primary-link url={`/products/${id}`}>
-              {truncate(title, 25)}
-            </UnstyledLink>
-          </IndexTable.Cell>
-          <IndexTable.Cell>
-            <Stack>
-              {deletedProduct && (
-                <Icon source={DiamondAlertMajor} color="critical" />
-              )}
-              <TextStyle variation={deletedProduct ? "negative" : null}>
-                {truncate(product?.title, 25)}
-              </TextStyle>
-            </Stack>
-          </IndexTable.Cell>
-          <IndexTable.Cell>{discountCode}</IndexTable.Cell>
           <IndexTable.Cell>
             {dayjs(createdAt).format("MMMM D, YYYY")}
           </IndexTable.Cell>
-          <IndexTable.Cell>{scans}</IndexTable.Cell>
+          <IndexTable.Cell>
+            <Checkbox
+              checked={!!shopifyProduct}
+              onChange={handleToggleShopifyListing}
+              disabled={false}
+            />
+          </IndexTable.Cell>
         </IndexTable.Row>
       );
     }
@@ -144,14 +142,11 @@ export function ProductsList({ Products, loading }) {
       ) : (
         <IndexTable
           resourceName={resourceName}
-          itemCount={Products.length}
+          itemCount={FDCProducts.length}
           headings={[
-            { title: "Thumbnail", hidden: true },
             { title: "Title" },
-            { title: "Product" },
-            { title: "Discount" },
             { title: "Date created" },
-            { title: "Scans" },
+            { title: "List on my store" },
           ]}
           selectable={false}
           loading={loading}
@@ -167,3 +162,5 @@ export function ProductsList({ Products, loading }) {
 function truncate(str, n) {
   return str.length > n ? str.substr(0, n - 1) + "…" : str;
 }
+
+export { ProductsList }
