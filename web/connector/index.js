@@ -10,8 +10,8 @@ import {
   OrderLine,
   Order,
   PhysicalCharacteristic
-//} from "@datafoodconsortium/connector"
-} from "../dependencies/connector-typescript/lib/index.js";
+} from "@datafoodconsortium/connector"
+//} from "../dependencies/connector-typescript/lib/index.js";
 import facets from './thesaurus/facets.js'
 import measures from './thesaurus/measures.js'
 import productTypes from './thesaurus/productTypes.js'
