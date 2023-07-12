@@ -2,12 +2,17 @@ import {Router} from 'express';
 
 const oidcRouter = Router();
 
+import session from 'express-session'
 import passport from 'passport'
 import OpenIDConnectStrategy from 'passport-openidconnect'
+import connectSQLite from 'connect-sqlite3'
 import { config } from './config.js'
 
-console.log('config.OIDC_CLIENT_ID', config.OIDC_CLIENT_ID)
-console.log('config.OIDC_CLIENT_SECRET', config.OIDC_CLIENT_SECRET)
+//console.log('config.OIDC_CLIENT_ID', config.OIDC_CLIENT_ID)
+//console.log('config.OIDC_CLIENT_SECRET', config.OIDC_CLIENT_SECRET)
+
+const SQLiteStore = connectSQLite(session);
+const sessionStore = new SQLiteStore({db: 'sessions.sqlite', dir: '.', concurrentDB: true});
 
 passport.use(new OpenIDConnectStrategy({
   issuer: 'https://login.lescommuns.org/auth/realms/data-food-consortium',
@@ -37,20 +42,23 @@ passport.deserializeUser(function(user, cb) {
   });
 });
 
-oidcRouter.get('/ofn/login', passport.authenticate('openidconnect'));
+oidcRouter.get('/login', passport.authenticate('openidconnect'));
 
-oidcRouter.get('/ofn/oauth2/redirect', passport.authenticate('openidconnect', {
+oidcRouter.get('/oauth2/redirect', passport.authenticate('openidconnect', {
   successReturnToOrRedirect: 'http://localhost:3001/',
   failureRedirect: '/login'
 }));
 
-//app.get('/ofn/oidc/callback', function(req, res, next) {
-//  console.log('/oidc/callback req', req)
-//});
-
-oidcRouter.post('/ofn/logout', function(req, res, next) {
+oidcRouter.post('/logout', function(req, res, next) {
   req.logout()
   res.redirect('/ofn')
 });
 
-export default oidcRouter;
+//oidcRouter.use('/*', session({
+//  secret: 'keyboard cat',
+//  resave: false, // don't save session if unmodified
+//  saveUninitialized: false, // don't create session until something stored
+//  store: sessionStore
+//}));
+
+export {sessionStore, oidcRouter};
