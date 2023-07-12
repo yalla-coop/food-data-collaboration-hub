@@ -10,7 +10,8 @@ const mockProducts = [
             "@id": "https://food-data-collaboration-hub-82234d1e2fc5.herokuapp.com/catalog/suppliedProduct1.json",
             "@type": "dfc-b:SuppliedProduct",
             "dfc-b:alcoholPercentage": "0",
-            "dfc-b:description": "Awesome tomato",
+            "dfc-b:description": "Tomato",
+            "price": "0.40",
             "dfc-b:hasAllergenCharacteristic": {
                 "@id": "_:b2"
             },
@@ -52,7 +53,8 @@ const mockProducts = [
               "dfc-b:value":"1000"
           },
           "dfc-p:hasType": "dfc-pt:strawberry",
-          "dfc-b:description": "supply description 2",
+          "price": "0.20",
+          "dfc-b:description": "Strawberry",
           "dfc-b:totalTheoriticalStock": "999",
           "dfc-b:image": "supply image url",
           "dfc-b:lifeTime": "supply lifeTime"

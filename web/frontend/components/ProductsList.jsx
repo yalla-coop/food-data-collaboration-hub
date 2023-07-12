@@ -24,7 +24,6 @@ function SmallScreenCard({
   product,
   discountCode,
   scans,
-  createdAt,
   navigate,
 }) {
   return (
@@ -50,7 +49,6 @@ function SmallScreenCard({
                   </TextStyle>
                 </p>
                 <p>{truncate(product?.title, 35)}</p>
-                <p>{dayjs(createdAt).format("MMMM D, YYYY")}</p>
               </Stack.Item>
               <div style={{ display: "flex" }}>
                 <div style={{ flex: "3" }}>
@@ -98,8 +96,9 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
       console.log('fdcProduct', fdcProduct)
 
       let id = fdcProduct['@id'];
-      let title = fdcProduct['dfc-b:description'] || "Description";
-      let createdAt = fdcProduct.createdAt || "2020-01-01T00:00:00.000Z";
+      let title = fdcProduct['dfc-b:description'] || "";
+      let price = fdcProduct['price'] || "";
+      //let createdAt = fdcProduct.createdAt || "2020-01-01T00:00:00.000Z";
 
       const handleToggleShopifyListing = useCallback(
         (newChecked) => console.log('handleListToShopify', newChecked),
@@ -120,7 +119,7 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
             {truncate(title, 25)}
           </IndexTable.Cell>
           <IndexTable.Cell>
-            {dayjs(createdAt).format("MMMM D, YYYY")}
+            £{price}
           </IndexTable.Cell>
           <IndexTable.Cell>
             <Checkbox
