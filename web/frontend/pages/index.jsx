@@ -33,7 +33,7 @@ export default function HomePage() {
 
     /* useAppQuery wraps react-query and the App Bridge authenticatedFetch function */
     let {
-      data: FDCProducts,
+      data: FDCProductsResponse,
       fdcIsLoading,
   
       /*
@@ -47,18 +47,9 @@ export default function HomePage() {
       url: "/api/products/fdc",
     });
 
-    console.log('FDCProducts is', FDCProducts)
+    console.log('FDCProductsResponse is', FDCProductsResponse)
 
-    //const FDCProducts = FDCCatalog && FDCCatalog['dfc-b:lists']
-    
-    /*
-    let FDCProducts
-    useEffect(async () => {
-      let catalogs = FDCCatalog && await connector.import(JSON.stringify(FDCCatalog))
-      FDCProducts = catalogs && catalogs[0]
-      console.log('FDCProducts 1 is', FDCProducts)
-    }, [FDCCatalog]);
-    */
+    const FDCProducts = FDCProductsResponse && FDCProductsResponse[0]['@graph']
 
     //useEffect(async () => {
     //  FDCProducts = FDCProducts && await connector.import(FDCProducts)

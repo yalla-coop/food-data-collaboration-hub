@@ -7,6 +7,7 @@ const getFDCProducts = async (req, res, next) => {
 
   //return res.status(200).json({products: 'products'});
 
+
   try {
     const products = await UseCases.getFDCProducts();
     console.log('getFDCProducts products', products)

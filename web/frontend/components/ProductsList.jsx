@@ -87,8 +87,6 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
     plural: "Products",
   };
 
-  console.log('ProductsList')
-
   const rowMarkup = FDCProducts.map(
     (fdcProduct, index) => {
     //({ id, title, product, discountCode, scans, createdAt }, index) => {
@@ -97,8 +95,10 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
       //);
       let shopifyProduct = {};
 
+      console.log('fdcProduct', fdcProduct)
+
       let id = fdcProduct['@id'];
-      let title = fdcProduct.title || "Title";
+      let title = fdcProduct['dfc-b:description'] || "Description";
       let createdAt = fdcProduct.createdAt || "2020-01-01T00:00:00.000Z";
 
       const handleToggleShopifyListing = useCallback(
