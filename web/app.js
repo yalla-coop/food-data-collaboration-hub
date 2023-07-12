@@ -33,6 +33,8 @@ app.use(express.json());
 app.use('/api', apiRouters);
 app.use('/oidc', oidcRouter);
 
+app.use(serveStatic(STATIC_PATH, {index: false}));
+
 app.use('/*', shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
   return res
     .status(200)
@@ -46,8 +48,6 @@ app.post(
     webhookHandlers: GDPRWebhookHandlers
   })
 );
-
-app.use(serveStatic(STATIC_PATH, {index: false}));
 
 app.use((err, _req, res, _next) => {
   console.error(err);
