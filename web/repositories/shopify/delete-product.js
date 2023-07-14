@@ -1,7 +1,7 @@
 import getClient from './get-client.js';
 import {DELETE_PRODUCT} from './queries/DELETE_PRODUCT.js';
 
-export const deleteProduct = async ({session}) => {
+export const deleteProduct = async ({session, id}) => {
   const client = getClient(session);
 
   const response = await client.query({
@@ -10,7 +10,7 @@ export const deleteProduct = async ({session}) => {
     },
     variables: {
       input: {
-        id: 'gid://shopify/Product/6628569655363'
+        id: id
       }
     }
   });

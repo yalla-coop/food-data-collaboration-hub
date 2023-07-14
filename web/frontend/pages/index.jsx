@@ -55,23 +55,18 @@ export default function HomePage() {
     //  FDCProducts = FDCProducts && await connector.import(FDCProducts)
     //}, [FDCProducts]);
 
-    //console.log('FDCProducts 2 is', FDCProducts)
-    //const importedCatalog = imported[0];
     const {
       data: ShopifyProducts,
       shopifyIsLoading,
-  
-      /*
-        react-query provides stale-while-revalidate caching.
-        By passing isRefetching to Index Tables we can show stale data and a loading state.
-        Once the query refetches, IndexTable updates and the loading state is removed.
-        This ensures a performant UX.
-      */
       shopifyIsRefetching,
     } = useAppQuery({
       url: "/api/products/shopify",
     });
     console.log('Shopify data is', ShopifyProducts)
+    //console.log('shopifyResponse is', shopifyResponse)
+    //let shopifyIsLoading = true;
+    //let shopifyIsRefetching = false;
+    //let ShopifyProducts = [];
 
     /* loadingMarkup uses the loading component from AppBridge and components from Polaris  */
     const loadingMarkup = fdcIsLoading || shopifyIsLoading ? (

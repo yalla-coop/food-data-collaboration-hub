@@ -5,13 +5,10 @@ import { config } from '../../../config.js';
 const getFDCProducts = async (req, res, next) => {
   console.log('getFDCProducts----------------------------------');
 
-  //return res.status(200).json({products: 'products'});
-
-
   try {
     const products = await UseCases.getFDCProducts();
     console.log('getFDCProducts products', products)
-    // retuen products string
+    console.log('FDC products are', products);
     res.set('content-type', 'application/ld+json');
     return res.status(200).send(products);
     //return res.status(200).json(products);

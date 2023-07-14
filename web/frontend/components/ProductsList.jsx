@@ -1,5 +1,5 @@
 import { useNavigate } from "@shopify/app-bridge-react";
-import {useCallback} from 'react';
+import {useCallback, useState} from 'react';
 import {
   Card,
   Checkbox,
@@ -10,12 +10,10 @@ import {
   UnstyledLink,
 } from "@shopify/polaris";
 import { DiamondAlertMajor, ImageMajor } from "@shopify/polaris-icons";
+import { useAppQuery, useAuthenticatedFetch } from "../hooks";
 
 /* useMedia is used to support multiple screen sizes */
 //import { useMedia } from "@shopify/react-hooks";
-
-/* dayjs is used to capture and format the date a QR code was created or modified */
-import dayjs from "dayjs";
 
 /* Markup for small screen sizes (mobile) */
 function SmallScreenCard({
@@ -69,11 +67,18 @@ function SmallScreenCard({
 }
 
 function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
+  const fetch = useAuthenticatedFetch();
+
   const navigate = useNavigate();
+
+  const [shopifyProducts, setShopifyProducts] = useState(ShopifyProducts || []);
 
   /* Check if screen is small */
   //const isSmallScreen = useMedia("(max-width: 640px)");
   const isSmallScreen = false
+
+  // Set state of shopifyProducts from ShopifyProducts if ShopifyProducts has changed
+  //const [shopifyProducts, setShopifyProducts] = useState(ShopifyProducts);
 
   /* Map over Products for small screen */
   const smallScreenMarkup = FDCProducts.map((Product) => (
@@ -87,22 +92,63 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
 
   const rowMarkup = FDCProducts.map(
     (fdcProduct, index) => {
-    //({ id, title, product, discountCode, scans, createdAt }, index) => {
-      //let shopifyProduct = ShopifyProducts.find(
-      //  (shopifyProduct) => shopifyProduct.id === fdcProduct.shopifyProductId
-      //);
-      let shopifyProduct = {};
-
-      console.log('fdcProduct', fdcProduct)
 
       let id = fdcProduct['@id'];
       let title = fdcProduct['dfc-b:description'] || "";
       let price = fdcProduct['price'] || "";
-      //let createdAt = fdcProduct.createdAt || "2020-01-01T00:00:00.000Z";
+
+      let shopifyProduct = shopifyProducts.find(
+        (shopifyProduct) => shopifyProduct.id === fdcProduct['@id']
+      );
+
+      const [isCreating, setIsCreating] = useState(false);
+      const createShopifyProduct = useCallback(async () => {
+        setIsCreating(true);
+        const response = await fetch(`/api/products/shopify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: fdcProduct['@id'],
+            title: fdcProduct['dfc-b:description'],
+            price: fdcProduct['price'],
+          }),
+        });
+        if (response.ok) {
+          const shopifyProduct = await response.json();
+          setShopifyProducts((shopifyProducts) => [
+            ...shopifyProducts,
+            shopifyProduct,
+          ]);
+          setIsCreating(false);
+        }
+      }, []);
+
+      const [isDeleting, setIsDeleting] = useState(false);
+      const deleteShopifyProduct = useCallback(async () => {
+        setIsDeleting(true);
+        const response = await fetch(`/api/products/shopify/${shopifyProduct.id}`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (response.ok) {
+          setShopifyProducts((shopifyProducts) =>
+            shopifyProducts.filter((shopifyProduct) => shopifyProduct.id !== id)
+          );
+          setIsDeleting(false);
+        }
+      }, []);
 
       const handleToggleShopifyListing = useCallback(
-        (newChecked) => console.log('handleListToShopify', newChecked),
-        [],
+        (newChecked) => {
+          console.log('handleListToShopify', newChecked)
+          if (newChecked) {
+            createShopifyProduct();
+          } else {
+            deleteShopifyProduct();
+          }
+        }
+        //[],
       )
 
       /* The form layout, created using Polaris components */
@@ -111,9 +157,9 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
           id={id}
           key={id}
           position={index}
-          onClick={() => {
-            navigate(`/products/${id}`);
-          }}
+          //onClick={() => {
+          //  navigate(`/products/${id}`);
+          //}}
         >
           <IndexTable.Cell>
             {truncate(title, 25)}
@@ -125,7 +171,7 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
             <Checkbox
               checked={!!shopifyProduct}
               onChange={handleToggleShopifyListing}
-              disabled={false}
+              disabled={isCreating || isDeleting}
             />
           </IndexTable.Cell>
         </IndexTable.Row>

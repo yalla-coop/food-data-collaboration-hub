@@ -1,9 +1,13 @@
 export const CREATE_PRODUCT = `
-mutation CreateProduct($title: String) {
-  productCreate(input: {title: $title, productType: "Toy", vendor: "Toys"}) {
+mutation CreateProduct($input: ProductInput!) {
+  productCreate(input: $input) {
     product {
       id
       title
+    }
+    userErrors {
+      message
+      field
     }
   }
 }
