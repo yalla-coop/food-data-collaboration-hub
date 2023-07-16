@@ -1,5 +1,5 @@
 import { useNavigate } from "@shopify/app-bridge-react";
-import {useCallback, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {
   Card,
   Checkbox,
@@ -67,18 +67,22 @@ function SmallScreenCard({
 }
 
 function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
-  const fetch = useAuthenticatedFetch();
+  const authenticatedFetch = useAuthenticatedFetch();
 
   const navigate = useNavigate();
 
+  console.log('ProductsList shopifyProducts', ShopifyProducts)
+
   const [shopifyProducts, setShopifyProducts] = useState(ShopifyProducts || []);
 
+  useEffect(() => {
+    setShopifyProducts(ShopifyProducts || []);
+  }, [ShopifyProducts]);
+
+  console.log('shopifyProducts', shopifyProducts)
   /* Check if screen is small */
   //const isSmallScreen = useMedia("(max-width: 640px)");
   const isSmallScreen = false
-
-  // Set state of shopifyProducts from ShopifyProducts if ShopifyProducts has changed
-  //const [shopifyProducts, setShopifyProducts] = useState(ShopifyProducts);
 
   /* Map over Products for small screen */
   const smallScreenMarkup = FDCProducts.map((Product) => (
@@ -98,27 +102,39 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
       let price = fdcProduct['price'] || "";
 
       let shopifyProduct = shopifyProducts.find(
-        (shopifyProduct) => shopifyProduct.id === fdcProduct['@id']
+        (shopifyProduct) => {
+          const fdcMetafield = shopifyProduct?.metafields?.edges?.find((metafield) => {
+            return metafield.node.key == 'fdcId'
+          })
+          console.log('fdcMetafield?.node?.value', fdcMetafield?.node?.value, 'fdcProduct ', fdcProduct['@id'] )
+          return fdcMetafield?.node?.value === fdcProduct['@id']
+        }
       );
+
+      console.log('shopifyProduct is', shopifyProduct)
 
       const [isCreating, setIsCreating] = useState(false);
       const createShopifyProduct = useCallback(async () => {
         setIsCreating(true);
-        const response = await fetch(`/api/products/shopify`, {
+        const response = await authenticatedFetch(`/api/products/shopify`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            id: fdcProduct['@id'],
+            fdcId: fdcProduct['@id'],
             title: fdcProduct['dfc-b:description'],
             price: fdcProduct['price'],
           }),
         });
         if (response.ok) {
-          const shopifyProduct = await response.json();
-          setShopifyProducts((shopifyProducts) => [
-            ...shopifyProducts,
-            shopifyProduct,
-          ]);
+          const body = await response.json();
+          if (body.userErrors.length > 0) {
+            console.warn("Couldn't create Shopify product", body.userErrors[0]);
+          } else {
+            setShopifyProducts((shopifyProducts) => [
+              ...shopifyProducts,
+              body.product,
+            ]);
+          }
           setIsCreating(false);
         }
       }, []);
@@ -126,7 +142,7 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
       const [isDeleting, setIsDeleting] = useState(false);
       const deleteShopifyProduct = useCallback(async () => {
         setIsDeleting(true);
-        const response = await fetch(`/api/products/shopify/${shopifyProduct.id}`, {
+        const response = await authenticatedFetch(`/api/products/shopify/${shopifyProduct.id}`, {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
         });
@@ -148,7 +164,6 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
             deleteShopifyProduct();
           }
         }
-        //[],
       )
 
       /* The form layout, created using Polaris components */
@@ -157,9 +172,6 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
           id={id}
           key={id}
           position={index}
-          //onClick={() => {
-          //  navigate(`/products/${id}`);
-          //}}
         >
           <IndexTable.Cell>
             {truncate(title, 25)}

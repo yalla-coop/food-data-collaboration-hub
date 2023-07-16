@@ -14,12 +14,10 @@ import {
 import { useNavigate, TitleBar, Loading } from "@shopify/app-bridge-react";
 
 import { useAppQuery } from "../hooks";
-//import { trophyImage } from "../assets";
 import { connector } from '../../connector/index.js'
 
 import { ProductsCard } from "../components/ProductsCard.jsx";
 import { ProductsList } from "../components/ProductsList.jsx";
-import { useEffect } from "react";
 
 export default function HomePage() {
 
@@ -56,12 +54,13 @@ export default function HomePage() {
     //}, [FDCProducts]);
 
     const {
-      data: ShopifyProducts,
+      data: ShopifyProductsResponse,
       shopifyIsLoading,
       shopifyIsRefetching,
     } = useAppQuery({
       url: "/api/products/shopify",
     });
+    const ShopifyProducts = ShopifyProductsResponse && ShopifyProductsResponse.map((shopifyProduct) => shopifyProduct.node)
     console.log('Shopify data is', ShopifyProducts)
     //console.log('shopifyResponse is', shopifyResponse)
     //let shopifyIsLoading = true;

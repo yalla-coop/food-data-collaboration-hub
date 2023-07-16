@@ -1,7 +1,7 @@
 import getClient from './get-client.js';
 import {CREATE_PRODUCT} from './queries/CREATE_PRODUCT.js';
 
-export const createProduct = async ({session, title, price}) => {
+export const createProduct = async ({session, title, price, fdcId}) => {
   const client = getClient(session);
 
   try {
@@ -11,7 +11,10 @@ export const createProduct = async ({session, title, price}) => {
         variables: {
           input: {
             title: title,
-            variants: [{ price: price }],
+            variants: [{
+              price: price,
+            }],
+            metafields: [{key: "fdcId", namespace: "fdc", value: fdcId, type: "single_line_text_field"}]
           },
         }
       },
