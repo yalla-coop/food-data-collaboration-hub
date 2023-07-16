@@ -71,15 +71,12 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
 
   const navigate = useNavigate();
 
-  console.log('ProductsList shopifyProducts', ShopifyProducts)
-
   const [shopifyProducts, setShopifyProducts] = useState(ShopifyProducts || []);
 
   useEffect(() => {
     setShopifyProducts(ShopifyProducts || []);
   }, [ShopifyProducts]);
 
-  console.log('shopifyProducts', shopifyProducts)
   /* Check if screen is small */
   //const isSmallScreen = useMedia("(max-width: 640px)");
   const isSmallScreen = false
@@ -106,12 +103,9 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
           const fdcMetafield = shopifyProduct?.metafields?.edges?.find((metafield) => {
             return metafield.node.key == 'fdcId'
           })
-          console.log('fdcMetafield?.node?.value', fdcMetafield?.node?.value, 'fdcProduct ', fdcProduct['@id'] )
           return fdcMetafield?.node?.value === fdcProduct['@id']
         }
       );
-
-      console.log('shopifyProduct is', shopifyProduct)
 
       const [isCreating, setIsCreating] = useState(false);
       const createShopifyProduct = useCallback(async () => {
@@ -142,8 +136,7 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
       const [isDeleting, setIsDeleting] = useState(false);
       const deleteShopifyProduct = useCallback(async () => {
         setIsDeleting(true);
-        const response = await authenticatedFetch(`/api/products/shopify/1234`, {
-        //const response = await authenticatedFetch(`/api/products/shopify/${shopifyProduct.id}`, {
+        const response = await authenticatedFetch(`/api/products/shopify`, {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -153,7 +146,7 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
 
         if (response.ok) {
           setShopifyProducts((shopifyProducts) =>
-            shopifyProducts.filter((shopifyProduct) => shopifyProduct.id !== id)
+            shopifyProducts.filter((p) => p.id !== shopifyProduct.id)
           );
           setIsDeleting(false);
         }
@@ -161,7 +154,6 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
 
       const handleToggleShopifyListing = useCallback(
         (newChecked) => {
-          console.log('handleListToShopify', newChecked)
           if (newChecked) {
             createShopifyProduct();
           } else {

@@ -10,6 +10,6 @@ const products = Router();
 products.get('/fdc', getFDCProducts, convertResponseToGraphData);
 products.get('/shopify', getShopifyProducts, convertResponseToGraphData);
 products.post('/shopify', createShopifyProduct);
-products.delete('/shopify/:id', deleteShopifyProduct);
+products.delete('/shopify', deleteShopifyProduct);
 
 export default products;

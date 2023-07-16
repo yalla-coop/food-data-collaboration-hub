@@ -66,11 +66,12 @@ const mockProducts = [
 const getFDCProducts = async () => {
 
   /*
-  The connector is giving too many errors, returning mock data for now
   const json = await FDC.getProducts(config.FDC_API_URL)
   const catalog = await connector.import(json)
   const products = await catalog[0].getItems()
   */
+
+  // The connector is giving too many errors, returning mock data for now
   return mockProducts
 }
 
