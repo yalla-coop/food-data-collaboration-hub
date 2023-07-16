@@ -142,9 +142,13 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
       const [isDeleting, setIsDeleting] = useState(false);
       const deleteShopifyProduct = useCallback(async () => {
         setIsDeleting(true);
-        const response = await authenticatedFetch(`/api/products/shopify/${shopifyProduct.id}`, {
+        const response = await authenticatedFetch(`/api/products/shopify/1234`, {
+        //const response = await authenticatedFetch(`/api/products/shopify/${shopifyProduct.id}`, {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            shopifyId: shopifyProduct.id,
+          }),
         });
 
         if (response.ok) {
@@ -153,7 +157,7 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
           );
           setIsDeleting(false);
         }
-      }, []);
+      }, [shopifyProduct]);
 
       const handleToggleShopifyListing = useCallback(
         (newChecked) => {
