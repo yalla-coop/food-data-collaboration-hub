@@ -19,7 +19,7 @@ const schema = yup
 const createConfig = () => {
   let envVars;
   try {
-    envVars = schema.validateSync(process.env, {stripUnknown: false});
+    envVars = schema.validateSync(process.env, { stripUnknown: false });
   } catch (error) {
     if (error) {
       throw new Error(`Config validation error: ${error.message}`);

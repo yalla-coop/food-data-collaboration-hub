@@ -1,20 +1,19 @@
 import '@shopify/shopify-api/adapters/node';
 import {} from '@shopify/shopify-api';
-import {BillingInterval, LATEST_API_VERSION} from '@shopify/shopify-api';
+import { BillingInterval, LATEST_API_VERSION } from '@shopify/shopify-api';
 import sqlite3 from 'sqlite3';
 
-import Shopify from 'shopify-api-node';
-import {shopifyApp} from '@shopify/shopify-app-express';
-import {SQLiteSessionStorage} from '@shopify/shopify-app-session-storage-sqlite';
-import {restResources} from '@shopify/shopify-api/rest/admin/2023-01';
-import {config} from './config.js';
+import { shopifyApp } from '@shopify/shopify-app-express';
+import { SQLiteSessionStorage } from '@shopify/shopify-app-session-storage-sqlite';
+import { restResources } from '@shopify/shopify-api/rest/admin/2023-01';
+import { config } from './config.js';
 
 const DB_PATH =
   process.env.NODE_ENV === 'test'
     ? `${process.cwd()}/web/test-database.sqlite`
     : `${process.cwd()}/database.sqlite`;
 
-import {DB} from './db.js';
+import { DB } from './db.js';
 
 const database = new sqlite3.Database(DB_PATH);
 
@@ -33,25 +32,13 @@ const billingConfig = {
   }
 };
 
-export const getShopifyApiNodeByShopNameAndAccessToken = ({
-  shopName,
-  accessToken
-}) => {
-  return Shopify({
-    shopName,
-    accessToken
-  });
-};
-
-
-
 const shopify = shopifyApp({
   api: {
     apiVersion: LATEST_API_VERSION,
     restResources,
+    apiKey: config.SHOPIFY_API_KEY,
+    apiSecretKey: config.SHOPIFY_API_SECRET_KEY,
     billing: undefined,
-    accessToken: config.SHOPIFY_ACCESS_TOKEN,
-    //hostName: config.HOST,
     scopes: ['write_products', 'read_products', 'write_draft_orders']
   },
   auth: {
