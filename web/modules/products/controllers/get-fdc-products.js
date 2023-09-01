@@ -1,13 +1,11 @@
 import UseCases from '../use-cases/index.js';
-import {getOfflineAccessTokenByShopName} from '../../../repositories/shopify/get-offline-access-token-by-shop-name.js';
-import { config } from '../../../config.js';
 
 const getFDCProducts = async (req, res, next) => {
   console.log('getFDCProducts----------------------------------');
 
   try {
     const products = await UseCases.getFDCProducts();
-    console.log('getFDCProducts products', products)
+    console.log('getFDCProducts products', products);
     console.log('FDC products are', products);
     res.set('content-type', 'application/ld+json');
     return res.status(200).send(products);

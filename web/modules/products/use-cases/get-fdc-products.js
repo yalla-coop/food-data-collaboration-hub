@@ -1,7 +1,3 @@
-import { connector } from '../../../connector/index.js';
-import FDC from '../../../repositories/fdc/index.js';
-import { config } from '../../../config.js';
-
 const mockProducts = [
   {
     '@context': 'https://www.datafoodconsortium.org',

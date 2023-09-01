@@ -1,12 +1,16 @@
 import '@shopify/shopify-api/adapters/node';
-import {} from '@shopify/shopify-api';
 import { BillingInterval, LATEST_API_VERSION } from '@shopify/shopify-api';
 import sqlite3 from 'sqlite3';
+import * as dotenv from 'dotenv';
+import { join } from 'path';
+
+dotenv.config({
+  path: join(process.cwd(), '.env')
+});
 
 import { shopifyApp } from '@shopify/shopify-app-express';
 import { SQLiteSessionStorage } from '@shopify/shopify-app-session-storage-sqlite';
 import { restResources } from '@shopify/shopify-api/rest/admin/2023-01';
-import { config } from './config.js';
 
 const DB_PATH =
   process.env.NODE_ENV === 'test'
@@ -32,12 +36,17 @@ const billingConfig = {
   }
 };
 
+const { SHOPIFY_API_KEY, SHOPIFY_API_SECRET_KEY } = process.env;
+
+console.log('SHOPIFY_API_KEY', SHOPIFY_API_KEY);
+console.log('SHOPIFY_API_SECRET_KEY', SHOPIFY_API_SECRET_KEY);
+
 const shopify = shopifyApp({
   api: {
     apiVersion: LATEST_API_VERSION,
     restResources,
-    apiKey: config.SHOPIFY_API_KEY,
-    apiSecretKey: config.SHOPIFY_API_SECRET_KEY,
+    apiKey: SHOPIFY_API_KEY,
+    apiSecretKey: SHOPIFY_API_SECRET_KEY,
     billing: undefined,
     scopes: ['write_products', 'read_products', 'write_draft_orders']
   },
