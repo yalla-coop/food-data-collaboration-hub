@@ -5,12 +5,17 @@ const createShopifyProduct = async (req, res, next) => {
 
   const session = res.locals.shopify.session;
 
-  const {title, price, fdcId} = req.body;
+  const { title, price, fdcId } = req.body;
   try {
-    let response = await Shopify.createProduct({session, title, price, fdcId: fdcId});
-    return res.setHeader('Content-Type', 'application/json')
+    let response = await Shopify.createProduct({
+      session,
+      title,
+      price,
+      fdcId: fdcId
+    });
+    return res
+      .setHeader('Content-Type', 'application/json')
       .end(JSON.stringify(response.body.data.productCreate));
-
   } catch (error) {
     console.warn('Could not create Shopify product', error);
     next(error);

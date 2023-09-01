@@ -1,5 +1,5 @@
-import { useNavigate } from "@shopify/app-bridge-react";
-import {useCallback, useEffect, useState} from 'react';
+import { useNavigate } from '@shopify/app-bridge-react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Card,
   Checkbox,
@@ -7,10 +7,10 @@ import {
   Stack,
   TextStyle,
   Thumbnail,
-  UnstyledLink,
-} from "@shopify/polaris";
-import { DiamondAlertMajor, ImageMajor } from "@shopify/polaris-icons";
-import { useAppQuery, useAuthenticatedFetch } from "../hooks";
+  UnstyledLink
+} from '@shopify/polaris';
+import { DiamondAlertMajor, ImageMajor } from '@shopify/polaris-icons';
+import { useAppQuery, useAuthenticatedFetch } from '../hooks';
 
 /* useMedia is used to support multiple screen sizes */
 //import { useMedia } from "@shopify/react-hooks";
@@ -22,12 +22,12 @@ function SmallScreenCard({
   product,
   discountCode,
   scans,
-  navigate,
+  navigate
 }) {
   return (
     <UnstyledLink onClick={() => navigate(`/products/${id}`)}>
       <div
-        style={{ padding: "0.75rem 1rem", borderBottom: "1px solid #E1E3E5" }}
+        style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #E1E3E5' }}
       >
         <Stack>
           <Stack.Item>
@@ -48,12 +48,12 @@ function SmallScreenCard({
                 </p>
                 <p>{truncate(product?.title, 35)}</p>
               </Stack.Item>
-              <div style={{ display: "flex" }}>
-                <div style={{ flex: "3" }}>
+              <div style={{ display: 'flex' }}>
+                <div style={{ flex: '3' }}>
                   <TextStyle variation="subdued">Discount</TextStyle>
-                  <p>{discountCode || "-"}</p>
+                  <p>{discountCode || '-'}</p>
                 </div>
-                <div style={{ flex: "2" }}>
+                <div style={{ flex: '2' }}>
                   <TextStyle variation="subdued">Scans</TextStyle>
                   <p>{scans}</p>
                 </div>
@@ -79,7 +79,7 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
 
   /* Check if screen is small */
   //const isSmallScreen = useMedia("(max-width: 640px)");
-  const isSmallScreen = false
+  const isSmallScreen = false;
 
   /* Map over Products for small screen */
   const smallScreenMarkup = FDCProducts.map((Product) => (
@@ -87,105 +87,92 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
   ));
 
   const resourceName = {
-    singular: "Product",
-    plural: "Products",
+    singular: 'Product',
+    plural: 'Products'
   };
 
-  const rowMarkup = FDCProducts.map(
-    (fdcProduct, index) => {
+  const rowMarkup = FDCProducts.map((fdcProduct, index) => {
+    let id = fdcProduct['@id'];
+    let title = fdcProduct['dfc-b:description'] || '';
+    let price = fdcProduct['price'] || '';
 
-      let id = fdcProduct['@id'];
-      let title = fdcProduct['dfc-b:description'] || "";
-      let price = fdcProduct['price'] || "";
-
-      let shopifyProduct = shopifyProducts.find(
-        (shopifyProduct) => {
-          const fdcMetafield = shopifyProduct?.metafields?.edges?.find((metafield) => {
-            return metafield.node.key == 'fdcId'
-          })
-          return fdcMetafield?.node?.value === fdcProduct['@id']
+    let shopifyProduct = shopifyProducts.find((shopifyProduct) => {
+      const fdcMetafield = shopifyProduct?.metafields?.edges?.find(
+        (metafield) => {
+          return metafield.node.key == 'fdcId';
         }
       );
+      return fdcMetafield?.node?.value === fdcProduct['@id'];
+    });
 
-      const [isCreating, setIsCreating] = useState(false);
-      const createShopifyProduct = useCallback(async () => {
-        setIsCreating(true);
-        const response = await authenticatedFetch(`/api/products/shopify`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            fdcId: fdcProduct['@id'],
-            title: fdcProduct['dfc-b:description'],
-            price: fdcProduct['price'],
-          }),
-        });
-        if (response.ok) {
-          const body = await response.json();
-          if (body.userErrors.length > 0) {
-            console.warn("Couldn't create Shopify product", body.userErrors[0]);
-          } else {
-            setShopifyProducts((shopifyProducts) => [
-              ...shopifyProducts,
-              body.product,
-            ]);
-          }
-          setIsCreating(false);
+    const [isCreating, setIsCreating] = useState(false);
+    const createShopifyProduct = useCallback(async () => {
+      setIsCreating(true);
+      const response = await authenticatedFetch(`/api/products/shopify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fdcId: fdcProduct['@id'],
+          title: fdcProduct['dfc-b:description'],
+          price: fdcProduct['price']
+        })
+      });
+      if (response.ok) {
+        const body = await response.json();
+        if (body.userErrors.length > 0) {
+          console.warn("Couldn't create Shopify product", body.userErrors[0]);
+        } else {
+          setShopifyProducts((shopifyProducts) => [
+            ...shopifyProducts,
+            body.product
+          ]);
         }
-      }, []);
+        setIsCreating(false);
+      }
+    }, []);
 
-      const [isDeleting, setIsDeleting] = useState(false);
-      const deleteShopifyProduct = useCallback(async () => {
-        setIsDeleting(true);
-        const response = await authenticatedFetch(`/api/products/shopify`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            shopifyId: shopifyProduct.id,
-          }),
-        });
+    const [isDeleting, setIsDeleting] = useState(false);
+    const deleteShopifyProduct = useCallback(async () => {
+      setIsDeleting(true);
+      const response = await authenticatedFetch(`/api/products/shopify`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shopifyId: shopifyProduct.id
+        })
+      });
 
-        if (response.ok) {
-          setShopifyProducts((shopifyProducts) =>
-            shopifyProducts.filter((p) => p.id !== shopifyProduct.id)
-          );
-          setIsDeleting(false);
-        }
-      }, [shopifyProduct]);
+      if (response.ok) {
+        setShopifyProducts((shopifyProducts) =>
+          shopifyProducts.filter((p) => p.id !== shopifyProduct.id)
+        );
+        setIsDeleting(false);
+      }
+    }, [shopifyProduct]);
 
-      const handleToggleShopifyListing = useCallback(
-        (newChecked) => {
-          if (newChecked) {
-            createShopifyProduct();
-          } else {
-            deleteShopifyProduct();
-          }
-        }
-      )
+    const handleToggleShopifyListing = useCallback((newChecked) => {
+      if (newChecked) {
+        createShopifyProduct();
+      } else {
+        deleteShopifyProduct();
+      }
+    });
 
-      /* The form layout, created using Polaris components */
-      return (
-        <IndexTable.Row
-          id={id}
-          key={id}
-          position={index}
-        >
-          <IndexTable.Cell>
-            {truncate(title, 25)}
-          </IndexTable.Cell>
-          <IndexTable.Cell>
-            £{price}
-          </IndexTable.Cell>
-          <IndexTable.Cell>
-            <Checkbox
-              checked={!!shopifyProduct}
-              onChange={handleToggleShopifyListing}
-              disabled={isCreating || isDeleting}
-            />
-          </IndexTable.Cell>
-        </IndexTable.Row>
-      );
-    }
-  );
+    /* The form layout, created using Polaris components */
+    return (
+      <IndexTable.Row id={id} key={id} position={index}>
+        <IndexTable.Cell>{truncate(title, 25)}</IndexTable.Cell>
+        <IndexTable.Cell>£{price}</IndexTable.Cell>
+        <IndexTable.Cell>
+          <Checkbox
+            checked={!!shopifyProduct}
+            onChange={handleToggleShopifyListing}
+            disabled={isCreating || isDeleting}
+          />
+        </IndexTable.Cell>
+      </IndexTable.Row>
+    );
+  });
 
   /* A layout for small screens, built using Polaris components */
   return (
@@ -197,9 +184,9 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
           resourceName={resourceName}
           itemCount={FDCProducts.length}
           headings={[
-            { title: "Title" },
-            { title: "Date created" },
-            { title: "List on my store" },
+            { title: 'Title' },
+            { title: 'Price' },
+            { title: 'List on my store' }
           ]}
           selectable={false}
           loading={loading}
@@ -213,7 +200,7 @@ function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
 
 /* A function to truncate long strings */
 function truncate(str, n) {
-  return str.length > n ? str.substr(0, n - 1) + "…" : str;
+  return str.length > n ? str.substr(0, n - 1) + '…' : str;
 }
 
-export { ProductsList }
+export { ProductsList };
