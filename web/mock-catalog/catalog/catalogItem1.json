@@ -1,0 +1,12 @@
+{
+    "@context": "https://www.datafoodconsortium.org",
+    "@id": "https://food-data-collaboration-hub-82234d1e2fc5.herokuapp.com/catalog/catalogItem1.json",
+    "@type": "dfc-b:CatalogItem",
+    "dfc-b:listedIn": {
+        "@id": "https://food-data-collaboration-hub-82234d1e2fc5.herokuapp.com/catalog/catalog.json"
+    },
+    "dfc-b:offeredThrough": "https://food-data-collaboration-hub-82234d1e2fc5.herokuapp.com/catalog/offer1",
+    "dfc-b:references": "https://food-data-collaboration-hub-82234d1e2fc5.herokuapp.com/catalog/suppliedProduct1.json",
+    "dfc-b:sku": "sku",
+    "dfc-b:stockLimitation": "6.32"
+}

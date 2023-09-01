@@ -15,6 +15,8 @@ export const GET_PRODUCTS_QUERY = `
           edges {
             node {
               id
+              key
+              value
             }
           }
         }

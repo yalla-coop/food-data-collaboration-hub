@@ -1,6 +1,6 @@
-{
+export default `{
   "@context": {
-    "dfc-f": "http://static.datafoodconsortium.org/data/facets.rdf#",
+    "dfc-f": "https://github.com/datafoodconsortium/taxonomies/releases/latest/download/facets.rdf#",
     "skos": "http://www.w3.org/2004/02/skos/core#",
     "rdf": "http://www.w3.org/2000/01/rdf-schema#"
   },
@@ -539,10 +539,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A nutrition claim states or suggests that a food has beneficial nutritional properties, such as “low fat”, “no added sugar” and “high in fibre”. A health claim is any statement on labels, advertising or other marketing products that health benefits can result from consuming a given food, for instance that a food can help reinforce the body’s natural defences or enhance learning ability.\" (source : European Food Safety Authority, https://www.efsa.europa.eu/fr/topics/topic/health-claims)"
+      "@value" : "\\"A nutrition claim states or suggests that a food has beneficial nutritional properties, such as “low fat”, “no added sugar” and “high in fibre”. A health claim is any statement on labels, advertising or other marketing products that health benefits can result from consuming a given food, for instance that a food can help reinforce the body’s natural defences or enhance learning ability.\\" (source : European Food Safety Authority, https://www.efsa.europa.eu/fr/topics/topic/health-claims)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Les allégations nutritionnelles et de santé sont des mentions, images ou symboles valorisant les denrées alimentaires sur le plan nutritionnel ou de la santé. Ce sont par exemple les phrases du type « jus de fruit riche en vitamine C », « riche en calcium », « allégé en sucres », « bon pour le cœur », « le calcium est nécessaire à une ossature normale », etc.\" (source: Direction générale de la concurrence, de la consommation et de la répression des fraudes, https://www.economie.gouv.fr/dgccrf/Consommation/Etiquetage-des-produits/Allegations-nutrionnelles-et-de-sante)"
+      "@value" : "\\"Les allégations nutritionnelles et de santé sont des mentions, images ou symboles valorisant les denrées alimentaires sur le plan nutritionnel ou de la santé. Ce sont par exemple les phrases du type « jus de fruit riche en vitamine C », « riche en calcium », « allégé en sucres », « bon pour le cœur », « le calcium est nécessaire à une ossature normale », etc.\\" (source: Direction générale de la concurrence, de la consommation et de la répression des fraudes, https://www.economie.gouv.fr/dgccrf/Consommation/Etiquetage-des-produits/Allegations-nutrionnelles-et-de-sante)"
     } ],
     "skos:narrower" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -564,10 +564,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food contains a nutrient or another substance, for which specific conditions are not laid down in this Regulation, or any claim likely to have the same meaning for the consumer, may only be made where the product complies with all the applicable provisions of this Regulation, and in particular Article 5. For vitamins and minerals the conditions of the claim 'source of' shall apply.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food contains a nutrient or another substance, for which specific conditions are not laid down in this Regulation, or any claim likely to have the same meaning for the consumer, may only be made where the product complies with all the applicable provisions of this Regulation, and in particular Article 5. For vitamins and minerals the conditions of the claim 'source of' shall apply.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire contient un nutriment ou une autre substance pour lequel ou laquelle le présent règlement ne fixe pas de conditions particulières, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit respecte toutes les dispositions applicables du présent règlement, et notamment l'article 5. Pour les vitamines et les minéraux, les conditions prévues pour l'allégation «source de» s'appliquent.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire contient un nutriment ou une autre substance pour lequel ou laquelle le présent règlement ne fixe pas de conditions particulières, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit respecte toutes les dispositions applicables du présent règlement, et notamment l'article 5. Pour les vitamines et les minéraux, les conditions prévues pour l'allégation «source de» s'appliquent.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -699,10 +699,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is energy-free, and any claim likely to have the same meaning for the consumer, may only be made where the product does not contain more than 4 kcal (17 kJ)/100 ml. For table-top sweeteners the limit of 0,4 kcal (1,7 kJ)/portion, with equivalent sweetening properties to 6 g of sucrose (approximately 1 teaspoon of sucrose), applies.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is energy-free, and any claim likely to have the same meaning for the consumer, may only be made where the product does not contain more than 4 kcal (17 kJ)/100 ml. For table-top sweeteners the limit of 0,4 kcal (1,7 kJ)/portion, with equivalent sweetening properties to 6 g of sucrose (approximately 1 teaspoon of sucrose), applies.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire n'a pas d'apport énergétique, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au maximum 4 kcal (17 kJ)/100 ml. Dans le cas des édulcorants de table, la limite de 0,4 kcal (1,7 kJ)/portion, ayant des propriétés édulcorantes équivalentes à 6 g de saccharose (approximativement 1 petite cuillérée de saccharose), s'applique.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire n'a pas d'apport énergétique, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au maximum 4 kcal (17 kJ)/100 ml. Dans le cas des édulcorants de table, la limite de 0,4 kcal (1,7 kJ)/portion, ayant des propriétés édulcorantes équivalentes à 6 g de saccharose (approximativement 1 petite cuillérée de saccharose), s'applique.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -722,10 +722,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is energy-reduced, and any claim likely to have the same meaning for the consumer, may only be made where the energy value is reduced by at least 30%, with an indication of the characteristic(s) which make(s) the food reduced in its total energy value.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is energy-reduced, and any claim likely to have the same meaning for the consumer, may only be made where the energy value is reduced by at least 30%, with an indication of the characteristic(s) which make(s) the food reduced in its total energy value.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire a une valeur énergétique réduite, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si la valeur énergétique est réduite d'au moins 30 %, en indiquant la ou les caractéristiques entraînant la réduction de la valeur énergétique totale de la denrée alimentaire.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire a une valeur énergétique réduite, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si la valeur énergétique est réduite d'au moins 30 %, en indiquant la ou les caractéristiques entraînant la réduction de la valeur énergétique totale de la denrée alimentaire.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -942,10 +942,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is fat-free, and any claim likely to have the same meaning for the consumer, may only be made where the product contains no more than 0,5 g of fat per 100 g or 100 ml. However, claims expressed as 'X % fat-free' shall be prohibited.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is fat-free, and any claim likely to have the same meaning for the consumer, may only be made where the product contains no more than 0,5 g of fat per 100 g or 100 ml. However, claims expressed as 'X % fat-free' shall be prohibited.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire ne contient pas de matières grasses, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit ne contient pas plus de 0,5 g de matières grasses par 100 g ou par 100 ml. Cependant, les allégations du type «à X % sans matières grasses» sont interdites.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire ne contient pas de matières grasses, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit ne contient pas plus de 0,5 g de matières grasses par 100 g ou par 100 ml. Cependant, les allégations du type «à X % sans matières grasses» sont interdites.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -1291,10 +1291,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is high in fibre, and any claim likely to have the same meaning for the consumer, may only be made where the product contains at least 6 g of fibre per 100 g or at least 3 g of fibre per 100 kcal.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is high in fibre, and any claim likely to have the same meaning for the consumer, may only be made where the product contains at least 6 g of fibre per 100 g or at least 3 g of fibre per 100 kcal.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire est riche en fibres, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au moins 6 g de fibres par 100 g ou au moins 3 g de fibres par 100 kcal.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire est riche en fibres, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au moins 6 g de fibres par 100 g ou au moins 3 g de fibres par 100 kcal.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -1314,10 +1314,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is high in monounsaturated fat, and any claim likely to have the same meaning for the consumer, may only be made where at least 45% of the fatty acids present in the product derive from monounsaturated fat under the condition that monounsaturated fat provides more than 20% of energy of the product.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is high in monounsaturated fat, and any claim likely to have the same meaning for the consumer, may only be made where at least 45% of the fatty acids present in the product derive from monounsaturated fat under the condition that monounsaturated fat provides more than 20% of energy of the product.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire est riche en graisses monoinsaturées, ou toute allégation susceptible d’avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au moins 45 % d’acides gras dérivés de graisses monoinsaturées et si l’énergie fournie par les graisses monoinsaturées représente plus de 20 % de l’apport énergétique du produit.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire est riche en graisses monoinsaturées, ou toute allégation susceptible d’avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au moins 45 % d’acides gras dérivés de graisses monoinsaturées et si l’énergie fournie par les graisses monoinsaturées représente plus de 20 % de l’apport énergétique du produit.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -1337,10 +1337,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is high in omega-3 fatty acids, and any claim likely to have the same meaning for the consumer, may only be made where the product contains at least 0,6 g alpha-linolenic acid per 100 g and per 100 kcal, or at least 80 mg of the sum of eicosapentaenoic acid and docosahexaenoic acid per 100 g and per 100 kcal.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is high in omega-3 fatty acids, and any claim likely to have the same meaning for the consumer, may only be made where the product contains at least 0,6 g alpha-linolenic acid per 100 g and per 100 kcal, or at least 80 mg of the sum of eicosapentaenoic acid and docosahexaenoic acid per 100 g and per 100 kcal.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire est riche en acide gras oméga-3, ou toute allégation susceptible d’avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au moins 0,6 g d’acide alphalinolénique pour 100 g et 100 kcal, ou au moins 80 mg d’acide eicosapentaénoïque et d’acide docosahexénoïque combinés pour 100 g et 100 kcal.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire est riche en acide gras oméga-3, ou toute allégation susceptible d’avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au moins 0,6 g d’acide alphalinolénique pour 100 g et 100 kcal, ou au moins 80 mg d’acide eicosapentaénoïque et d’acide docosahexénoïque combinés pour 100 g et 100 kcal.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -1360,10 +1360,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is high in polyunsaturated fat, and any claim likely to have the same meaning for the consumer, may only be made where at least 45% of the fatty acids present in the product derive from polyunsaturated fat under the condition that polyunsaturated fat provides more than 20% of energy of the product.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is high in polyunsaturated fat, and any claim likely to have the same meaning for the consumer, may only be made where at least 45% of the fatty acids present in the product derive from polyunsaturated fat under the condition that polyunsaturated fat provides more than 20% of energy of the product.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire est riche en graisses polyinsaturées, ou toute allégation susceptible d’avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au moins 45 % d’acides gras dérivés de graisses polyinsaturées et si l’énergie fournie par les graisses polyinsaturées représente plus de 20 % de l’apport énergétique du produit.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire est riche en graisses polyinsaturées, ou toute allégation susceptible d’avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au moins 45 % d’acides gras dérivés de graisses polyinsaturées et si l’énergie fournie par les graisses polyinsaturées représente plus de 20 % de l’apport énergétique du produit.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -1383,10 +1383,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is high in protein, and any claim likely to have the same meaning for the consumer, may only be made where at least 20% of the energy value of the food is provided by protein.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is high in protein, and any claim likely to have the same meaning for the consumer, may only be made where at least 20% of the energy value of the food is provided by protein.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire est riche en protéines, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si 20 % au moins de la valeur énergétique de la denrée alimentaire sont produits par des protéines.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire est riche en protéines, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si 20 % au moins de la valeur énergétique de la denrée alimentaire sont produits par des protéines.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -1406,10 +1406,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is high in unsaturated fat, and any claim likely to have the same meaning for the consumer may only be made where at least 70% of the fatty acids present in the product derive from unsaturated fat under the condition that unsaturated fat provides more than 20% of energy of the product.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is high in unsaturated fat, and any claim likely to have the same meaning for the consumer may only be made where at least 70% of the fatty acids present in the product derive from unsaturated fat under the condition that unsaturated fat provides more than 20% of energy of the product.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire est riche en graisses insaturées, ou toute allégation susceptible d’avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au moins 70 % d’acides gras dérivés de graisses insaturées et si l’énergie fournie par les graisses insaturées représente plus de 20 % de l’apport énergétique du produit.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire est riche en graisses insaturées, ou toute allégation susceptible d’avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au moins 70 % d’acides gras dérivés de graisses insaturées et si l’énergie fournie par les graisses insaturées représente plus de 20 % de l’apport énergétique du produit.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -1429,10 +1429,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is high in vitamins and/or minerals, and any claim likely to have the same meaning for the consumer, may only be made where the product contains at least twice the value of ‘source of [NAME OF VITAMIN/S] and/or [NAME OF MINERAL/S]’.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is high in vitamins and/or minerals, and any claim likely to have the same meaning for the consumer, may only be made where the product contains at least twice the value of ‘source of [NAME OF VITAMIN/S] and/or [NAME OF MINERAL/S]’.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire est riche en vitamines et/ou en minéraux, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au moins deux fois la teneur requise pour l'allégation «source de [NOM DES VITAMINES] et/ou [NOM DES MINÉRAUX]».\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire est riche en vitamines et/ou en minéraux, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au moins deux fois la teneur requise pour l'allégation «source de [NOM DES VITAMINES] et/ou [NOM DES MINÉRAUX]».\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -1504,10 +1504,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim stating that the content in one or more nutrients, other than vitamins and minerals, has been increased, and any claim likely to have the same meaning for the consumer, may only be made where the product meets the conditions for the claim ‘source of’ and the increase in content is at least 30% compared to a similar product.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim stating that the content in one or more nutrients, other than vitamins and minerals, has been increased, and any claim likely to have the same meaning for the consumer, may only be made where the product meets the conditions for the claim ‘source of’ and the increase in content is at least 30% compared to a similar product.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation affirmant que la teneur en un ou plusieurs nutriments, autres que des vitamines ou des minéraux, a été augmentée, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit remplit les conditions applicables à l'allégation «source de» et si l'augmentation de cette teneur est d'au moins 30 % par rapport à un produit similaire.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation affirmant que la teneur en un ou plusieurs nutriments, autres que des vitamines ou des minéraux, a été augmentée, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit remplit les conditions applicables à l'allégation «source de» et si l'augmentation de cette teneur est d'au moins 30 % par rapport à un produit similaire.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -1588,10 +1588,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim stating that a product is ‘light’ or ‘lite’, and any claim likely to have the same meaning for the consumer, shall follow the same conditions as those set for the term ‘reduced’; the claim shall also be accompanied by an indication of the characteristic(s) which make(s) the food 'light' or 'lite'.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim stating that a product is ‘light’ or ‘lite’, and any claim likely to have the same meaning for the consumer, shall follow the same conditions as those set for the term ‘reduced’; the claim shall also be accompanied by an indication of the characteristic(s) which make(s) the food 'light' or 'lite'.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle un produit est «allégé» ou «light», ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, doit remplir les mêmes conditions que celles applicables aux termes «réduit en»; elle doit aussi être accompagnée d'une indication de la ou les caractéristiques entraînant l'allégement de la denrée alimentaire.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle un produit est «allégé» ou «light», ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, doit remplir les mêmes conditions que celles applicables aux termes «réduit en»; elle doit aussi être accompagnée d'une indication de la ou les caractéristiques entraînant l'allégement de la denrée alimentaire.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -1611,10 +1611,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim stating that a product is ‘light’ or ‘lite’, and any claim likely to have the same meaning for the consumer, shall follow the same conditions as those set for the term ‘reduced’; the claim shall also be accompanied by an indication of the characteristic(s) which make(s) the food 'light' or 'lite'.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim stating that a product is ‘light’ or ‘lite’, and any claim likely to have the same meaning for the consumer, shall follow the same conditions as those set for the term ‘reduced’; the claim shall also be accompanied by an indication of the characteristic(s) which make(s) the food 'light' or 'lite'.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle un produit est «allégé» ou «light», ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, doit remplir les mêmes conditions que celles applicables aux termes «réduit en»; elle doit aussi être accompagnée d'une indication de la ou les caractéristiques entraînant l'allégement de la denrée alimentaire.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle un produit est «allégé» ou «light», ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, doit remplir les mêmes conditions que celles applicables aux termes «réduit en»; elle doit aussi être accompagnée d'une indication de la ou les caractéristiques entraînant l'allégement de la denrée alimentaire.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -1661,10 +1661,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is low in energy, and any claim likely to have the same meaning for the consumer, may only be made where the product does not contain more than 40 kcal (170 kJ)/100 g for solids or more than 20 kcal (80 kJ)/100 ml for liquids. For table-top sweeteners the limit of 4 kcal (17 kJ)/portion, with equivalent sweetening properties to 6 g of sucrose (approximately 1 teaspoon of sucrose), applies.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is low in energy, and any claim likely to have the same meaning for the consumer, may only be made where the product does not contain more than 40 kcal (170 kJ)/100 g for solids or more than 20 kcal (80 kJ)/100 ml for liquids. For table-top sweeteners the limit of 4 kcal (17 kJ)/portion, with equivalent sweetening properties to 6 g of sucrose (approximately 1 teaspoon of sucrose), applies.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire a une faible valeur énergétique, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que pour un produit contenant au maximum 40 kcal (170 kJ)/100 g dans le cas des solides ou au maximum 20 kcal (80 kJ)/100 ml dans le cas des liquides. Dans le cas des édulcorants de table, la limite de 4 kcal (17 kJ)/portion, avec des propriétés édulcorantes équivalentes à 6 g de saccharose (approximativement 1 petite cuillérée de saccharose), s'applique.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire a une faible valeur énergétique, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que pour un produit contenant au maximum 40 kcal (170 kJ)/100 g dans le cas des solides ou au maximum 20 kcal (80 kJ)/100 ml dans le cas des liquides. Dans le cas des édulcorants de table, la limite de 4 kcal (17 kJ)/portion, avec des propriétés édulcorantes équivalentes à 6 g de saccharose (approximativement 1 petite cuillérée de saccharose), s'applique.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -1684,10 +1684,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is low in fat, and any claim likely to have the same meaning for the consumer, may only be made where the product contains no more than 3 g of fat per 100 g for solids or 1,5 g of fat per 100 ml for liquids (1,8 g of fat per 100 ml for semi-skimmed milk).\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is low in fat, and any claim likely to have the same meaning for the consumer, may only be made where the product contains no more than 3 g of fat per 100 g for solids or 1,5 g of fat per 100 ml for liquids (1,8 g of fat per 100 ml for semi-skimmed milk).\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire a une faible teneur en matières grasses, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit ne contient pas plus de 3 g de matières grasses par 100 g dans le cas des solides ou 1,5 g de matières grasses par 100 ml dans le cas des liquides (1,8 g de matières grasses par 100 ml pour le lait demi-écrémé).\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire a une faible teneur en matières grasses, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit ne contient pas plus de 3 g de matières grasses par 100 g dans le cas des solides ou 1,5 g de matières grasses par 100 ml dans le cas des liquides (1,8 g de matières grasses par 100 ml pour le lait demi-écrémé).\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -1707,10 +1707,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is low in saturated fat, and any claim likely to have the same meaning for the consumer, may only be made if the sum of saturated fatty acids and trans-fatty acids in the product does not exceed 1,5 g per 100 g for solids or 0,75 g/100 ml for liquids and in either case the sum of saturated fatty acids and trans-fatty acids must not provide more than 10% of energy.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is low in saturated fat, and any claim likely to have the same meaning for the consumer, may only be made if the sum of saturated fatty acids and trans-fatty acids in the product does not exceed 1,5 g per 100 g for solids or 0,75 g/100 ml for liquids and in either case the sum of saturated fatty acids and trans-fatty acids must not provide more than 10% of energy.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire a une faible teneur en graisses saturées, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si la somme des acides gras saturés et des acides gras trans contenus dans le produit n'est pas supérieure à 1,5 g par 100 g de solide ou à 0,75 g par 100 ml de liquide, la somme des acides gras saturés et des acides gras trans ne pouvant pas produire, dans les deux cas, plus de 10 % de l'énergie.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire a une faible teneur en graisses saturées, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si la somme des acides gras saturés et des acides gras trans contenus dans le produit n'est pas supérieure à 1,5 g par 100 g de solide ou à 0,75 g par 100 ml de liquide, la somme des acides gras saturés et des acides gras trans ne pouvant pas produire, dans les deux cas, plus de 10 % de l'énergie.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -1730,10 +1730,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is low in sodium/salt, and any claim likely to have the same meaning for the consumer, may only be made where the product contains no more than 0,12 g of sodium, or the equivalent value for salt, per 100 g or per 100 ml. For waters, other than natural mineral waters falling within the scope of Directive 80/777/EEC, this value should not exceed 2 mg of sodium per 100 ml.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is low in sodium/salt, and any claim likely to have the same meaning for the consumer, may only be made where the product contains no more than 0,12 g of sodium, or the equivalent value for salt, per 100 g or per 100 ml. For waters, other than natural mineral waters falling within the scope of Directive 80/777/EEC, this value should not exceed 2 mg of sodium per 100 ml.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire est pauvre en sodium ou en sel, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit ne contient pas plus de 0,12 g de sodium ou de l'équivalent en sel par 100 g ou par 100 ml. En ce qui concerne les eaux, autres que les eaux minérales naturelles relevant du champ d'application de la directive 80/777/CEE, cette valeur ne devrait pas être supérieure à 2 mg de sodium par 100 ml.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire est pauvre en sodium ou en sel, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit ne contient pas plus de 0,12 g de sodium ou de l'équivalent en sel par 100 g ou par 100 ml. En ce qui concerne les eaux, autres que les eaux minérales naturelles relevant du champ d'application de la directive 80/777/CEE, cette valeur ne devrait pas être supérieure à 2 mg de sodium par 100 ml.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -1753,10 +1753,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is low in sugars, and any claim likely to have the same meaning for the consumer, may only be made where the product contains no more than 5 g of sugars per 100 g for solids or 2,5 g of sugars per 100 ml for liquids.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is low in sugars, and any claim likely to have the same meaning for the consumer, may only be made where the product contains no more than 5 g of sugars per 100 g for solids or 2,5 g of sugars per 100 ml for liquids.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire a une faible teneur en sucres, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit ne contient pas plus de 5 g de sucres par 100 g dans le cas des solides ou 2,5 g de sucres par 100 ml dans le cas des liquides.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire a une faible teneur en sucres, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit ne contient pas plus de 5 g de sucres par 100 g dans le cas des solides ou 2,5 g de sucres par 100 ml dans le cas des liquides.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -1903,10 +1903,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"Where a food naturally meets the condition(s) laid down in this Annex for the use of a nutritional claim, the term 'naturally/natural' may be used as a prefix to the claim.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Where a food naturally meets the condition(s) laid down in this Annex for the use of a nutritional claim, the term 'naturally/natural' may be used as a prefix to the claim.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Lorsqu'une denrée alimentaire remplit naturellement la ou les conditions fixées dans la présente annexe pour l'utilisation d'une allégation nutritionnelle, le terme «naturellement/naturel» peut accompagner cette allégation.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Lorsqu'une denrée alimentaire remplit naturellement la ou les conditions fixées dans la présente annexe pour l'utilisation d'une allégation nutritionnelle, le terme «naturellement/naturel» peut accompagner cette allégation.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -1949,10 +1949,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "Natural \"living\" origin concerned"
+      "@value" : "Natural \\"living\\" origin concerned"
     }, {
       "@language" : "fr",
-      "@value" : "Source \"vivante\" d'origine concernée"
+      "@value" : "Source \\"vivante\\" d'origine concernée"
     } ],
     "rdf:comment" : [ {
       "@language" : "en",
@@ -2033,10 +2033,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim stating that sodium/salt has not been added to a food and any claim likely to have the same meaning for the consumer may only be made where the product does not contain any added sodium/salt or any other ingredient containing added sodium/salt and the product contains no more than 0,12 g sodium, or the equivalent value for salt, per 100 g or 100 ml.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim stating that sodium/salt has not been added to a food and any claim likely to have the same meaning for the consumer may only be made where the product does not contain any added sodium/salt or any other ingredient containing added sodium/salt and the product contains no more than 0,12 g sodium, or the equivalent value for salt, per 100 g or 100 ml.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle il n’a pas été ajouté de sodium ou de sel à une denrée alimentaire, ou toute autre allégation susceptible d’avoir le même sens pour le consommateur, ne peut être faite que si le produit ne contient pas de sodium ou de sel ajouté ou tout autre ingrédient contenant du sodium ou du sel ajouté et si le produit ne contient pas plus de 0,12 g de sodium ou de l’équivalent en sel par 100 g ou par 100 ml.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle il n’a pas été ajouté de sodium ou de sel à une denrée alimentaire, ou toute autre allégation susceptible d’avoir le même sens pour le consommateur, ne peut être faite que si le produit ne contient pas de sodium ou de sel ajouté ou tout autre ingrédient contenant du sodium ou du sel ajouté et si le produit ne contient pas plus de 0,12 g de sodium ou de l’équivalent en sel par 100 g ou par 100 ml.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -2056,10 +2056,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim stating that sugars have not been added to a food, and any claim likely to have the same meaning for the consumer, may only be made where the product does not contain any added mono- or disaccharides or any other food used for its sweetening properties. If sugars are naturally present in the food, the following indication should also appear on the label: 'CONTAINS NATURALLY OCCURRING SUGARS'.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim stating that sugars have not been added to a food, and any claim likely to have the same meaning for the consumer, may only be made where the product does not contain any added mono- or disaccharides or any other food used for its sweetening properties. If sugars are naturally present in the food, the following indication should also appear on the label: 'CONTAINS NATURALLY OCCURRING SUGARS'.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle il n'a pas été ajouté de sucres à une denrée alimentaire, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit ne contient pas de monosaccharides ou disaccharides ajoutés ou toute autre denrée alimentaire utilisée pour ses propriétés édulcorantes. Si les sucres sont naturellement présents dans la denrée alimentaire, l'indication suivante devrait également figurer sur l'étiquette: «CONTIENT DES SUCRES NATURELLEMENT PRÉSENTS».\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle il n'a pas été ajouté de sucres à une denrée alimentaire, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit ne contient pas de monosaccharides ou disaccharides ajoutés ou toute autre denrée alimentaire utilisée pour ses propriétés édulcorantes. Si les sucres sont naturellement présents dans la denrée alimentaire, l'indication suivante devrait également figurer sur l'étiquette: «CONTIENT DES SUCRES NATURELLEMENT PRÉSENTS».\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -2418,10 +2418,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/elements/1.1/description" : [ {
       "@language" : "en",
-      "@value" : "Part of natural \"living\" origin concerned"
+      "@value" : "Part of natural \\"living\\" origin concerned"
     }, {
       "@language" : "fr",
-      "@value" : "Partie de la source \"vivante\" d'origine concernée"
+      "@value" : "Partie de la source \\"vivante\\" d'origine concernée"
     } ],
     "rdf:comment" : [ {
       "@language" : "en",
@@ -2724,10 +2724,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim stating that the content in one or more nutrients has been reduced, and any claim likely to have the same meaning for the consumer, may only be made where the reduction in content is at least 30% compared to a similar product, except for micronutrients, where a 10 % difference in the reference values as set in Directive 90/496/EEC shall be acceptable, and for sodium, or the equivalent value for salt, where a 25% difference shall be acceptable. The claim \"reduced saturated fat\", and any claim likely to have the same meaning for the consumer, may only be made: (a) if the sum of saturated fatty acids and of trans-fatty acids in the product bearing the claim is at least 30% less than the sum of saturated fatty acids and of trans-fatty acids in a similar product; and (b) if the content in trans-fatty acids in the product bearing the claim is equal to or less than in a similar product. The claim \"reduced sugars\", and any claim likely to have the same meaning for the consumer, may only be made if the amount of energy of the product bearing the claim is equal to or less than the amount of energy in a similar product.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim stating that the content in one or more nutrients has been reduced, and any claim likely to have the same meaning for the consumer, may only be made where the reduction in content is at least 30% compared to a similar product, except for micronutrients, where a 10 % difference in the reference values as set in Directive 90/496/EEC shall be acceptable, and for sodium, or the equivalent value for salt, where a 25% difference shall be acceptable. The claim \\"reduced saturated fat\\", and any claim likely to have the same meaning for the consumer, may only be made: (a) if the sum of saturated fatty acids and of trans-fatty acids in the product bearing the claim is at least 30% less than the sum of saturated fatty acids and of trans-fatty acids in a similar product; and (b) if the content in trans-fatty acids in the product bearing the claim is equal to or less than in a similar product. The claim \\"reduced sugars\\", and any claim likely to have the same meaning for the consumer, may only be made if the amount of energy of the product bearing the claim is equal to or less than the amount of energy in a similar product.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation affirmant que la teneur en un ou plusieurs nutriments a été réduite, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si la réduction de cette teneur est d'au moins 30 % par rapport à un produit similaire, sauf s'il s'agit de micronutriments, pour lesquels une différence de 10 % par rapport aux valeurs de référence fixées par la directive 90/496/CEE est admissible, ou s'il s'agit de sodium ou d'équivalent en sel, pour lesquels une différence de 25 % est admissible. L’allégation «réduit en graisses saturées», ou toute autre allégation susceptible d’avoir le même sens pour le consommateur, ne peut être faite que: a) si la somme des acides gras saturés et des acides gras trans contenus dans le produit auquel s’applique l’allégation est au moins de 30 % inférieure à la somme des acides gras saturés et des acides gras trans contenus dans un produit similaire; et b) si la teneur en acides gras trans dans le produit auquel s’applique l’allégation est inférieure ou égale à celle d’un produit similaire. L’allégation «réduit en sucres», ou toute autre allégation susceptible d’avoir le même sens pour le consommateur, ne peut être faite que si la valeur énergétique du produit auquel s’applique l’allégation est inférieure ou égale à celle d’un produit similaire.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation affirmant que la teneur en un ou plusieurs nutriments a été réduite, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si la réduction de cette teneur est d'au moins 30 % par rapport à un produit similaire, sauf s'il s'agit de micronutriments, pour lesquels une différence de 10 % par rapport aux valeurs de référence fixées par la directive 90/496/CEE est admissible, ou s'il s'agit de sodium ou d'équivalent en sel, pour lesquels une différence de 25 % est admissible. L’allégation «réduit en graisses saturées», ou toute autre allégation susceptible d’avoir le même sens pour le consommateur, ne peut être faite que: a) si la somme des acides gras saturés et des acides gras trans contenus dans le produit auquel s’applique l’allégation est au moins de 30 % inférieure à la somme des acides gras saturés et des acides gras trans contenus dans un produit similaire; et b) si la teneur en acides gras trans dans le produit auquel s’applique l’allégation est inférieure ou égale à celle d’un produit similaire. L’allégation «réduit en sucres», ou toute autre allégation susceptible d’avoir le même sens pour le consommateur, ne peut être faite que si la valeur énergétique du produit auquel s’applique l’allégation est inférieure ou égale à celle d’un produit similaire.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -2798,10 +2798,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food does not contain saturated fat, and any claim likely to have the same meaning for the consumer, may only be made where the sum of saturated fat and trans-fatty acids does not exceed 0,1 g of saturated fat per 100 g or 100 ml.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food does not contain saturated fat, and any claim likely to have the same meaning for the consumer, may only be made where the sum of saturated fat and trans-fatty acids does not exceed 0,1 g of saturated fat per 100 g or 100 ml.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire ne contient pas de graisses saturées, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si la somme des acides gras saturés et des acides gras trans n'excède pas 0,1 g de graisses saturées par 100 g ou par 100 ml.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire ne contient pas de graisses saturées, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si la somme des acides gras saturés et des acides gras trans n'excède pas 0,1 g de graisses saturées par 100 g ou par 100 ml.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -2891,10 +2891,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is sodium-free or salt-free, and any claim likely to have the same meaning for the consumer, may only be made where the product contains no more than 0,005 g of sodium, or the equivalent value for salt, per 100 g.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is sodium-free or salt-free, and any claim likely to have the same meaning for the consumer, may only be made where the product contains no more than 0,005 g of sodium, or the equivalent value for salt, per 100 g.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire ne contient pas de sodium ou de sel, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit ne contient pas plus de 0,005 g de sodium ou de l'équivalent en sel par 100 g.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire ne contient pas de sodium ou de sel, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit ne contient pas plus de 0,005 g de sodium ou de l'équivalent en sel par 100 g.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -2914,10 +2914,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is a source of fibre, and any claim likely to have the same meaning for the consumer, may only be made where the product contains at least 3 g of fibre per 100 g or at least 1,5 g of fibre per 100 kcal.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is a source of fibre, and any claim likely to have the same meaning for the consumer, may only be made where the product contains at least 3 g of fibre per 100 g or at least 1,5 g of fibre per 100 kcal.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire est une source de fibres, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au moins 3 g de fibres par 100 g ou au moins 1,5 g de fibres par 100 kcal.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire est une source de fibres, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au moins 3 g de fibres par 100 g ou au moins 1,5 g de fibres par 100 kcal.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -2937,10 +2937,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"Where a food naturally meets the condition(s) laid down in this Annex for the use of a nutritional claim, the term 'naturally/natural' may be used as a prefix to the claim.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Where a food naturally meets the condition(s) laid down in this Annex for the use of a nutritional claim, the term 'naturally/natural' may be used as a prefix to the claim.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire est une source d’acide gras oméga-3, ou toute allégation susceptible d’avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au moins 0,3 g d’acide alphalinolénique pour 100 g et 100 kcal, ou au moins 40 mg d’acide eicosapentaénoïque et d’acide docosahexénoïque combinés pour 100 g et 100 kcal.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire est une source d’acide gras oméga-3, ou toute allégation susceptible d’avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au moins 0,3 g d’acide alphalinolénique pour 100 g et 100 kcal, ou au moins 40 mg d’acide eicosapentaénoïque et d’acide docosahexénoïque combinés pour 100 g et 100 kcal.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -2960,10 +2960,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is a source of protein, and any claim likely to have the same meaning for the consumer, may only be made where at least 12% of the energy value of the food is provided by protein.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is a source of protein, and any claim likely to have the same meaning for the consumer, may only be made where at least 12% of the energy value of the food is provided by protein.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire est une source de protéines, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si 12 % au moins de la valeur énergétique de la denrée alimentaire sont produits par des protéines.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire est une source de protéines, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si 12 % au moins de la valeur énergétique de la denrée alimentaire sont produits par des protéines.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -2983,10 +2983,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is a source of vitamins and/or minerals, and any claim likely to have the same meaning for the consumer, may only be made where the product contains at least a significant amount as defined in the Annex to Directive 90/496/EEC or an amount provided for by derogations granted according to Article 6 of Regulation (EC) No 1925/2006 of the European Parliament and of the Council of 20 December 2006 on the addition of vitamins and minerals and of certain other substances to foods[1].\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is a source of vitamins and/or minerals, and any claim likely to have the same meaning for the consumer, may only be made where the product contains at least a significant amount as defined in the Annex to Directive 90/496/EEC or an amount provided for by derogations granted according to Article 6 of Regulation (EC) No 1925/2006 of the European Parliament and of the Council of 20 December 2006 on the addition of vitamins and minerals and of certain other substances to foods[1].\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire est une source de vitamines et/ou de minéraux, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au moins la quantité significative définie à l'annexe de la directive 90/496/CEE ou une quantité prévue au titre de dérogations accordées conformément à l'article 6 du règlement (CE) no 1925/2006 du Parlement européen et du Conseil du 20 décembre 2006 concernant l'adjonction de vitamines, de minéraux et de certaines autres substances aux denrées alimentaires.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire est une source de vitamines et/ou de minéraux, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit contient au moins la quantité significative définie à l'annexe de la directive 90/496/CEE ou une quantité prévue au titre de dérogations accordées conformément à l'article 6 du règlement (CE) no 1925/2006 du Parlement européen et du Conseil du 20 décembre 2006 concernant l'adjonction de vitamines, de minéraux et de certaines autres substances aux denrées alimentaires.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -3060,10 +3060,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is sugars-free, and any claim likely to have the same meaning for the consumer, may only be made where the product contains no more than 0,5 g of sugars per 100 g or 100 ml.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is sugars-free, and any claim likely to have the same meaning for the consumer, may only be made where the product contains no more than 0,5 g of sugars per 100 g or 100 ml.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire ne contient pas de sucres, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit ne contient pas plus de 0,5 g de sucres par 100 g ou par 100 ml.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire ne contient pas de sucres, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit ne contient pas plus de 0,5 g de sucres par 100 g ou par 100 ml.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -3305,10 +3305,10 @@
     "@type" : [ "skos:Concept" ],
     "http://purl.org/dc/terms/description" : [ {
       "@language" : "en",
-      "@value" : "\"A claim that a food is very low in sodium/salt, and any claim likely to have the same meaning for the consumer, may only be made where the product contains no more than 0,04 g of sodium, or the equivalent value for salt, per 100 g or per 100 ml. This claim shall not be used for natural mineral waters and other waters.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"A claim that a food is very low in sodium/salt, and any claim likely to have the same meaning for the consumer, may only be made where the product contains no more than 0,04 g of sodium, or the equivalent value for salt, per 100 g or per 100 ml. This claim shall not be used for natural mineral waters and other waters.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     }, {
       "@language" : "fr",
-      "@value" : "\"Une allégation selon laquelle une denrée alimentaire est très pauvre en sodium ou en sel, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit ne contient pas plus de 0,04 g de sodium ou de l'équivalent en sel par 100 g ou 100 ml. Il est interdit d'utiliser cette allégation pour les eaux minérales naturelles et les autres eaux.\" (source: Annex of Regulation (EC) No 1924/2006)"
+      "@value" : "\\"Une allégation selon laquelle une denrée alimentaire est très pauvre en sodium ou en sel, ou toute autre allégation susceptible d'avoir le même sens pour le consommateur, ne peut être faite que si le produit ne contient pas plus de 0,04 g de sodium ou de l'équivalent en sel par 100 g ou 100 ml. Il est interdit d'utiliser cette allégation pour les eaux minérales naturelles et les autres eaux.\\" (source: Annex of Regulation (EC) No 1924/2006)"
     } ],
     "skos:broader" : [ {
       "@id" : "dfc-f:NutritionalClaim"
@@ -3376,4 +3376,4 @@
     } ]
   }
 ]
-}
+}`

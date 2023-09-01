@@ -7,10 +7,11 @@ const getShopifyProducts = async (req, res, next) => {
 
   const products = await ProductUseCases.getShopifyProducts({session});
 
+  console.log('shopify products are', products);
   res.locals.products = products;
 
-  // return a 200 response with the products
-  return res.status(200).json({products: 'products'});
+  res.set('content-type', 'application/json');
+  return res.status(200).send(products);
 };
 
 export default getShopifyProducts;

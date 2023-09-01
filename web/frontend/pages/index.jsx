@@ -14,10 +14,10 @@ import {
 import { useNavigate, TitleBar, Loading } from "@shopify/app-bridge-react";
 
 import { useAppQuery } from "../hooks";
-//import { trophyImage } from "../assets";
+import { connector } from '../../connector/index.js'
 
-import { ProductsCard } from "../components";
-import { ProductsList } from "../components";
+import { ProductsCard } from "../components/ProductsCard.jsx";
+import { ProductsList } from "../components/ProductsList.jsx";
 
 export default function HomePage() {
 
@@ -30,9 +30,9 @@ export default function HomePage() {
     const navigate = useNavigate();
 
     /* useAppQuery wraps react-query and the App Bridge authenticatedFetch function */
-    const {
-      data: Products,
-      isLoading,
+    let {
+      data: FDCProductsResponse,
+      fdcIsLoading,
   
       /*
         react-query provides stale-while-revalidate caching.
@@ -40,23 +40,46 @@ export default function HomePage() {
         Once the query refetches, IndexTable updates and the loading state is removed.
         This ensures a performant UX.
       */
-      isRefetching,
+      fdcIsRefetching,
     } = useAppQuery({
       url: "/api/products/fdc",
     });
-  
-    console.log('Products data is', Products)
+
+    console.log('FDCProductsResponse is', FDCProductsResponse)
+
+    const FDCProducts = FDCProductsResponse && FDCProductsResponse[0]['@graph']
+
+    //useEffect(async () => {
+    //  FDCProducts = FDCProducts && await connector.import(FDCProducts)
+    //}, [FDCProducts]);
+
+    const {
+      data: ShopifyProductsResponse,
+      shopifyIsLoading,
+      shopifyIsRefetching,
+    } = useAppQuery({
+      url: "/api/products/shopify",
+    });
+    const ShopifyProducts = ShopifyProductsResponse && ShopifyProductsResponse.map((shopifyProduct) => shopifyProduct.node)
+    console.log('Shopify data is', ShopifyProducts)
+    //console.log('shopifyResponse is', shopifyResponse)
+    //let shopifyIsLoading = true;
+    //let shopifyIsRefetching = false;
+    //let ShopifyProducts = [];
+
     /* loadingMarkup uses the loading component from AppBridge and components from Polaris  */
-    const loadingMarkup = isLoading ? (
+    const loadingMarkup = fdcIsLoading || shopifyIsLoading ? (
       <Card sectioned>
         <Loading />
         <SkeletonBodyText />
       </Card>
     ) : null;
+
+    const isRefetching = fdcIsRefetching || shopifyIsRefetching;
   
     /* Set the Products to use in the list */
-    const productsMarkup = Products?.length ? (
-      <ProductList Products={Products} loading={isRefetching} />
+    const productsMarkup = FDCProducts?.length ? (
+      <ProductsList FDCProducts={FDCProducts} ShopifyProducts={ShopifyProducts} loading={isRefetching} />
     ) : null;
     console.log('productsMarkup ', productsMarkup )
   
@@ -82,8 +105,6 @@ export default function HomePage() {
       ) : null;
     */
   
-    console.log('index.js')
-
     /*
       Use Polaris Page and TitleBar components to create the page layout,
       and include the empty state contents set above.
@@ -92,10 +113,6 @@ export default function HomePage() {
       <Page fullWidth={!!productsMarkup}>
         <TitleBar
           title="Products"
-          primaryAction={{
-            content: "Create QR code",
-            onAction: () => navigate("/qrcodes/new"),
-          }}
         />
         <Layout>
           <Layout.Section>

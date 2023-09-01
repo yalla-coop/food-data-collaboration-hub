@@ -1,20 +1,19 @@
-import { useNavigate } from "@shopify/app-bridge-react";
+import { useNavigate } from '@shopify/app-bridge-react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Card,
-  Icon,
+  Checkbox,
   IndexTable,
   Stack,
   TextStyle,
   Thumbnail,
-  UnstyledLink,
-} from "@shopify/polaris";
-import { DiamondAlertMajor, ImageMajor } from "@shopify/polaris-icons";
+  UnstyledLink
+} from '@shopify/polaris';
+import { DiamondAlertMajor, ImageMajor } from '@shopify/polaris-icons';
+import { useAppQuery, useAuthenticatedFetch } from '../hooks';
 
 /* useMedia is used to support multiple screen sizes */
 //import { useMedia } from "@shopify/react-hooks";
-
-/* dayjs is used to capture and format the date a QR code was created or modified */
-import dayjs from "dayjs";
 
 /* Markup for small screen sizes (mobile) */
 function SmallScreenCard({
@@ -23,13 +22,12 @@ function SmallScreenCard({
   product,
   discountCode,
   scans,
-  createdAt,
-  navigate,
+  navigate
 }) {
   return (
     <UnstyledLink onClick={() => navigate(`/products/${id}`)}>
       <div
-        style={{ padding: "0.75rem 1rem", borderBottom: "1px solid #E1E3E5" }}
+        style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #E1E3E5' }}
       >
         <Stack>
           <Stack.Item>
@@ -49,14 +47,13 @@ function SmallScreenCard({
                   </TextStyle>
                 </p>
                 <p>{truncate(product?.title, 35)}</p>
-                <p>{dayjs(createdAt).format("MMMM D, YYYY")}</p>
               </Stack.Item>
-              <div style={{ display: "flex" }}>
-                <div style={{ flex: "3" }}>
+              <div style={{ display: 'flex' }}>
+                <div style={{ flex: '3' }}>
                   <TextStyle variation="subdued">Discount</TextStyle>
-                  <p>{discountCode || "-"}</p>
+                  <p>{discountCode || '-'}</p>
                 </div>
-                <div style={{ flex: "2" }}>
+                <div style={{ flex: '2' }}>
                   <TextStyle variation="subdued">Scans</TextStyle>
                   <p>{scans}</p>
                 </div>
@@ -69,72 +66,113 @@ function SmallScreenCard({
   );
 }
 
-export function ProductsList({ Products, loading }) {
-  console.log('ProductsList', Products)
+function ProductsList({ FDCProducts, ShopifyProducts, loading }) {
+  const authenticatedFetch = useAuthenticatedFetch();
+
   const navigate = useNavigate();
+
+  const [shopifyProducts, setShopifyProducts] = useState(ShopifyProducts || []);
+
+  useEffect(() => {
+    setShopifyProducts(ShopifyProducts || []);
+  }, [ShopifyProducts]);
 
   /* Check if screen is small */
   //const isSmallScreen = useMedia("(max-width: 640px)");
-  const isSmallScreen = false
+  const isSmallScreen = false;
 
   /* Map over Products for small screen */
-  const smallScreenMarkup = Products.map((Product) => (
+  const smallScreenMarkup = FDCProducts.map((Product) => (
     <SmallScreenCard key={Product.id} navigate={navigate} {...Product} />
   ));
 
   const resourceName = {
-    singular: "Product",
-    plural: "Products",
+    singular: 'Product',
+    plural: 'Products'
   };
 
-  console.log('ProductsList')
+  const rowMarkup = FDCProducts.map((fdcProduct, index) => {
+    let id = fdcProduct['@id'];
+    let title = fdcProduct['dfc-b:description'] || '';
+    let price = fdcProduct['price'] || '';
 
-  const rowMarkup = Products.map(
-    ({ id, title, product, discountCode, scans, createdAt }, index) => {
-      const deletedProduct = product.title.includes("Deleted product");
-
-      /* The form layout, created using Polaris components. Includes the QR code data set above. */
-      return (
-        <IndexTable.Row
-          id={id}
-          key={id}
-          position={index}
-          onClick={() => {
-            navigate(`/products/${id}`);
-          }}
-        >
-          <IndexTable.Cell>
-            <Thumbnail
-              source={product?.images?.edges[0]?.node?.url || ImageMajor}
-              alt="placeholder"
-              color="base"
-              size="small"
-            />
-          </IndexTable.Cell>
-          <IndexTable.Cell>
-            <UnstyledLink data-primary-link url={`/products/${id}`}>
-              {truncate(title, 25)}
-            </UnstyledLink>
-          </IndexTable.Cell>
-          <IndexTable.Cell>
-            <Stack>
-              {deletedProduct && (
-                <Icon source={DiamondAlertMajor} color="critical" />
-              )}
-              <TextStyle variation={deletedProduct ? "negative" : null}>
-                {truncate(product?.title, 25)}
-              </TextStyle>
-            </Stack>
-          </IndexTable.Cell>
-          <IndexTable.Cell>{discountCode}</IndexTable.Cell>
-          <IndexTable.Cell>
-            {dayjs(createdAt).format("MMMM D, YYYY")}
-          </IndexTable.Cell>
-          <IndexTable.Cell>{scans}</IndexTable.Cell>
-        </IndexTable.Row>
+    let shopifyProduct = shopifyProducts.find((shopifyProduct) => {
+      const fdcMetafield = shopifyProduct?.metafields?.edges?.find(
+        (metafield) => {
+          return metafield.node.key == 'fdcId';
+        }
       );
-    }
-  );
+      return fdcMetafield?.node?.value === fdcProduct['@id'];
+    });
+
+    const [isCreating, setIsCreating] = useState(false);
+    const createShopifyProduct = useCallback(async () => {
+      setIsCreating(true);
+      const response = await authenticatedFetch(`/api/products/shopify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fdcId: fdcProduct['@id'],
+          title: fdcProduct['dfc-b:description'],
+          price: fdcProduct['price']
+        })
+      });
+      if (response.ok) {
+        const body = await response.json();
+        if (body.userErrors.length > 0) {
+          console.warn("Couldn't create Shopify product", body.userErrors[0]);
+        } else {
+          setShopifyProducts((shopifyProducts) => [
+            ...shopifyProducts,
+            body.product
+          ]);
+        }
+        setIsCreating(false);
+      }
+    }, []);
+
+    const [isDeleting, setIsDeleting] = useState(false);
+    const deleteShopifyProduct = useCallback(async () => {
+      setIsDeleting(true);
+      const response = await authenticatedFetch(`/api/products/shopify`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shopifyId: shopifyProduct.id
+        })
+      });
+
+      if (response.ok) {
+        setShopifyProducts((shopifyProducts) =>
+          shopifyProducts.filter((p) => p.id !== shopifyProduct.id)
+        );
+        setIsDeleting(false);
+      }
+    }, [shopifyProduct]);
+
+    const handleToggleShopifyListing = useCallback((newChecked) => {
+      if (newChecked) {
+        createShopifyProduct();
+      } else {
+        deleteShopifyProduct();
+      }
+    });
+
+    /* The form layout, created using Polaris components */
+    return (
+      <IndexTable.Row id={id} key={id} position={index}>
+        <IndexTable.Cell>{truncate(title, 25)}</IndexTable.Cell>
+        <IndexTable.Cell>£{price}</IndexTable.Cell>
+        <IndexTable.Cell>
+          <Checkbox
+            checked={!!shopifyProduct}
+            onChange={handleToggleShopifyListing}
+            disabled={isCreating || isDeleting}
+          />
+        </IndexTable.Cell>
+      </IndexTable.Row>
+    );
+  });
 
   /* A layout for small screens, built using Polaris components */
   return (
@@ -144,14 +182,11 @@ export function ProductsList({ Products, loading }) {
       ) : (
         <IndexTable
           resourceName={resourceName}
-          itemCount={Products.length}
+          itemCount={FDCProducts.length}
           headings={[
-            { title: "Thumbnail", hidden: true },
-            { title: "Title" },
-            { title: "Product" },
-            { title: "Discount" },
-            { title: "Date created" },
-            { title: "Scans" },
+            { title: 'Title' },
+            { title: 'Price' },
+            { title: 'List on my store' }
           ]}
           selectable={false}
           loading={loading}
@@ -165,5 +200,7 @@ export function ProductsList({ Products, loading }) {
 
 /* A function to truncate long strings */
 function truncate(str, n) {
-  return str.length > n ? str.substr(0, n - 1) + "…" : str;
+  return str.length > n ? str.substr(0, n - 1) + '…' : str;
 }
+
+export { ProductsList };
