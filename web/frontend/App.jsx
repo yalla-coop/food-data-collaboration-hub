@@ -12,9 +12,6 @@ export default function App() {
   // Any .tsx or .jsx files in /pages will become a route
   // See documentation for <Routes /> for more info
 
-  console.log('running app.jsx');
-  console.log('process.env', process.env);
-
   const pages = import.meta.globEager('./pages/**/!(*.test.[jt]sx)*.([jt]sx)');
 
   return (
