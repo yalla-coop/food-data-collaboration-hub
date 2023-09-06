@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppQuery, useAppMutation } from '../hooks';
 import { useQueryClient } from 'react-query';
 import { Checkbox } from '@shopify/polaris';
@@ -9,8 +9,6 @@ const convertShopifyGraphQLIdToNumber = (id) => {
   return parseInt(id.split('/').pop());
 };
 export default function Home() {
-  const { PRODUCER_SHOP_URL } = process.env;
-
   const [nextPageCursorValue, setNextPageCursorValue] = useState(null);
   const [productsList, setProductsList] = useState([]);
 
@@ -40,13 +38,14 @@ export default function Home() {
     }
   });
 
+  console.log('process.env', process.env);
   const { data, isLoading } = useAppQuery({
     reactQueryOptions: {
       onSuccess: (data) => {
         setProductsList([...productsList, ...data.products.list]);
       }
     },
-    url: `${PRODUCER_SHOP_URL}/fdc/products?shop=test-hodmedod.myshopify.com&nextPageCursor=${nextPageCursorValue}`
+    url: `${PRODUCER_SHOP_URL}fdc/products?shop=test-hodmedod.myshopify.com&nextPageCursor=${nextPageCursorValue}`
   });
 
   if ((productsList.length === 0 && isLoading) || exitingProductsIsLoading) {

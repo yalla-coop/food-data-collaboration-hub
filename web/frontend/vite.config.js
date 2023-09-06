@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import react from '@vitejs/plugin-react';
@@ -47,7 +47,7 @@ export default defineConfig({
   define: {
     'process.env.SHOPIFY_API_KEY': JSON.stringify(process.env.SHOPIFY_API_KEY),
     'process.env.PRODUCER_SHOP_URL': JSON.stringify(
-      process.env.PRODUCER_SHOP_URL
+      process?.env?.PRODUCER_SHOP_URL || ''
     )
   },
   resolve: {

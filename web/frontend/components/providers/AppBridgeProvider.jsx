@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Provider } from "@shopify/app-bridge-react";
-import { Banner, Layout, Page } from "@shopify/polaris";
+import { useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Provider } from '@shopify/app-bridge-react';
+import { Banner, Layout, Page } from '@shopify/polaris';
 
 /**
  * A component to configure App Bridge.
@@ -19,7 +19,7 @@ export function AppBridgeProvider({ children }) {
     () => ({
       replace: (path) => {
         navigate(path, { replace: true });
-      },
+      }
     }),
     [navigate]
   );
@@ -36,7 +36,7 @@ export function AppBridgeProvider({ children }) {
   // See: https://stackoverflow.com/questions/60482318/version-of-usememo-for-caching-a-value-that-will-never-change
   const [appBridgeConfig] = useState(() => {
     const host =
-      new URLSearchParams(location.search).get("host") ||
+      new URLSearchParams(location.search).get('host') ||
       window.__SHOPIFY_DEV_HOST;
 
     window.__SHOPIFY_DEV_HOST = host;
@@ -44,38 +44,38 @@ export function AppBridgeProvider({ children }) {
     return {
       host,
       apiKey: process.env.SHOPIFY_API_KEY,
-      forceRedirect: true,
+      forceRedirect: true
     };
   });
 
   if (!process.env.SHOPIFY_API_KEY || !appBridgeConfig.host) {
     const bannerProps = !process.env.SHOPIFY_API_KEY
       ? {
-          title: "Missing Shopify API Key",
+          title: 'Missing Shopify API Key',
           children: (
             <>
               Your app is running without the SHOPIFY_API_KEY environment
               variable. Please ensure that it is set when running or building
               your React app.
             </>
-          ),
+          )
         }
       : {
-          title: "Missing host query argument",
+          title: 'Missing host query argument',
           children: (
             <>
               Your app can only load if the URL has a <b>host</b> argument.
               Please ensure that it is set, or access your app using the
               Partners Dashboard <b>Test your app</b> feature
             </>
-          ),
+          )
         };
 
     return (
       <Page narrowWidth>
         <Layout>
           <Layout.Section>
-            <div style={{ marginTop: "100px" }}>
+            <div style={{ marginTop: '100px' }}>
               <Banner {...bannerProps} status="critical" />
             </div>
           </Layout.Section>

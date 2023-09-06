@@ -3,3 +3,4 @@ build:
     web: Dockerfile
   config:
     SHOPIFY_API_KEY: 97ce55b3446cddeeae30ad0eff938022
+    PRODUCER_SHOP_URL: https://food-data-collaboration-produc-fe870152f634.herokuapp.com/
