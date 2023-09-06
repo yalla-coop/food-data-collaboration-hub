@@ -2,8 +2,13 @@ import { useState, useEffect } from 'react';
 import { useAppQuery, useAppMutation } from '../hooks';
 import { useQueryClient } from 'react-query';
 import { Checkbox } from '@shopify/polaris';
+console.log(
+  'import.meta.env.PRODUCER_SHOP_URL ',
+  import.meta.env.PRODUCER_SHOP_URL
+);
 
-const PRODUCER_SHOP_URL = import.meta.env.PRODUCER_SHOP_URL;
+const PRODUCER_SHOP_URL =
+  import.meta.env.PRODUCER_SHOP_URL || process?.env?.PRODUCER_SHOP_URL;
 
 const convertShopifyGraphQLIdToNumber = (id) => {
   if (!id) return null;
@@ -40,7 +45,6 @@ export default function Home() {
     }
   });
 
-  console.log('process.env', process.env);
   const { data, isLoading } = useAppQuery({
     reactQueryOptions: {
       onSuccess: (data) => {
