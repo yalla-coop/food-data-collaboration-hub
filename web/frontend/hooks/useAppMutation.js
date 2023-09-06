@@ -15,19 +15,26 @@ import { useAuthenticatedFetch } from './useAuthenticatedFetch';
  *
  * @returns Return value of useQuery.  See: https://react-query.tanstack.com/reference/useQuery.
  */
-export const useAppMutation = ({ url, fetchInit = {}, reactQueryOptions }) => {
+export const useAppMutation = ({ reactQueryOptions = {} }) => {
   const authenticatedFetch = useAuthenticatedFetch();
+
   const fetch = useMemo(
     () =>
       async ({ url, fetchInit = {} }) => {
         const response = await authenticatedFetch(url, fetchInit);
-        return response.json();
+        const responseJson = await response.json();
+        if (response.status === 500 || response.status === 400) {
+          throw responseJson;
+        }
+        return responseJson;
       },
     []
   );
 
-  return useMutation(url, fetch, {
+  return useMutation(fetch, {
     ...reactQueryOptions,
     refetchOnWindowFocus: false
   });
 };
+
+export default useAppMutation;

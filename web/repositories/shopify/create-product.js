@@ -1,34 +1,44 @@
-import getClient from './get-client.js';
-import { CREATE_PRODUCT } from './queries/CREATE_PRODUCT.js';
+import shopify from '../../shopify.js';
 
-export const createProduct = async ({ session, title, price, fdcId }) => {
-  const client = getClient(session);
+export const createProduct = async ({
+  session,
+  title,
+  handle,
+  variants,
+  producerProductId
+}) => {
+  const product = new shopify.api.rest.Product({
+    session
+  });
 
-  try {
-    return await client.query({
-      data: {
-        query: CREATE_PRODUCT,
-        variables: {
-          input: {
-            title: title,
-            variants: [
-              {
-                price: price
-              }
-            ],
-            metafields: [
-              {
-                key: 'fdcId',
-                namespace: 'fdc',
-                value: fdcId,
-                type: 'single_line_text_field'
-              }
-            ]
-          }
-        }
+  product.title = title;
+  product.handle = handle;
+  product.metafields = [
+    {
+      key: 'producer_product_id',
+      namespace: 'global',
+      value: producerProductId,
+      type: 'single_line_text_field'
+    }
+  ];
+  product.variants = variants;
+
+  product.variants?.forEach((variant) => {
+    variant.metafields = [
+      {
+        key: 'producer_variant_id',
+        namespace: 'global',
+        value: variant.id,
+        type: 'single_line_text_field'
       }
-    });
-  } catch (error) {
-    console.warn('Could not create Shopify product', error);
-  }
+    ];
+  });
+
+  await product.save({
+    update: true
+  });
+
+  // save this product id to my database
+
+  
 };

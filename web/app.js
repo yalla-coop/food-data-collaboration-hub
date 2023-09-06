@@ -1,5 +1,6 @@
 // @ts-check
 
+//http://localhost:55807/oidc/callback
 import * as dotenv from 'dotenv';
 import { join } from 'path';
 
@@ -47,8 +48,9 @@ app.use('/api/*', shopify.validateAuthenticatedSession());
 
 app.use('/*', addSessionShopToReqParams);
 
+app.use('/api', express.json(), apiRouters);
+
 app.use(express.json());
-app.use('/api', apiRouters);
 app.use('/oidc', oidcRouter);
 
 app.use(serveStatic(STATIC_PATH, { index: false }));

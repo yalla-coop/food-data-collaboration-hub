@@ -1,4 +1,4 @@
-import {Router} from 'express';
+import { Router } from 'express';
 
 import ProductsModules from './modules/products/index.js';
 
