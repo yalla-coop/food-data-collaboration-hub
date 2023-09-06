@@ -4,7 +4,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "vite build",
-    "dev": "vite",
+    "dev": "PRODUCER_SHOP_URL=http://localhost:63505/ vite",
     "coverage": "vitest run --coverage",
     "test": "vitest"
   },
