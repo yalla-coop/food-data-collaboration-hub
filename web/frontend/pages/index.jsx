@@ -42,7 +42,11 @@ export default function Home() {
     }
   });
 
-  const { data, isLoading } = useAppQuery({
+  const {
+    data,
+    isLoading,
+    error: getProductDataError
+  } = useAppQuery({
     reactQueryOptions: {
       onSuccess: (data) => {
         setProductsList([...productsList, ...data.products.list]);
@@ -56,6 +60,16 @@ export default function Home() {
   }
 
   const { products: { pageInfo = {}, list = [] } = {} } = data || {};
+
+  if (getProductDataError)
+    return (
+      <div>
+        <p>
+          Something went wrong, please check the producer server - maybe the
+          server is down : {getProductDataError?.message || 'Unknown error'}
+        </p>
+      </div>
+    );
 
   if (!data || !data?.products || !data?.products?.list || list.length === 0)
     return (
