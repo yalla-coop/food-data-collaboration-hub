@@ -45,7 +45,7 @@ export default defineConfig({
   root: dirname(fileURLToPath(import.meta.url)),
   plugins: [react()],
   define: {
-    'process.env': {},
+    'process.env': process.env,
     'process.env.SHOPIFY_API_KEY': JSON.stringify(process.env.SHOPIFY_API_KEY),
     'process.env.VITE_PRODUCER_SHOP_URL': JSON.stringify(
       process?.env?.PRODUCER_SHOP_URL || ''
