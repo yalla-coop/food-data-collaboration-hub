@@ -46,7 +46,7 @@ export default defineConfig({
   plugins: [react()],
   define: {
     'process.env.SHOPIFY_API_KEY': JSON.stringify(process.env.SHOPIFY_API_KEY),
-    'process.env.PRODUCER_SHOP_URL': JSON.stringify(
+    'process.env.VITE_PRODUCER_SHOP_URL': JSON.stringify(
       process?.env?.PRODUCER_SHOP_URL || ''
     )
   },
