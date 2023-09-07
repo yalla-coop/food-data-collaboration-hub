@@ -71,16 +71,6 @@ export default function Home() {
       </div>
     );
 
-  if (!data || !data?.products || !data?.products?.list || list.length === 0)
-    return (
-      <div>
-        <p>
-          Something went wrong, please check the producer server - maybe the
-          server is down
-        </p>
-      </div>
-    );
-
   const handleShowMore = () => {
     if (!pageInfo?.hasNextPage) return;
     setNextPageCursorValue(pageInfo?.startCursor);
