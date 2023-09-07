@@ -2,10 +2,6 @@ import { useState, useEffect } from 'react';
 import { useAppQuery, useAppMutation } from '../hooks';
 import { useQueryClient } from 'react-query';
 import { Checkbox } from '@shopify/polaris';
-console.log(
-  'import.meta.env.PRODUCER_SHOP_URL ',
-  import.meta.env.PRODUCER_SHOP_URL
-);
 
 const PRODUCER_SHOP_URL =
   import.meta.env.PRODUCER_SHOP_URL || process?.env?.PRODUCER_SHOP_URL;
@@ -150,7 +146,14 @@ export default function Home() {
             />
 
             <button
-              disabled={createShopifyProductLoading}
+              disabled={
+                createShopifyProductLoading ||
+                exitingProductsList.some(
+                  (exitingProduct) =>
+                    convertShopifyGraphQLIdToNumber(product.id) ===
+                    Number(exitingProduct.producerProductId)
+                )
+              }
               onClick={() => handleAddToStore(product)}
             >
               Add to my store
