@@ -41,6 +41,8 @@ if (host === 'localhost') {
   };
 }
 
+console.log('process.env.PRODUCER_SHOP_URL', process.env.PRODUCER_SHOP_URL);
+
 export default defineConfig({
   root: dirname(fileURLToPath(import.meta.url)),
   plugins: [react()],
