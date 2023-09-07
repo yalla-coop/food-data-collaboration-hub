@@ -3,7 +3,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "vite build",
+    "build": "PRODUCER_SHOP_URL=https://food-data-collaboration-produc-fe870152f634.herokuapp.com/ vite build",
     "dev": "PRODUCER_SHOP_URL=http://localhost:63505/ vite",
     "coverage": "vitest run --coverage",
     "test": "vitest"
