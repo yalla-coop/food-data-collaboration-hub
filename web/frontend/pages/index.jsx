@@ -3,10 +3,7 @@ import { useAppQuery, useAppMutation } from '../hooks';
 import { useQueryClient } from 'react-query';
 import { Checkbox } from '@shopify/polaris';
 
-const PRODUCER_SHOP_URL =
-  import.meta.env.VITE_PRODUCER_SHOP_URL ||
-  process?.env?.VITE_PRODUCER_SHOP_URL;
-
+const PRODUCER_SHOP_URL = import.meta.env.VITE_PRODUCER_SHOP_URL;
 const convertShopifyGraphQLIdToNumber = (id) => {
   if (!id) return null;
   if (typeof id === 'number') return id;
