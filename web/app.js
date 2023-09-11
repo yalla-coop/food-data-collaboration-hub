@@ -4,19 +4,25 @@
 import * as dotenv from 'dotenv';
 import { join } from 'path';
 
-dotenv.config({
-  path: join(process.cwd(), '.env')
-});
+import cookieParser from 'cookie-parser';
+
+import session from 'express-session';
+import passport from 'passport';
+import OpenIDConnectStrategy from 'passport-openidconnect';
+import connectSQLite from 'connect-sqlite3';
 
 import { readFileSync } from 'fs';
 import express from 'express';
 import serveStatic from 'serve-static';
 import apiRouters from './api-routers.js';
-import session from 'express-session';
-import { sessionStore, oidcRouter } from './oidc-router.js';
+import { oidcRouter } from './oidc-router.js';
 import shopify from './shopify.js';
 import GDPRWebhookHandlers from './gdpr.js';
-import addSessionShopToReqParams from './middleware/addSessionShopToReqParameters.js';
+import isAuthenticated from './middleware/isAuthenticated.js';
+
+dotenv.config({
+  path: join(process.cwd(), '.env')
+});
 
 const STATIC_PATH =
   process.env.NODE_ENV === 'production'
@@ -25,17 +31,90 @@ const STATIC_PATH =
 
 const app = express();
 
+const SQLiteStore = connectSQLite(session);
+
+const sessionStore = new SQLiteStore({
+  db: 'sessions.sqlite',
+  dir: '.',
+  concurrentDB: true
+});
+
+const sessionObject = {
+  secret: process.env.OIDC_SESSION_SECRET,
+  resave: false, // don't save session if unmodified
+  saveUninitialized: false,
+  store: sessionStore
+};
+
 app.use(
-  '/*',
+  '/',
   session({
-    secret: process.env.OIDC_SESSION_SECRET || 'dangerously hardcoded secret',
-    resave: false, // don't save session if unmodified
-    saveUninitialized: false, // don't create session until something stored
-    store: sessionStore
+    ...sessionObject,
+    proxy: true,
+    cookie: {
+      secure: true, // Set to true if you're using HTTPS
+      httpOnly: true, // Ensures the cookie is only accessible via HTTP/HTTPS
+      maxAge: 1000 * 60 * 60 * 24 * 7, // Sets cookie to expire in 7 days
+      sameSite: 'none' // Can be 'strict', 'lax', 'none', or boolean (true)
+    }
   })
 );
 
-//app.use(serveStatic(`${process.cwd()}/mock-catalog`, {index: false}));
+app.use(cookieParser());
+
+passport.use(
+  new OpenIDConnectStrategy(
+    {
+      issuer: 'https://login.lescommuns.org/auth/realms/data-food-consortium',
+      authorizationURL:
+        'https://login.lescommuns.org/auth/realms/data-food-consortium/protocol/openid-connect/auth',
+      tokenURL:
+        'https://login.lescommuns.org/auth/realms/data-food-consortium/protocol/openid-connect/token',
+      userInfoURL:
+        'https://login.lescommuns.org/auth/realms/data-food-consortium/protocol/openid-connect/userinfo',
+      clientID: process.env.OIDC_CLIENT_ID || '',
+      clientSecret: process.env.OIDC_CLIENT_SECRET || '',
+      callbackURL: process.env.OIDC_CALLBACK_URL || '',
+      passReqToCallback: true,
+      sessionKey: 'openidconnect:login.lescommuns.org'
+    },
+
+    function (
+      req,
+      issure,
+      profile,
+      context,
+      idToken,
+      accessToken,
+      refreshToken,
+      done
+    ) {
+      profile.accessToken = accessToken;
+      profile.refreshToken = refreshToken;
+      profile.idToken = idToken;
+
+      return done(null, profile);
+    }
+  )
+);
+
+passport.serializeUser(function (user, cb) {
+  return cb(null, {
+    id: user.id,
+    username: user.username,
+    name: user.displayName,
+    email: user.emails[0].value,
+    accessToken: user.accessToken,
+    refreshToken: user.refreshToken,
+    idToken: user.idToken
+  });
+});
+passport.deserializeUser(function (user, cb) {
+  return cb(null, user);
+});
+
+app.use('/*', passport.initialize());
+app.use('/*', passport.session());
 
 app.get(shopify.config.auth.path, shopify.auth.begin());
 app.get(
@@ -46,9 +125,23 @@ app.get(
 
 app.use('/api/*', shopify.validateAuthenticatedSession());
 
-app.use('/*', addSessionShopToReqParams);
+app.post('/api/user/logout', function (req, res, next) {
+  return req.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
 
-app.use('/api', express.json(), apiRouters);
+    //remove the session token from the cookie
+    res.clearCookie('connect.sid');
+    return res.redirect('/');
+  });
+});
+
+app.get('/api/user/check', isAuthenticated, (req, res) => {
+  return res.json({ success: true, user: req.user, isAuthenticated: true });
+});
+
+app.use('/api', express.json(), isAuthenticated, apiRouters);
 
 app.use(express.json());
 app.use('/oidc', oidcRouter);
@@ -70,8 +163,6 @@ app.post(
 );
 
 app.use((err, _req, res, _next) => {
-  console.error(err);
-
   if (err.name === 'ValidationError') {
     return res.status(400).json({
       success: false,
@@ -79,8 +170,10 @@ app.use((err, _req, res, _next) => {
     });
   }
 
-  return res.status(500).json({
-    message: err.message,
+  const errorStatus = err.status || 500;
+
+  return res.status(errorStatus).json({
+    message: err.response?.data?.message || err.message,
     stack: err.stack
   });
 });

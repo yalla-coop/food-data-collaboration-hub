@@ -23,7 +23,12 @@ export const useAppMutation = ({ reactQueryOptions = {} }) => {
       async ({ url, fetchInit = {} }) => {
         const response = await authenticatedFetch(url, fetchInit);
         const responseJson = await response.json();
-        if (response.status === 500 || response.status === 400) {
+        if (
+          response.status === 500 ||
+          response.status === 400 ||
+          response.status === 401 ||
+          response.status === 403
+        ) {
           throw responseJson;
         }
         return responseJson;

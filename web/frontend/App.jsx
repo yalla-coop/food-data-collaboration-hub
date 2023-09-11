@@ -5,7 +5,8 @@ import Routes from './Routes';
 import {
   AppBridgeProvider,
   QueryProvider,
-  PolarisProvider
+  PolarisProvider,
+  AuthProvider
 } from './components';
 
 export default function App() {
@@ -19,15 +20,21 @@ export default function App() {
       <BrowserRouter>
         <AppBridgeProvider>
           <QueryProvider>
-            <NavigationMenu
-              navigationLinks={[
-                {
-                  label: 'Page name',
-                  destination: '/pagename'
-                }
-              ]}
-            />
-            <Routes pages={pages} />
+            <AuthProvider>
+              <NavigationMenu
+                navigationLinks={[
+                  {
+                    label: 'Product List',
+                    destination: '/productslist'
+                  },
+                  {
+                    label: 'Login',
+                    destination: '/'
+                  }
+                ]}
+              />
+              <Routes pages={pages} />
+            </AuthProvider>
           </QueryProvider>
         </AppBridgeProvider>
       </BrowserRouter>

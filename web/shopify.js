@@ -16,6 +16,7 @@ const { SHOPIFY_API_KEY, SHOPIFY_API_SECRET_KEY } = process.env;
 
 const shopify = shopifyApp({
   api: {
+    hostName: process.env.HOST.replace(/https?:\/\//, ''),
     apiVersion: LATEST_API_VERSION,
     restResources,
     apiKey: SHOPIFY_API_KEY,

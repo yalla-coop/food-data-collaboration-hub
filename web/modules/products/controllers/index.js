@@ -9,7 +9,7 @@ import getProducts from './get-products.js';
 
 const products = Router();
 
-products.get('/fdc', getFDCProducts, convertResponseToGraphData);
+products.get('/fdc', getFDCProducts);
 products.get('/shopify', getShopifyProducts, convertResponseToGraphData);
 products.get('/shopify/:id', getShopifyProductById);
 products.get('/', getProducts);

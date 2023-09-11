@@ -19,12 +19,25 @@ export const useAppQuery = ({ url, fetchInit = {}, reactQueryOptions }) => {
   const fetch = useMemo(() => {
     return async () => {
       const response = await authenticatedFetch(url, fetchInit);
-      return response.json();
+      const responseJson = await response.json();
+
+      if (
+        response.status === 500 ||
+        response.status === 400 ||
+        response.status === 401 ||
+        response.status === 403
+      ) {
+        throw responseJson;
+      }
+      return responseJson;
     };
   }, [url, JSON.stringify(fetchInit)]);
 
   return useQuery(url, fetch, {
     ...reactQueryOptions,
-    refetchOnWindowFocus: false
+    retryOnMount: true,
+    retry: 1,
+    retryDelay: 1000,
+    refetchOnWindowFocus: true
   });
 };

@@ -13,8 +13,10 @@ if (
   );
 }
 
+const BACKEND_PORT = process.env.BACKEND_PORT;
+
 const proxyOptions = {
-  target: `http://127.0.0.1:${process.env.BACKEND_PORT}`,
+  target: `http://127.0.0.1:${BACKEND_PORT}`,
   changeOrigin: false,
   secure: true,
   ws: false
@@ -40,8 +42,6 @@ if (host === 'localhost') {
     clientPort: 443
   };
 }
-
-console.log('process.env.PRODUCER_SHOP_URL', process.env.PRODUCER_SHOP_URL);
 
 export default defineConfig({
   root: dirname(fileURLToPath(import.meta.url)),

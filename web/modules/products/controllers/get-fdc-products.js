@@ -1,18 +1,32 @@
-import UseCases from '../use-cases/index.js';
+import axios from 'axios';
 
+const PRODUCER_SHOP_URL =
+  process.env.PRODUCER_SHOP_URL || 'http://localhost:51063/';
+const PRODUCER_SHOP =
+  process.env.PRODUCER_SHOP || 'test-hodmedod.myshopify.com';
 const getFDCProducts = async (req, res, next) => {
-  console.log('getFDCProducts----------------------------------');
+  const { nextPageCursor } = req.query;
+
+  const user = req.user;
+  const accessToken = user.accessToken;
 
   try {
-    const products = await UseCases.getFDCProducts();
-    console.log('getFDCProducts products', products);
-    console.log('FDC products are', products);
-    res.set('content-type', 'application/ld+json');
-    return res.status(200).send(products);
-    //return res.status(200).json(products);
-  } catch (error) {
-    console.warn('Error getting FDC products', error);
-    return next(error);
+    const { data } = await axios.post(
+      `${PRODUCER_SHOP_URL}fdc/products?shop=${PRODUCER_SHOP}&nextPageCursor=${nextPageCursor}`,
+      {
+        userId: user.id,
+        accessToken: accessToken
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    return res.json(data);
+  } catch (err) {
+    return next(err);
   }
 };
 
