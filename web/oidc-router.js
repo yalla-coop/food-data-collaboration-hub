@@ -4,10 +4,7 @@ import passport from 'passport';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-const STATIC_PATH =
-  process.env.NODE_ENV === 'production'
-    ? `${process.cwd()}/frontend/dist`
-    : `${process.cwd()}/frontend/`;
+const STATIC_PATH = `${process.cwd()}/frontend/`;
 
 const oidcRouter = Router();
 
