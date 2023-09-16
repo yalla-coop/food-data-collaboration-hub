@@ -30,6 +30,10 @@ export default function App() {
                   {
                     label: 'Login',
                     destination: '/'
+                  },
+                  {
+                    label: 'Sales Session',
+                    destination: '/salessession'
                   }
                 ]}
               />

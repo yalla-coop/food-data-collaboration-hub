@@ -66,7 +66,8 @@ export default defineConfig({
       '^/fdc(/|(\\?.*)?$)': proxyOptions,
       '^/ofn(/|(\\?.*)?$)': proxyOptions,
       '^/oidc(/|(\\?.*)?$)': proxyOptions,
-      '^/auth(/|(\\?.*)?$)': proxyOptions
+      '^/auth(/|(\\?.*)?$)': proxyOptions,
+      '^/hub(/|(\\?.*)?$)': proxyOptions
     }
   },
   optimizeDeps: {

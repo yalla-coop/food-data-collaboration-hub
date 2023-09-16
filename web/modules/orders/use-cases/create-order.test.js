@@ -1,12 +1,10 @@
-import {beforeAll, expect, test, vi} from 'vitest';
-import createOrder from './create-order.js';
-import {connector} from '../../../connector/index.js';
+import createOrder from './legacy-create-order.js';
+import { connector } from '../../../connector/index.js';
 
 let order;
 const json = `{"@context":"http://static.datafoodconsortium.org/ontologies/context.json","@id":"820982911946154500","@type":"dfc-b:Order","dfc-b:belongsTo":{"@id":"saleSessionId"},"dfc-b:date":"2023-07-03T10:08:34-04:00","dfc-b:hasPart":[{"@id":"487817672276298560"},{"@id":"976318377106520300"}],"dfc-b:orderNumber":"820982911946154500","dfc-b:orderedBy":{"@id":"115310627314723950"}}`;
 
 beforeAll(async () => {
-
   const shopifyOrderBody = {
     id: 820982911946154500,
     admin_graphql_api_id: 'gid://shopify/Order/820982911946154508',
@@ -64,10 +62,11 @@ beforeAll(async () => {
     note_attributes: [],
     number: 234,
     order_number: 1234,
-    order_status_url: 'https://yalla-cooperative.myshopify.com/71606010129/orders/123456abcd/authenticate?key=abcdefg',
+    order_status_url:
+      'https://yalla-cooperative.myshopify.com/71606010129/orders/123456abcd/authenticate?key=abcdefg',
     original_total_additional_fees_set: null,
     original_total_duties_set: null,
-    payment_gateway_names: [ 'visa', 'bogus' ],
+    payment_gateway_names: ['visa', 'bogus'],
     phone: null,
     po_number: null,
     presentment_currency: 'GBP',
@@ -280,7 +279,7 @@ beforeAll(async () => {
         discount_allocations: []
       }
     ]
-  }
+  };
 
   /*
   const data = {
@@ -301,7 +300,6 @@ beforeAll(async () => {
 });
 
 test('export order', async () => {
-
   const serialized = await connector.export([order]);
   expect(serialized).toStrictEqual(json);
 });

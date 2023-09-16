@@ -1,9 +1,14 @@
 import axios from 'axios';
+import dotenv from 'dotenv';
+import { join } from 'path';
 
-const PRODUCER_SHOP_URL =
-  process.env.PRODUCER_SHOP_URL || 'http://localhost:51063/';
-const PRODUCER_SHOP =
-  process.env.PRODUCER_SHOP || 'test-hodmedod.myshopify.com';
+dotenv.config({
+  path: join(process.cwd(), '.env')
+});
+
+const PRODUCER_SHOP_URL = process.env.PRODUCER_SHOP_URL;
+const PRODUCER_SHOP = process.env.PRODUCER_SHOP;
+
 const getFDCProducts = async (req, res, next) => {
   const { nextPageCursor } = req.query;
 
@@ -26,6 +31,7 @@ const getFDCProducts = async (req, res, next) => {
 
     return res.json(data);
   } catch (err) {
+    console.log('err', err);
     return next(err);
   }
 };

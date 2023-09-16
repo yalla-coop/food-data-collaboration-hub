@@ -4,6 +4,8 @@
 import * as dotenv from 'dotenv';
 import { join } from 'path';
 
+import cron from 'node-cron';
+
 import cookieParser from 'cookie-parser';
 
 import session from 'express-session';
@@ -19,10 +21,18 @@ import { oidcRouter } from './oidc-router.js';
 import shopify from './shopify.js';
 import GDPRWebhookHandlers from './gdpr.js';
 import isAuthenticated from './middleware/isAuthenticated.js';
+import { createSalesSessionCronJob } from './modules/sales-session/cron-jobs/index.js';
+import fdcRouters from './fdc-routers.js';
 
-dotenv.config({
-  path: join(process.cwd(), '.env')
-});
+if (process.env.NODE_ENV === 'test') {
+  dotenv.config({
+    path: join(process.cwd(), '.env.test')
+  });
+} else {
+  dotenv.config({
+    path: join(process.cwd(), '.env')
+  });
+}
 
 const STATIC_PATH =
   process.env.NODE_ENV === 'production'
@@ -141,6 +151,8 @@ app.get('/api/user/check', isAuthenticated, (req, res) => {
   return res.json({ success: true, user: req.user, isAuthenticated: true });
 });
 
+app.use('/fdc', express.json(), fdcRouters);
+
 app.use('/api', express.json(), isAuthenticated, apiRouters);
 
 app.use(express.json());
@@ -153,6 +165,10 @@ app.use('/*', shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
     .status(200)
     .set('Content-Type', 'text/html')
     .send(readFileSync(join(STATIC_PATH, 'index.html')));
+});
+
+cron.schedule('0 * * * *', async () => {
+  await createSalesSessionCronJob();
 });
 
 app.post(

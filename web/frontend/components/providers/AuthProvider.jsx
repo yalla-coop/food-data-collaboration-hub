@@ -6,22 +6,20 @@ import { useAppQuery } from '../../hooks';
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export function AuthProvider({ children }) {
   const app = useAppBridge();
   const redirect = Redirect.create(app);
 
   const { data, isLoading } = useAppQuery({
     url: '/api/user/check',
     reactQueryOptions: {
-      onError: (error) => {
-        redirect.dispatch(Redirect.Action.APP, `/`);
+      onError: () => {
+        redirect.dispatch(Redirect.Action.APP, '/');
       },
       onSuccess: (data) => {
         if (!data || !data?.isAuthenticated) {
           return redirect.dispatch(Redirect.Action.APP, `/`);
         }
-
-        return redirect.dispatch(Redirect.Action.APP, `/productslist`);
       }
     }
   });
@@ -39,7 +37,7 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
 export const useAuth = () => {
   const context = useContext(AuthContext);

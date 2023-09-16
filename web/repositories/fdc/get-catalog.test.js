@@ -1,5 +1,4 @@
-import { beforeAll, expect, test, vi } from "vitest";
-import getFDCCatalog from "./get-catalog";
+import getFDCCatalog from './get-catalog';
 import axios from 'axios';
 
 const json = `{
@@ -17,20 +16,19 @@ const json = `{
   "dfc-b:maintainedBy": {
       "@id": "https://food-data-collaboration-hub-82234d1e2fc5.herokuapp.com/catalog/enterprise1.json"
   }
-}`
+}`;
 
-vi.mock('axios')
+vi.mock('axios');
 
-test("get products from the FDC", async () => {
-  
+test('get products from the FDC', async () => {
   axios.get.mockResolvedValue({
     data: json
-  })
+  });
 
-  const fdcAPIURL = "http://localhost:3000";
+  const fdcAPIURL = 'http://localhost:3000';
   try {
     const catalog = await getFDCProducts(fdcAPIURL);
-    console.log('catalog is', catalog)
+    console.log('catalog is', catalog);
   } catch (error) {
     console.warn('Failed to get products from FDC', error);
   }

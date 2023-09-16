@@ -1,9 +1,9 @@
-import {Router} from 'express';
+import { Router } from 'express';
 
-import OrdersModules from './modules/orders/index.js';
+import Webhooks from './modules/webhooks/index.js';
 
 const fdcRouter = Router();
 
-fdcRouter.use('/orders', OrdersModules.Controllers);
+fdcRouter.use('/webhooks', Webhooks.Controllers);
 
 export default fdcRouter;

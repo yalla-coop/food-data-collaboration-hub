@@ -9,8 +9,6 @@ import {
   sanitizeCSVInjection
 } from './utils/index.js';
 
-console.log('path', process.cwd() + '/env');
-
 dotenv.config({
   path: process.cwd() + '/web/.env'
 });
@@ -115,7 +113,7 @@ const query = async (text, _params, client) => {
     }
     return res;
   } catch (e) {
-    console.log('Error from query fun', e, 'with query', text);
+    console.log('Error from query function: ', e, 'with query: ', text);
     throw new Error(e);
   }
 };

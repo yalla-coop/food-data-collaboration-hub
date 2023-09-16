@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { useAuthenticatedFetch } from '../hooks/useAuthenticatedFetch';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { useQueryClient } from 'react-query';
+import { useAuthenticatedFetch } from '../hooks/useAuthenticatedFetch';
+import { useAuth } from '../components/providers/AuthProvider';
 
 export default function Home() {
   const authenticatedFetch = useAuthenticatedFetch();
@@ -11,9 +12,17 @@ export default function Home() {
   const redirect = Redirect.create(app);
   const qc = useQueryClient();
 
+  const { data: userAuthData } = useAuth();
+
+  if (userAuthData?.isAuthenticated) {
+    redirect.dispatch(Redirect.Action.APP, '/productslist');
+    return null;
+  }
+
   return (
     <div>
       <button
+        type="button"
         onClick={() => {
           window.open(
             `https://${window.location.host}/oidc/login?host=${window.location.host}`,
@@ -26,6 +35,7 @@ export default function Home() {
       </button>
 
       <button
+        type="button"
         onClick={async () => {
           setLoading(true);
           await authenticatedFetch('/api/user/logout', {
@@ -35,7 +45,7 @@ export default function Home() {
             }
           });
           await qc.invalidateQueries('/api/user/check');
-          redirect.dispatch(Redirect.Action.APP, `/`);
+          redirect.dispatch(Redirect.Action.APP, '/');
           setLoading(false);
         }}
       >
