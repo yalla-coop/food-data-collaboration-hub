@@ -1,6 +1,7 @@
 import { DeliveryMethod } from '@shopify/shopify-api';
+import handleProductDeleteWebhookHandler from './webhooks/handleProductDeleteWebhookHandler.js';
 
-export default {
+const GDPRWebhookHandlers = {
   CUSTOMERS_DATA_REQUEST: {
     deliveryMethod: DeliveryMethod.Http,
     callbackUrl: '/api/webhooks',
@@ -22,13 +23,10 @@ export default {
     callback: async (topic, shop, body, webhookId) => {
       const payload = JSON.parse(body);
     }
-  },
-  PRODUCTS_UPDATE: {
-    deliveryMethod: DeliveryMethod.Http,
-    callbackUrl: '/api/webhooks',
-    callback: async (topic, shop, body, webhookId) => {
-      const payload = JSON.parse(body);
-      console.log('CART_CREATE', payload);
-    }
   }
+};
+
+export default {
+  ...GDPRWebhookHandlers,
+  ...handleProductDeleteWebhookHandler
 };

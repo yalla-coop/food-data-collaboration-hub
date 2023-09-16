@@ -1,6 +1,4 @@
 // @ts-check
-
-//http://localhost:55807/oidc/callback
 import * as dotenv from 'dotenv';
 import { join } from 'path';
 
@@ -19,10 +17,11 @@ import serveStatic from 'serve-static';
 import apiRouters from './api-routers.js';
 import { oidcRouter } from './oidc-router.js';
 import shopify from './shopify.js';
-import GDPRWebhookHandlers from './gdpr.js';
+import webhookHandlers from './webhooks-handlers.js';
 import isAuthenticated from './middleware/isAuthenticated.js';
 import { createSalesSessionCronJob } from './modules/sales-session/cron-jobs/index.js';
 import fdcRouters from './fdc-routers.js';
+import subscribeToWebhook from './utils/subscribe-to-webhook.js';
 
 if (process.env.NODE_ENV === 'test') {
   dotenv.config({
@@ -40,6 +39,13 @@ const STATIC_PATH =
     : `${process.cwd()}/frontend/`;
 
 const app = express();
+
+app.post(
+  shopify.config.webhooks.path,
+  shopify.processWebhooks({
+    webhookHandlers
+  })
+);
 
 const SQLiteStore = connectSQLite(session);
 
@@ -127,9 +133,24 @@ app.use('/*', passport.initialize());
 app.use('/*', passport.session());
 
 app.get(shopify.config.auth.path, shopify.auth.begin());
+
+// This is the best place to subscribe for the webhooks.
 app.get(
   shopify.config.auth.callbackPath,
   shopify.auth.callback(),
+  async (req, res, next) => {
+    try {
+      await subscribeToWebhook({
+        session: res.locals.shopify.session,
+        HOST: process.env.HOST,
+        topic: 'products/delete',
+        shopify
+      });
+      return next();
+    } catch (err) {
+      return next(err);
+    }
+  },
   shopify.redirectToShopifyOrAppRoot()
 );
 
@@ -170,13 +191,6 @@ app.use('/*', shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
 cron.schedule('0 * * * *', async () => {
   await createSalesSessionCronJob();
 });
-
-app.post(
-  shopify.config.webhooks.path,
-  shopify.processWebhooks({
-    webhookHandlers: GDPRWebhookHandlers
-  })
-);
 
 app.use((err, _req, res, _next) => {
   if (err.name === 'ValidationError') {

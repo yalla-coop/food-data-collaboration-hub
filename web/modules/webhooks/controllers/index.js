@@ -2,6 +2,7 @@ import { Router } from 'express';
 import checkoutCreation from './checkout-creation.js';
 import orderCreation from './order-creation.js';
 import productUpdate from './product-update.js';
+import shopify from '../../../shopify.js';
 // import verifyShopifyWebhook from './verify-shopify-webhook.js';
 
 // TODO : implement verifyShopifyWebhook
