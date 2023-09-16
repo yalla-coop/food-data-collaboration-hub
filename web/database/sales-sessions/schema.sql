@@ -8,9 +8,17 @@ CREATE TABLE IF NOT EXISTS sales_sessions (
     session_duration INTEGER NOT NULL,
     order_id TEXT,
     is_active BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+    "updated_at" TIMESTAMP NOT NULL DEFAULT NOW()
 );
+
+
+CREATE TRIGGER set_timestamp
+BEFORE UPDATE ON "sales_sessions"
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_timestamp();
+
+
 
 
 COMMIT;

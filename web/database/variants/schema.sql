@@ -22,4 +22,10 @@ CREATE TABLE IF NOT EXISTS "variants" (
     "updated_at" TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+CREATE TRIGGER set_timestamp
+BEFORE UPDATE ON "variants"
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_timestamp();
+
+
 COMMIT;

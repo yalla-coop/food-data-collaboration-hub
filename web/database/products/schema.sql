@@ -6,7 +6,15 @@ CREATE TABLE IF NOT EXISTS products (
   hub_product_id VARCHAR(255) NOT NULL,
   "updated_product_json_data" JSONB,
   is_updated_on_producer_side BOOLEAN NOT NULL DEFAULT FALSE,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-)
+  "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+  "updated_at" TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+
+CREATE TRIGGER set_timestamp
+BEFORE UPDATE ON "products"
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_timestamp();
+
+
 COMMIT;

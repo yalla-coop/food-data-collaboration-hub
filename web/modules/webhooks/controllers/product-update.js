@@ -30,10 +30,16 @@ const variantUpdate = async ({
 };
 
 const productUpdate = async (req, res) => {
+  console.log('product update webhook');
+
   try {
     const shopName = req.body.shopName;
     const { id: producerProductId, variants: producerVariants } =
       req.body.product;
+
+    if (!shopName || !producerProductId || !producerVariants) {
+      return res.sendStatus(200);
+    }
 
     const sessions = await shopify.config.sessionStorage.findSessionsByShop(
       shopName
@@ -73,6 +79,7 @@ const productUpdate = async (req, res) => {
     const hubProduct = new shopify.api.rest.Product({
       session
     });
+
     hubProduct.id = hubProductId;
     await hubProduct.saveAndUpdate();
 
