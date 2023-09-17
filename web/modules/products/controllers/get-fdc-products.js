@@ -8,6 +8,10 @@ dotenv.config({
 
 const PRODUCER_SHOP_URL = process.env.PRODUCER_SHOP_URL;
 const PRODUCER_SHOP = process.env.PRODUCER_SHOP;
+const HOST =
+  process.env.NODE_ENV === 'production'
+    ? process.env.HOST
+    : process.env.HOST + '/';
 
 const getFDCProducts = async (req, res, next) => {
   const { nextPageCursor } = req.query;
@@ -26,7 +30,7 @@ const getFDCProducts = async (req, res, next) => {
         userId: user.id,
         accessToken: accessToken,
         shop: hubShopName,
-        listenerUrl: `${process.env.HOST}/fdc/webhooks/product-update`
+        listenerUrl: `${HOST}fdc/webhooks/product-update`
       },
       {
         headers: {
