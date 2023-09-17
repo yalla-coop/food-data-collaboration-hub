@@ -98,6 +98,22 @@ export default function SalesSession() {
     }
   });
 
+  const {
+    mutateAsync: deleteCurrentSalesSession,
+    isLoading: deleteCurrentSalesSessionIsLoading,
+    error: deleteCurrentSalesSessionError
+  } = useAppMutation({
+    reactQueryOptions: {
+      onSuccess: async () => {
+        await queryClient.invalidateQueries('/api/sales-session');
+        setShowSuccessAlert({
+          show: true,
+          type: 'deleted'
+        });
+      }
+    }
+  });
+
   const handleOnEditCurrentSalesSessionClick = async () => {
     await editCurrentSalesSession({
       url: '/api/sales-session/current',
@@ -110,6 +126,18 @@ export default function SalesSession() {
           startDate: startDate.toISOString(),
           sessionDurationInDays: Number(sessionDurationInDays)
         })
+      }
+    });
+  };
+
+  const handleOnDeleteCurrentSalesSessionClick = async () => {
+    await deleteCurrentSalesSession({
+      url: '/api/sales-session/current',
+      fetchInit: {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       }
     });
   };
@@ -229,12 +257,32 @@ export default function SalesSession() {
             : 'Edit Current Sales Session'}
         </Button>
 
+        <Button
+          variant="contained"
+          type="button"
+          onClick={handleOnDeleteCurrentSalesSessionClick}
+          disabled={
+            deleteCurrentSalesSessionIsLoading ||
+            !currentSalesSessionData?.currentSalesSession?.isActive
+          }
+        >
+          {editCurrentSalesSessionIsLoading
+            ? 'Loading...'
+            : 'Delete Current Sales Session'}
+        </Button>
+
         {createSalesSessionError && (
           <Alert severity="error">{createSalesSessionError.message}</Alert>
         )}
 
         {editCurrentSalesSessionError && (
           <Alert severity="error">{editCurrentSalesSessionError.message}</Alert>
+        )}
+
+        {deleteCurrentSalesSessionError && (
+          <Alert severity="error">
+            {deleteCurrentSalesSessionError.message}
+          </Alert>
         )}
       </Stack>
     </Box>

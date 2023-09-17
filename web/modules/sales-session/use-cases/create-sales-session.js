@@ -162,6 +162,10 @@ const createSalesSessionUseCase = async (
       hubProducts.push(hubProduct);
     }
 
+    if (hubProducts.length === 0) {
+      return;
+    }
+
     const hubVariants = hubProducts.flatMap((p) => p.variants);
 
     const inventoryLevels = await shopify.api.rest.InventoryLevel.all({

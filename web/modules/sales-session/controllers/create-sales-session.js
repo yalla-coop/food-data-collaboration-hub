@@ -1,4 +1,6 @@
 import createSalesSessionUseCase from '../use-cases/create-sales-session.js';
+import { getClient } from '../../../database/connect.js';
+import moment from 'moment';
 
 // Interval will be in days
 
@@ -8,6 +10,28 @@ const createSalesSession = async (req, res, next) => {
     user
   } = req;
 
+  // validate the startDate should be in the future
+
+  if (!startDate) {
+    return res.status(400).json({
+      message: 'Start Date is required'
+    });
+  }
+
+  if (!sessionDurationInDays) {
+    return res.status(400).json({
+      message: 'Session Duration is required'
+    });
+  }
+
+  // check the startDate is in the future
+
+  if (moment(startDate).isBefore(moment().startOf('day'))) {
+    return res.status(400).json({
+      message: 'Start Date should be in the future'
+    });
+  }
+
   const session = res?.locals?.shopify?.session;
 
   if (!session) {
@@ -16,20 +40,31 @@ const createSalesSession = async (req, res, next) => {
     });
   }
 
+  const client = await getClient();
+
   try {
-    await createSalesSessionUseCase({
-      startDate,
-      sessionDurationInDays,
-      user,
-      session
-    });
+    await client.query('BEGIN');
+    await createSalesSessionUseCase(
+      {
+        startDate,
+        sessionDurationInDays,
+        user,
+        session
+      },
+      client
+    );
+
+    await client.query('COMMIT');
 
     return res.status(200).json({
       message: 'Sales session created successfully'
     });
   } catch (err) {
-    console.log('err', err);
+    await client.query('ROLLBACK');
+    console.log('Sales session creation failed : ', err);
     return next(err);
+  } finally {
+    client.release();
   }
 };
 
