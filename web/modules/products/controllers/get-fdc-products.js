@@ -12,6 +12,10 @@ const PRODUCER_SHOP = process.env.PRODUCER_SHOP;
 const getFDCProducts = async (req, res, next) => {
   const { nextPageCursor } = req.query;
 
+  const { session } = res.locals.shopify;
+
+  const hubShopName = session.shop;
+
   const user = req.user;
   const accessToken = user.accessToken;
 
@@ -20,7 +24,9 @@ const getFDCProducts = async (req, res, next) => {
       `${PRODUCER_SHOP_URL}fdc/products?shop=${PRODUCER_SHOP}&nextPageCursor=${nextPageCursor}`,
       {
         userId: user.id,
-        accessToken: accessToken
+        accessToken: accessToken,
+        shop: hubShopName,
+        listenerUrl: `${process.env.HOST}/fdc/webhooks/product-update`
       },
       {
         headers: {
