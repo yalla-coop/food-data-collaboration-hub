@@ -1,6 +1,6 @@
-import { createSalesSessionCronJob } from '.';
-import UseCases from '../use-cases/index.js';
-import { query } from '../../../database/connect.js';
+import { createSalesSessionCronJob } from './createSalesSessionCronJob';
+import UseCases from '../sales-session/use-cases/index.js';
+import { query } from '../../database/connect.js';
 
 describe('CreateSalesSession Cron job', () => {
   test('cron job', async () => {

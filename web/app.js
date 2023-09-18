@@ -19,7 +19,10 @@ import { oidcRouter } from './oidc-router.js';
 import shopify from './shopify.js';
 import webhookHandlers from './webhooks-handlers.js';
 import isAuthenticated from './middleware/isAuthenticated.js';
-import { createSalesSessionCronJob } from './modules/sales-session/cron-jobs/index.js';
+import {
+  createSalesSessionCronJob,
+  updateExistingProductsCronJob
+} from './modules/cron-jobs/index.js';
 import fdcRouters from './fdc-routers.js';
 import subscribeToWebhook from './utils/subscribe-to-webhook.js';
 
@@ -189,6 +192,8 @@ app.use('/*', shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
 });
 
 cron.schedule('0 * * * *', async () => {
+  // I can create also a cron job to do an update for exiting products , instead of listening to the webhook - because right now the webhook is not required based on the standard flow
+  await updateExistingProductsCronJob();
   await createSalesSessionCronJob();
 });
 

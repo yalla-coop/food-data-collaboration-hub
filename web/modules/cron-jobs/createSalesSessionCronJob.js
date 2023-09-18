@@ -1,9 +1,9 @@
-import { getClient, query } from '../../../database/connect.js';
+import { getClient, query } from '../../database/connect.js';
 import moment from 'moment';
 import dotenv from 'dotenv';
-import createSalesSessionUseCase from '../use-cases/create-sales-session.js';
-import completeOrderAtProducerStoreUseCase from '../../orders/use-cases/complete-order-at-producer-store.js';
-import shopify from '../../../shopify.js';
+import createSalesSessionUseCase from '../sales-session/use-cases/create-sales-session.js';
+import completeOrderAtProducerStoreUseCase from '../orders/use-cases/complete-order-at-producer-store.js';
+import shopify from '../../shopify.js';
 
 dotenv.config();
 
@@ -20,7 +20,7 @@ const HUB_SHOP_NAME = process.env.HUB_SHOP_NAME;
 // 2. deactivate the previous sales session
 // 3. Mark the order as completed
 
-export const createSalesSessionCronJob = async () => {
+const createSalesSessionCronJob = async () => {
   try {
     const sessions = await shopify.config.sessionStorage.findSessionsByShop(
       HUB_SHOP_NAME
@@ -96,3 +96,5 @@ export const createSalesSessionCronJob = async () => {
     console.log('err', err);
   }
 };
+
+export default createSalesSessionCronJob;
