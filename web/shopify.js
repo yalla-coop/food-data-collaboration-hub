@@ -32,7 +32,9 @@ const shopify = shopifyApp({
       'write_products',
       'read_products',
       'write_draft_orders',
-      'write_inventory'
+      'write_inventory',
+      'read_orders',
+      'write_orders'
     ]
   },
   auth: {

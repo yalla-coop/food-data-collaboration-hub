@@ -53,13 +53,12 @@ const createShopifyProduct = async (req, res, next) => {
       option1: v.variantA.title,
       title: v.variantA.title,
       price: v.price,
-      inventory_policy: v.variantA.inventoryPolicy,
-      compare_at_price: v.variantA.compareAtPrice,
-      fulfillment_service: v.variantA.fulfillmentService,
-      inventory_management: v.variantA.inventoryManagement,
-      inventory_quantity: v.variantA.inventoryQuantity,
-      old_inventory_quantity: v.variantA.oldInventoryQuantity,
-      requires_shipping: v.variantA.requiresShipping
+      inventory_policy: v.variantB.inventoryPolicy,
+      fulfillment_service: v.variantB.fulfillmentService,
+      inventory_management: v.variantB.inventoryManagement,
+      inventory_quantity:
+        Number(v.noOfItemPerCase) * Number(v.variantB.inventoryQuantity),
+      old_inventory_quantity: v.variantB.oldInventoryQuantity
     }));
 
     await hubProduct.saveAndUpdate({
@@ -72,7 +71,7 @@ const createShopifyProduct = async (req, res, next) => {
       });
       inventory_item.id = variant.inventory_item_id;
       inventory_item.tracked =
-        customVariants.find((v) => v.variantA.title === variant.title)?.variantA
+        customVariants.find((v) => v.variantA.title === variant.title)?.variantB
           ?.inventoryItem?.tracked || false;
       await inventory_item.saveAndUpdate();
     }

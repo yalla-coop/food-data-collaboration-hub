@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect } from 'react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { useAppBridge } from '@shopify/app-bridge-react';
+import { CircularProgress, Stack, Typography } from '@mui/material';
 
 import { useAppQuery } from '../../hooks';
 
@@ -30,7 +31,19 @@ export function AuthProvider({ children }) {
     }
   }, [data]);
 
-  if (isLoading) return 'Loading...';
+  if (isLoading)
+    return (
+      <Stack
+        sx={{
+          width: '100vw',
+          height: '100vh',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
+      >
+        <CircularProgress size={200} />;
+      </Stack>
+    );
 
   return (
     <AuthContext.Provider value={{ data, isLoading }}>

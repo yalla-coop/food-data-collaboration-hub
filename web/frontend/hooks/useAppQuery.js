@@ -1,6 +1,6 @@
-import { useAuthenticatedFetch } from './useAuthenticatedFetch';
 import { useMemo } from 'react';
 import { useQuery } from 'react-query';
+import { useAuthenticatedFetch } from './useAuthenticatedFetch';
 
 /**
  * A hook for querying your custom app data.
@@ -36,7 +36,7 @@ export const useAppQuery = ({ url, fetchInit = {}, reactQueryOptions }) => {
   return useQuery(url, fetch, {
     ...reactQueryOptions,
     retryOnMount: true,
-    retry: 1,
+    retry: 0,
     retryDelay: 1000,
     refetchOnWindowFocus: true
   });

@@ -56,9 +56,15 @@ export default function SalesSession() {
     },
     reactQueryOptions: {
       onSuccess: (data) => {
-        const currentSalesStartDate = dayjs(data.currentSalesSession.startDate);
+        if (!data?.currentSalesSession?.isActive) {
+          return;
+        }
+
+        const currentSalesStartDate = dayjs(
+          data?.currentSalesSession?.startDate
+        );
         const currentSalesSessionSessionDurationInDays =
-          data.currentSalesSession.sessionDuration;
+          data?.currentSalesSession?.sessionDuration;
 
         setStartDate(currentSalesStartDate);
         setSessionDurationInDays(currentSalesSessionSessionDurationInDays);
@@ -114,6 +120,22 @@ export default function SalesSession() {
     }
   });
 
+  const {
+    mutateAsync: completeCurrentSalesSession,
+    isLoading: completeCurrentSalesSessionIsLoading,
+    error: completeCurrentSalesSessionError
+  } = useAppMutation({
+    reactQueryOptions: {
+      onSuccess: async () => {
+        await queryClient.invalidateQueries('/api/sales-session');
+        setShowSuccessAlert({
+          show: true,
+          type: 'Finished/Completed'
+        });
+      }
+    }
+  });
+
   const handleOnEditCurrentSalesSessionClick = async () => {
     await editCurrentSalesSession({
       url: '/api/sales-session/current',
@@ -142,6 +164,17 @@ export default function SalesSession() {
     });
   };
 
+  const handleOnFinishCurrentSalesSessionClick = async () => {
+    await completeCurrentSalesSession({
+      url: '/api/sales-session/current/complete',
+      fetchInit: {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    });
+  };
   const handleOnCreateSalesSessionClick = async () => {
     await createSalesSession({
       url: '/api/sales-session',
@@ -271,6 +304,20 @@ export default function SalesSession() {
             : 'Delete Current Sales Session'}
         </Button>
 
+        <Button
+          variant="contained"
+          type="button"
+          onClick={handleOnFinishCurrentSalesSessionClick}
+          disabled={
+            completeCurrentSalesSessionIsLoading ||
+            !currentSalesSessionData?.currentSalesSession?.isActive
+          }
+        >
+          {completeCurrentSalesSessionIsLoading
+            ? 'Loading...'
+            : 'Finish/Complete Current Sales Session'}
+        </Button>
+
         {createSalesSessionError && (
           <Alert severity="error">{createSalesSessionError.message}</Alert>
         )}
@@ -282,6 +329,12 @@ export default function SalesSession() {
         {deleteCurrentSalesSessionError && (
           <Alert severity="error">
             {deleteCurrentSalesSessionError.message}
+          </Alert>
+        )}
+
+        {completeCurrentSalesSessionError && (
+          <Alert severity="error">
+            {completeCurrentSalesSessionError.message}
           </Alert>
         )}
       </Stack>

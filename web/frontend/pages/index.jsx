@@ -1,3 +1,6 @@
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
+import { CircularProgress, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
@@ -20,39 +23,70 @@ export default function Home() {
   }
 
   return (
-    <div>
-      <button
-        type="button"
-        onClick={() => {
-          window.open(
-            `https://${window.location.host}/oidc/login?host=${window.location.host}`,
-            '_blank',
-            'toolbar=yes,scrollbars=yes,resizable=yes,top=500,left=500,width=400,height=400'
-          );
-        }}
-      >
-        Login
-      </button>
+    <Stack
+      spacing="20px"
+      sx={{
+        width: '100vw',
+        height: '100vh',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}
+    >
+      {loading ? (
+        <CircularProgress />
+      ) : (
+        <>
+          <Typography variant="h2">Welcome to the Shopify App</Typography>
+          <Typography variant="h3">Please login to continue</Typography>
 
-      <button
-        type="button"
-        onClick={async () => {
-          setLoading(true);
-          await authenticatedFetch('/api/user/logout', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          });
-          await qc.invalidateQueries('/api/user/check');
-          redirect.dispatch(Redirect.Action.APP, '/');
-          setLoading(false);
-        }}
-      >
-        Logout
-      </button>
+          <Button
+            variant="contained"
+            type="button"
+            sx={{
+              width: '200px',
+              height: '10px',
+              p: '30px',
+              fontSize: '20px',
+              fontWeight: 'bold'
+            }}
+            onClick={() => {
+              window.open(
+                `https://${window.location.host}/oidc/login?host=${window.location.host}`,
+                '_blank',
+                'toolbar=yes,scrollbars=yes,resizable=yes,top=500,left=500,width=400,height=400'
+              );
+            }}
+          >
+            Login
+          </Button>
 
-      {loading && <div>Loading...</div>}
-    </div>
+          <Button
+            variant="contained"
+            type="button"
+            sx={{
+              width: '200px',
+              height: '10px',
+              p: '30px',
+              fontSize: '20px',
+              fontWeight: 'bold'
+            }}
+            onClick={async () => {
+              setLoading(true);
+              await authenticatedFetch('/api/user/logout', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              });
+              await qc.invalidateQueries('/api/user/check');
+              redirect.dispatch(Redirect.Action.APP, '/');
+              setLoading(false);
+            }}
+          >
+            Logout
+          </Button>
+        </>
+      )}
+    </Stack>
   );
 }

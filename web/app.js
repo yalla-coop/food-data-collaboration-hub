@@ -149,6 +149,13 @@ app.get(
         topic: 'products/delete',
         shopify
       });
+
+      await subscribeToWebhook({
+        session: res.locals.shopify.session,
+        HOST: process.env.HOST,
+        topic: 'orders/paid',
+        shopify
+      });
       return next();
     } catch (err) {
       return next(err);

@@ -10,6 +10,8 @@ const subscribeToWebhook = async ({ session, HOST, topic, shopify }) => {
         topic
       });
 
+    console.log('topicRegisteredWebhooks', topicRegisteredWebhooks);
+
     const webhookAlreadyExists = topicRegisteredWebhooks?.some(
       (webhook) => webhook.address === address && webhook.topic === topic
     );
