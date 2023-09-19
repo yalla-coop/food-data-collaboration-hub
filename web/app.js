@@ -200,7 +200,9 @@ app.use('/*', shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
 
 cron.schedule('0 * * * *', async () => {
   // I can create also a cron job to do an update for exiting products , instead of listening to the webhook - because right now the webhook is not required based on the standard flow
-  await updateExistingProductsCronJob();
+
+  // TODO: this function should be fixed to use the mapped - variant - id
+  // await updateExistingProductsCronJob();
   await createSalesSessionCronJob();
 });
 
