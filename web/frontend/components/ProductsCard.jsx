@@ -1,18 +1,24 @@
+/* eslint-disable arrow-body-style */
+/* eslint-disable react/function-component-definition */
 import { useState } from 'react';
+import {
+  Stack,
+  Typography,
+  Button,
+  FormControlLabel,
+  Checkbox
+} from '@mui/material';
 import { useQueryClient } from 'react-query';
-import { Checkbox } from '@shopify/polaris';
 import { useAppMutation, useAppQuery } from '../hooks';
-import { VariantCard } from '../components/VariantCard';
+import { VariantMappingComponent } from '../components/VariantMapping';
 
-const convertShopifyGraphQLIdToNumber = (id) => {
-  if (!id) return null;
-  if (typeof id === 'number') return id;
-  return parseInt(id.split('/').pop(), 10);
-};
-
-let productInfoFromTheStore;
-export function ProductsCard({ product, exitingProductsList }) {
+export function ProductsCard({ product, exitingProduct }) {
   const queryClient = useQueryClient();
+
+  const exitingCount = exitingProduct?.variants?.length || 1;
+
+  const [variantMappingCount, setVariantMappingCount] = useState(exitingCount);
+  const [variantsMappingData, setVariantsMappingData] = useState([]);
 
   const { data: currentSalesSessionData } = useAppQuery({
     url: '/api/sales-session',
@@ -28,19 +34,7 @@ export function ProductsCard({ product, exitingProductsList }) {
     [product.id]: {}
   });
 
-  const isProductInStore = exitingProductsList.some(
-    (exitingProduct) =>
-      convertShopifyGraphQLIdToNumber(product.id) ===
-      Number(exitingProduct.producerProductId)
-  );
-
-  if (isProductInStore) {
-    productInfoFromTheStore = exitingProductsList.find(
-      (exitingProduct) =>
-        convertShopifyGraphQLIdToNumber(product.id) ===
-        Number(exitingProduct.producerProductId)
-    );
-  }
+  const isProductInStore = !!exitingProduct?.producerProductId;
 
   const {
     mutateAsync: createShopifyProduct,
@@ -53,13 +47,8 @@ export function ProductsCard({ product, exitingProductsList }) {
     }
   });
 
-  const handleAddToStore = async (modifiedProduct, prices) => {
-    const {
-      title,
-      handle,
-      variants: { list: variants },
-      id: producerProductId
-    } = modifiedProduct;
+  const handleAddToStore = async (modifiedProduct) => {
+    const { title, handle, id: producerProductId } = modifiedProduct;
 
     await createShopifyProduct({
       url: '/api/products/shopify',
@@ -71,14 +60,7 @@ export function ProductsCard({ product, exitingProductsList }) {
         body: JSON.stringify({
           title,
           handle,
-          variants: variants.map((variant) => ({
-            ...variant,
-            price: prices[variant.id].price.toFixed(2),
-            option1: variant.title,
-            addedValueMethod: prices[variant.id].addedValueMethod,
-            addedValue: prices[variant.id].addedValue,
-            originalPrice: prices[variant.id].originalPrice
-          })),
+          customVariants: variantsMappingData,
           producerProductId
         })
       }
@@ -89,40 +71,81 @@ export function ProductsCard({ product, exitingProductsList }) {
     <li
       key={product.title}
       style={{
-        borderBottom: '2px solid black'
+        borderBottom: '2px solid black',
+        padding: '12px',
+        marginBottom: '12px',
+        listStyle: 'none'
       }}
     >
-      {isCurrentSalesSessionActive && (
-        <>
-          <Checkbox checked={isProductInStore} />
-          <button
-            type="button"
-            disabled={
-              createShopifyProductLoading ||
-              isProductInStore ||
-              !isCurrentSalesSessionActive
-            }
-            onClick={() => handleAddToStore(product, productsVariantsPrices)}
-          >
-            Add to my store
-          </button>
-        </>
-      )}
+      <Stack direction="row" justifyContent="space-between" p="12px">
+        <Typography variant="h3" mb="12px">
+          {product.title}
+        </Typography>
 
-      <p>{product.title}</p>
-      <ul>
-        {product.variants.list.map((variant, idx) => (
-          <VariantCard
-            isCurrentSalesSessionActive={isCurrentSalesSessionActive}
-            variant={variant}
-            index={idx}
-            productsVariantsPrices={productsVariantsPrices}
-            setProductsVariantsPrices={setProductsVariantsPrices}
-            isProductInStore={isProductInStore}
-            productInfoFromTheStore={productInfoFromTheStore}
-          />
-        ))}
-      </ul>
+        {isCurrentSalesSessionActive && (
+          <Stack spacing="12px" direction="row">
+            <FormControlLabel
+              control={<Checkbox checked={isProductInStore} disabled />}
+              label={isProductInStore ? 'In store' : 'Not in store'}
+            />
+            <Button
+              variant="contained"
+              type="button"
+              disabled={
+                createShopifyProductLoading ||
+                isProductInStore ||
+                !isCurrentSalesSessionActive ||
+                variantMappingCount !== variantsMappingData.length
+              }
+              onClick={() => handleAddToStore(product, productsVariantsPrices)}
+            >
+              {createShopifyProductLoading ? 'Loading...' : 'Add to store'}
+            </Button>
+          </Stack>
+        )}
+      </Stack>
+
+      <Stack
+        spacing="12px"
+        sx={{
+          pointerEvents: isProductInStore ? 'none' : 'auto',
+          opacity: isProductInStore ? 0.5 : 1
+        }}
+      >
+        <Stack spacing="12px">
+          {[...Array(variantMappingCount)].map((_, index) => (
+            <VariantMappingComponent
+              setVariantsMappingData={setVariantsMappingData}
+              isCurrentSalesSessionActive={isCurrentSalesSessionActive}
+              isProductInStore={isProductInStore}
+              product={product}
+              productsVariantsPrices={productsVariantsPrices}
+              setProductsVariantsPrices={setProductsVariantsPrices}
+              exitingProductVariant={exitingProduct?.variants?.[index] || {}}
+            />
+          ))}
+        </Stack>
+
+        <Stack direction="row" spacing="12px">
+          {variantMappingCount > 0 && (
+            <Button
+              variant="contained"
+              type="button"
+              onClick={() => setVariantMappingCount(variantMappingCount - 1)}
+            >
+              Remove variant
+            </Button>
+          )}
+
+          <Button
+            variant="contained"
+            type="button"
+            onClick={() => setVariantMappingCount(variantMappingCount + 1)}
+          >
+            Add more variants
+          </Button>
+        </Stack>
+      </Stack>
     </li>
   );
 }

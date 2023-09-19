@@ -11,7 +11,7 @@ const createShopifyProduct = async (req, res, next) => {
   try {
     const session = res.locals.shopify.session;
 
-    const { title, handle, variants, producerProductId } = req.body;
+    const { title, handle, producerProductId, customVariants } = req.body;
 
     const productExists = await query(
       `
@@ -24,13 +24,13 @@ const createShopifyProduct = async (req, res, next) => {
       throw new Error('Product already exists');
     }
 
-    const product = new shopify.api.rest.Product({
+    const hubProduct = new shopify.api.rest.Product({
       session
     });
 
-    product.title = title;
-    product.handle = handle;
-    product.metafields = [
+    hubProduct.title = title;
+    hubProduct.handle = handle;
+    hubProduct.metafields = [
       {
         key: 'producer_product_id',
         namespace: 'global',
@@ -38,39 +38,42 @@ const createShopifyProduct = async (req, res, next) => {
         type: 'single_line_text_field'
       }
     ];
-    product.variants = variants.map((variant) => ({
-      ...variant,
-      inventory_item: variant.inventoryItem,
-      inventory_policy: variant.inventoryPolicy,
+
+    hubProduct.variants = customVariants.map((v) => ({
+      inventory_item: v.variantA.inventoryItem,
+      inventory_policy: v.variantA.inventoryPolicy,
       metafields: [
         {
           key: 'producer_variant_id',
           namespace: 'global',
-          value: variant.id,
+          value: v.variantA.id,
           type: 'single_line_text_field'
         }
       ],
-      inventory_policy: variant.inventoryPolicy,
-      compare_at_price: variant.compareAtPrice,
-      fulfillment_service: variant.fulfillmentService,
-      inventory_management: variant.inventoryManagement,
-      inventory_quantity: variant.inventoryQuantity,
-      old_inventory_quantity: variant.oldInventoryQuantity,
-      requires_shipping: variant.requiresShipping
+      option1: v.variantA.title,
+      title: v.variantA.title,
+      price: v.price,
+      inventory_policy: v.variantA.inventoryPolicy,
+      compare_at_price: v.variantA.compareAtPrice,
+      fulfillment_service: v.variantA.fulfillmentService,
+      inventory_management: v.variantA.inventoryManagement,
+      inventory_quantity: v.variantA.inventoryQuantity,
+      old_inventory_quantity: v.variantA.oldInventoryQuantity,
+      requires_shipping: v.variantA.requiresShipping
     }));
 
-    await product.saveAndUpdate({
+    await hubProduct.saveAndUpdate({
       update: true
     });
 
-    for (let variant of product.variants) {
+    for (let variant of hubProduct.variants) {
       const inventory_item = new shopify.api.rest.InventoryItem({
         session
       });
       inventory_item.id = variant.inventory_item_id;
       inventory_item.tracked =
-        variants.find((v) => v.title === variant.title)?.inventoryItem
-          .tracked || false;
+        customVariants.find((v) => v.variantA.title === variant.title)?.variantA
+          ?.inventoryItem?.tracked || false;
       await inventory_item.saveAndUpdate();
     }
 
@@ -83,23 +86,40 @@ const createShopifyProduct = async (req, res, next) => {
         `
       INSERT INTO products (producer_product_id,hub_product_id) VALUES ($1,$2) returning id;
       `,
-        [convertShopifyGraphQLIdToNumber(producerProductId), product.id],
+        [convertShopifyGraphQLIdToNumber(producerProductId), hubProduct.id],
         client
       );
 
       const { id: productId } = products.rows[0];
 
-      for (let i = 0; i < variants.length; i++) {
+      for (let customVariant of customVariants) {
         await query(
-          `INSERT INTO variants (producer_variant_id,hub_variant_id,product_id,price,added_value,added_value_method,original_price) VALUES ($1,$2,$3,$4,$5,$6,$7);`,
+          `INSERT INTO variants (
+            producer_variant_id,
+            hub_variant_id,
+            product_id,
+            price,
+            added_value,
+            added_value_method,
+            original_price,
+            no_of_items_per_package,
+            mapped_variant_id
+            ) 
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9);`,
           [
-            convertShopifyGraphQLIdToNumber(variants[i].id),
-            convertShopifyGraphQLIdToNumber(product.variants[i].id),
+            convertShopifyGraphQLIdToNumber(customVariant.variantA.id),
+            convertShopifyGraphQLIdToNumber(
+              hubProduct.variants.find(
+                (v) => v.title === customVariant.variantA.title
+              ).id
+            ),
             productId,
-            Number(variants[i].price),
-            Number(variants[i].addedValue),
-            variants[i].addedValueMethod,
-            Number(variants[i].originalPrice)
+            Number(customVariant.price),
+            Number(customVariant.addedValue),
+            customVariant.addedValueMethod,
+            Number(customVariant.originalPrice),
+            Number(customVariant.noOfItemPerCase),
+            convertShopifyGraphQLIdToNumber(customVariant.variantB.id)
           ],
           client
         );
@@ -108,6 +128,7 @@ const createShopifyProduct = async (req, res, next) => {
       await client.query('COMMIT');
     } catch (err) {
       await client.query('ROLLBACK');
+      console.log('Error creating Shopify product', err);
       throw new Error('Database error:', err);
     } finally {
       client.release();

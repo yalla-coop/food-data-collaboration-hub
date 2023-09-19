@@ -18,6 +18,8 @@ CREATE TABLE IF NOT EXISTS "variants" (
     "original_price" DECIMAL(10, 2) NOT NULL,
     "added_value" DECIMAL(10, 2) NOT NULL,
     "added_value_method" "added_value_method" NOT NULL,
+    "no_of_items_per_package" INTEGER NOT NULL,
+    "mapped_variant_id" TEXT NOT NULL,
     "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
     "updated_at" TIMESTAMP NOT NULL DEFAULT NOW()
 );

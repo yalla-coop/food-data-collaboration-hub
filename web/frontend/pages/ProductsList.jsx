@@ -5,6 +5,7 @@ import { Alert } from '@mui/material';
 import { useAppQuery } from '../hooks';
 import { useAuth } from '../components/providers/AuthProvider';
 import { ProductsCard } from '../components/ProductsCard';
+import { convertShopifyGraphQLIdToNumber } from '../utils/index.js';
 
 export default function ProductsList() {
   const [nextPageCursorValue, setNextPageCursorValue] = useState(null);
@@ -111,7 +112,13 @@ export default function ProductsList() {
         {productsList.map((product) => (
           <ProductsCard
             product={product}
-            exitingProductsList={exitingProductsList}
+            exitingProduct={
+              exitingProductsList?.find(
+                (exitingProduct) =>
+                  Number(exitingProduct.producerProductId) ===
+                  convertShopifyGraphQLIdToNumber(product.id)
+              ) || {}
+            }
           />
         ))}
       </ul>
