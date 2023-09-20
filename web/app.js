@@ -143,19 +143,25 @@ app.get(
   shopify.auth.callback(),
   async (req, res, next) => {
     try {
-      await subscribeToWebhook({
-        session: res.locals.shopify.session,
-        HOST: process.env.HOST,
-        topic: 'products/delete',
-        shopify
-      });
+      await Promise.allSettled([
+        [
+          'products/delete',
+          'orders/paid',
+          'carts/create',
+          'carts/update',
+          'checkouts/create',
+          'checkouts/update',
+          'products/update'
+        ].map(async (topic) => {
+          await subscribeToWebhook({
+            session: res.locals.shopify.session,
+            HOST: process.env.HOST,
+            topic,
+            shopify
+          });
+        })
+      ]);
 
-      await subscribeToWebhook({
-        session: res.locals.shopify.session,
-        HOST: process.env.HOST,
-        topic: 'orders/paid',
-        shopify
-      });
       return next();
     } catch (err) {
       return next(err);
@@ -201,8 +207,7 @@ app.use('/*', shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
 cron.schedule('0 * * * *', async () => {
   // I can create also a cron job to do an update for exiting products , instead of listening to the webhook - because right now the webhook is not required based on the standard flow
 
-  // TODO: this function should be fixed to use the mapped - variant - id
-  // await updateExistingProductsCronJob();
+  await updateExistingProductsCronJob();
   await createSalesSessionCronJob();
 });
 

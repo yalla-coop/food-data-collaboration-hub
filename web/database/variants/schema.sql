@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS "variants" (
     "id" SERIAL PRIMARY KEY,
     "producer_variant_id" TEXT NOT NULL,
     "hub_variant_id" TEXT NOT NULL,
-    "number_of_remaining_orders" INTEGER NOT NULL DEFAULT 0,
+    "number_of_excess_orders" INTEGER NOT NULL DEFAULT 0,
     "product_id" INTEGER NOT NULL REFERENCES "products" ("id") ON DELETE CASCADE,
     "price" DECIMAL(10, 2) NOT NULL,
     "original_price" DECIMAL(10, 2) NOT NULL,

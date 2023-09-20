@@ -1,7 +1,7 @@
-import { createContext, useContext, useEffect } from 'react';
+import { createContext, useContext } from 'react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { useAppBridge } from '@shopify/app-bridge-react';
-import { CircularProgress, Stack, Typography } from '@mui/material';
+import { CircularProgress, Stack } from '@mui/material';
 
 import { useAppQuery } from '../../hooks';
 
@@ -14,22 +14,17 @@ export function AuthProvider({ children }) {
   const { data, isLoading } = useAppQuery({
     url: '/api/user/check',
     reactQueryOptions: {
+      refetchOnWindowFocus: true,
       onError: () => {
         redirect.dispatch(Redirect.Action.APP, '/');
       },
       onSuccess: (data) => {
         if (!data || !data?.isAuthenticated) {
-          return redirect.dispatch(Redirect.Action.APP, `/`);
+          return redirect.dispatch(Redirect.Action.APP, '/');
         }
       }
     }
   });
-
-  useEffect(() => {
-    if (!data || !data?.isAuthenticated) {
-      return redirect.dispatch(Redirect.Action.APP, `/`);
-    }
-  }, [data]);
 
   if (isLoading)
     return (
@@ -41,7 +36,7 @@ export function AuthProvider({ children }) {
           alignItems: 'center'
         }}
       >
-        <CircularProgress size={200} />;
+        <CircularProgress size={200} />
       </Stack>
     );
 

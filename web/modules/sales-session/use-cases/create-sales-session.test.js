@@ -66,4 +66,8 @@ describe('CreateSalesSession', () => {
 
     expect(true).toBe(true);
   });
+
+  it('Test creating a sales session after some products are exiting', async () => {
+    // it's important to test this scenario because we need to make sure that
+  });
 });

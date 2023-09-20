@@ -38,6 +38,6 @@ export const useAppQuery = ({ url, fetchInit = {}, reactQueryOptions }) => {
     retryOnMount: true,
     retry: 0,
     retryDelay: 1000,
-    refetchOnWindowFocus: true
+    refetchOnWindowFocus: reactQueryOptions?.refetchOnWindowFocus ?? false
   });
 };

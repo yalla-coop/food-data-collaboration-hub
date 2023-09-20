@@ -1,9 +1,42 @@
 import {
   processOrderPaidWebhook,
-  updateCurrentVariantInventory
+  updateCurrentVariantInventory,
+  calculateTheExcessOrders
 } from './handleOrderPaidWebhookHandler';
 
 describe('web/webhooks/handleOrderPaidWebhookHandler.test.js', () => {
+  it('calculateTheExcessOrders should return 4 when I have excessOrders of 7 and quantity 15 and noOfItemsPerPackage of 6', () => {
+    const { numberOfExcessOrders } = calculateTheExcessOrders({
+      noOfItemsPerPackage: 6,
+      quantity: 15,
+      numberOfExcessOrders: 7
+    });
+    expect(numberOfExcessOrders).toBe(4);
+  });
+  it('calculateTheExcessOrders should return 4 when I have excessOrders of 2 and quantity 10 and noOfItemsPerPackage of 6', () => {
+    const { numberOfExcessOrders } = calculateTheExcessOrders({
+      noOfItemsPerPackage: 6,
+      quantity: 1,
+      numberOfExcessOrders: 5
+    });
+    expect(numberOfExcessOrders).toBe(4);
+  });
+  it('calculateTheExcessOrders should return 4 when I have excessOrders of 2 and quantity 10 and noOfItemsPerPackage of 6', () => {
+    const { numberOfExcessOrders } = calculateTheExcessOrders({
+      noOfItemsPerPackage: 6,
+      quantity: 10,
+      numberOfExcessOrders: 10
+    });
+    expect(numberOfExcessOrders).toBe(0);
+  });
+  it('calculateTheExcessOrders should return 4 when I have excessOrders of 2 and quantity 10 and noOfItemsPerPackage of 6', () => {
+    const { numberOfExcessOrders } = calculateTheExcessOrders({
+      noOfItemsPerPackage: 6,
+      quantity: 10,
+      numberOfExcessOrders: 2
+    });
+    expect(numberOfExcessOrders).toBe(4);
+  });
   it('updateCurrentVariantInventory', async () => {
     await updateCurrentVariantInventory({
       hubVariantId: 42818522120344,

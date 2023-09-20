@@ -3,78 +3,14 @@ import shopify from '../shopify.js';
 import { getClient, query } from '../database/connect.js';
 import axios from 'axios';
 import dotenv from 'dotenv';
-import { convertShopifyGraphQLIdToNumber } from '../utils/index.js';
+import { updateCurrentVariantInventory } from './updateCurrentVariantInventory.js';
+import { calculateTheExcessOrders } from './calculateTheExcessOrders.js';
 dotenv.config();
 
 const PRODUCER_SHOP_URL = process.env.PRODUCER_SHOP_URL;
 const PRODUCER_SHOP = process.env.PRODUCER_SHOP;
 
 const HUB_SHOP_NAME = process.env.HUB_SHOP_NAME;
-
-export const updateCurrentVariantInventory = async ({
-  hubProductId,
-  producerProductId,
-  hubVariantId,
-  noOfItemsPerPackage,
-  mappedProducerVariantId
-}) => {
-  try {
-    const sessions = await shopify.config.sessionStorage.findSessionsByShop(
-      HUB_SHOP_NAME
-    );
-
-    const session = sessions[0];
-
-    const { data } = await axios.post(
-      `${PRODUCER_SHOP_URL}fdc/products/all?shop=${PRODUCER_SHOP}`,
-      {
-        ids: `${producerProductId}`
-      }
-    );
-
-    const { products: producerProducts } = data;
-
-    const producerProduct = producerProducts[0];
-
-    const mappedProducerVariant = producerProduct.variants.find(
-      (v) =>
-        convertShopifyGraphQLIdToNumber(v.id) ===
-        convertShopifyGraphQLIdToNumber(mappedProducerVariantId)
-    );
-
-    const hubProductVariants = await shopify.api.rest.Variant.all({
-      session,
-      product_id: hubProductId
-    });
-
-    const currentVariant = hubProductVariants.find(
-      (v) => v.id === hubVariantId
-    );
-
-    const inventoryItemId = currentVariant.inventory_item_id;
-
-    const inventoryLevels = await shopify.api.rest.InventoryLevel.all({
-      session,
-      inventory_item_ids: inventoryItemId
-    });
-
-    const inventoryLevel = new shopify.api.rest.InventoryLevel({
-      session
-    });
-
-    await inventoryLevel.set({
-      inventory_item_id: inventoryItemId,
-      available:
-        noOfItemsPerPackage * Number(mappedProducerVariant.inventory_quantity),
-      location_id: inventoryLevels.find(
-        (l) => l.inventory_item_id === inventoryItemId
-      ).location_id
-    });
-  } catch (err) {
-    console.log(err);
-    throw new Error(err);
-  }
-};
 
 const sendOrderToProducer = async ({
   mappedProducerVariantId,
@@ -126,14 +62,14 @@ export const processOrderPaidWebhook = async (v) => {
     try {
       await sqlClient.query('BEGIN');
       const selectVariantQuery = `
-    SELECT
-      v.*,
-      p.producer_product_id,
-      p.hub_product_id
-    FROM variants as v
-    INNER JOIN products as p
-    ON v.product_id = p.id
-    WHERE hub_variant_id = $1
+        SELECT
+          v.*,
+          p.producer_product_id,
+          p.hub_product_id
+        FROM variants as v
+        INNER JOIN products as p
+        ON v.product_id = p.id
+        WHERE hub_variant_id = $1
     `;
 
       const result = await query(selectVariantQuery, [hubVariantId], sqlClient);
@@ -146,25 +82,25 @@ export const processOrderPaidWebhook = async (v) => {
       const producerProductId = result.rows[0].producerProductId;
       const mappedProducerVariantId = result.rows[0].mappedVariantId;
       const noOfItemsPerPackage = Number(result.rows[0].noOfItemsPerPackage);
-      const numberOfRemainingOrders = Number(
-        result.rows[0].numberOfRemainingOrders
+      const numberOfExitingExcessOrders = Number(
+        result.rows[0].numberOfExcessOrders
       );
 
-      const totalOrders = quantity + numberOfRemainingOrders; // 13
-
-      const numberOfPackages = Math.floor(totalOrders / noOfItemsPerPackage); // 3
-
-      const numberOfRemainingOrdersAfterThisOrder =
-        totalOrders % noOfItemsPerPackage; // 1
+      const { numberOfExcessOrders, numberOfPackages } =
+        calculateTheExcessOrders({
+          noOfItemsPerPackage,
+          quantity,
+          numberOfExitingExcessOrders
+        });
 
       const updateVariantQuery = `
-    UPDATE variants
-    SET number_of_remaining_orders = $1
-    WHERE hub_variant_id = $2
+        UPDATE variants
+        SET number_of_excess_orders = $1
+        WHERE hub_variant_id = $2
     `;
       await query(
         updateVariantQuery,
-        [numberOfRemainingOrdersAfterThisOrder, hubVariantId],
+        [numberOfExcessOrders, hubVariantId],
         sqlClient
       );
 
@@ -215,7 +151,8 @@ export const processOrderPaidWebhook = async (v) => {
           producerProductId,
           hubVariantId,
           noOfItemsPerPackage,
-          mappedProducerVariantId
+          mappedProducerVariantId,
+          numberOfExcessOrders
         });
       }
     } catch (err) {

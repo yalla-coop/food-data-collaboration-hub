@@ -1,3 +1,4 @@
+/* eslint-disable react/no-array-index-key */
 /* eslint-disable arrow-body-style */
 /* eslint-disable react/function-component-definition */
 import { useState } from 'react';
@@ -30,10 +31,6 @@ export function ProductsCard({ product, exitingProduct }) {
   const isCurrentSalesSessionActive =
     currentSalesSessionData?.currentSalesSession?.isActive;
 
-  const [productsVariantsPrices, setProductsVariantsPrices] = useState({
-    [product.id]: {}
-  });
-
   const isProductInStore = !!exitingProduct?.producerProductId;
 
   const {
@@ -61,7 +58,8 @@ export function ProductsCard({ product, exitingProduct }) {
           title,
           handle,
           customVariants: variantsMappingData,
-          producerProductId
+          producerProductId,
+          productData: modifiedProduct
         })
       }
     });
@@ -97,7 +95,7 @@ export function ProductsCard({ product, exitingProduct }) {
                 !isCurrentSalesSessionActive ||
                 variantMappingCount !== variantsMappingData.length
               }
-              onClick={() => handleAddToStore(product, productsVariantsPrices)}
+              onClick={() => handleAddToStore(product)}
             >
               {createShopifyProductLoading ? 'Loading...' : 'Add to store'}
             </Button>
@@ -115,12 +113,9 @@ export function ProductsCard({ product, exitingProduct }) {
         <Stack spacing="12px">
           {[...Array(variantMappingCount)].map((_, index) => (
             <VariantMappingComponent
+              key={index}
               setVariantsMappingData={setVariantsMappingData}
-              isCurrentSalesSessionActive={isCurrentSalesSessionActive}
-              isProductInStore={isProductInStore}
               product={product}
-              productsVariantsPrices={productsVariantsPrices}
-              setProductsVariantsPrices={setProductsVariantsPrices}
               exitingProductVariant={exitingProduct?.variants?.[index] || {}}
             />
           ))}

@@ -18,9 +18,12 @@ const getProducerProducts = async () => {
       'price', v.price,
       'added_value', v.added_value,
       'original_price', v.original_price,
+      'mapped_variant_id', v.mapped_variant_id,
+      'no_of_items_per_package', v.no_of_items_per_package,
+      'number_of_excess_orders', v.number_of_excess_orders,
       'added_value_method', v.added_value_method)
-      ) as variants
-      FROM products as p INNER JOIN variants as v ON p.id = v.product_id
+  ) as variants
+    FROM products as p INNER JOIN variants as v ON p.id = v.product_id
   GROUP BY p.id
   `;
 

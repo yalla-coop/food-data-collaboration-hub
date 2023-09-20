@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import { useState } from 'react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import Typography from '@mui/material/Typography';
@@ -19,7 +20,7 @@ import { ProductsCard } from '../components/ProductsCard';
 import { convertShopifyGraphQLIdToNumber } from '../utils/index.js';
 
 export default function ProductsList() {
-  const [nextPageCursorValue, setNextPageCursorValue] = useState(null);
+  const [productSinceId, setProductSinceId] = useState(0);
   const [productsList, setProductsList] = useState([]);
   const [helpTextVisible, setHelpTextVisible] = useState(false);
 
@@ -50,16 +51,16 @@ export default function ProductsList() {
   });
 
   const {
-    data,
+    data: producerProductsData,
     isLoading,
     error: getProductDataError
   } = useAppQuery({
     reactQueryOptions: {
-      onSuccess: (getProductData) => {
-        setProductsList([...productsList, ...getProductData.products.list]);
+      onSuccess: ({ products }) => {
+        setProductsList([...productsList, ...products]);
       }
     },
-    url: `/api/products/fdc?nextPageCursor=${nextPageCursorValue}`
+    url: `/api/products/fdc?sinceId=${productSinceId}`
   });
 
   const isCurrentSalesSessionCreated =
@@ -83,32 +84,33 @@ export default function ProductsList() {
           alignItems: 'center'
         }}
       >
-        <CircularProgress size={200} />;
+        <CircularProgress size={200} />
       </Stack>
     );
   }
 
-  const { products: { pageInfo = {} } = {} } = data || {};
-
   if (getProductDataError) {
     return (
-      <div>
-        <p>
-          Something went wrong, please check the producer server - maybe the
-          server is down :{' '}
-          {getProductDataError?.message ||
-            getProductDataError?.error ||
-            'Unknown error'}
-        </p>
-      </div>
+      <Alert
+        severity="warning"
+        sx={{
+          typography: 'body1',
+          fontSize: '20px'
+        }}
+      >
+        Something went wrong, please check the producer server - the error is :
+        {getProductDataError?.message ||
+          getProductDataError?.error ||
+          'Unknown error'}
+      </Alert>
     );
   }
 
   const handleShowMore = () => {
-    if (!pageInfo?.hasNextPage) {
+    if (!producerProductsData?.lastId) {
       return;
     }
-    setNextPageCursorValue(pageInfo?.startCursor);
+    setProductSinceId(producerProductsData?.lastId);
   };
 
   return (
@@ -123,9 +125,13 @@ export default function ProductsList() {
         variant="contained"
         type="button"
         onClick={handleShowMore}
-        disabled={isLoading}
+        disabled={isLoading || !producerProductsData?.lastId}
       >
-        {isLoading ? 'Loading...' : 'Show More'}
+        {isLoading
+          ? 'Loading...'
+          : !producerProductsData?.lastId
+          ? 'No more products'
+          : 'Show More'}
       </Button>
 
       <Button
@@ -267,6 +273,7 @@ export default function ProductsList() {
       <ul>
         {productsList.map((product) => (
           <ProductsCard
+            key={product.id}
             product={product}
             exitingProduct={
               exitingProductsList?.find(

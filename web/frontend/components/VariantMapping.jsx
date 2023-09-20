@@ -6,7 +6,8 @@ import {
   Typography,
   MenuItem,
   Checkbox,
-  FormControlLabel
+  FormControlLabel,
+  Divider
 } from '@mui/material';
 import { VariantCard } from '../components/VariantCard';
 
@@ -27,23 +28,18 @@ const getAddingPriceMethodOption = (value) => {
 
 function VariantMappingComponent({
   product,
-  isCurrentSalesSessionActive,
-  productsVariantsPrices,
-  setProductsVariantsPrices,
-  isProductInStore,
-  productInfoFromTheStore,
   setVariantsMappingData,
   exitingProductVariant
 }) {
   const exitingVariantA =
-    product?.variants?.list?.find(
+    product?.variants?.find(
       (v) =>
         convertShopifyGraphQLIdToNumber(v.id) ===
         Number(exitingProductVariant?.producerVariantId)
     ) || null;
 
   const exitingVariantB =
-    product?.variants?.list?.find(
+    product?.variants?.find(
       (v) =>
         convertShopifyGraphQLIdToNumber(v.id) ===
         Number(exitingProductVariant?.mappedVariantId)
@@ -118,17 +114,9 @@ function VariantMappingComponent({
               setSelectedVariantA(_e.target.value);
             }}
           >
-            {product.variants.list.map((variant, idx) => (
+            {product.variants.map((variant, idx) => (
               <MenuItem key={variant.id} value={variant}>
-                <VariantCard
-                  isCurrentSalesSessionActive={isCurrentSalesSessionActive}
-                  variant={variant}
-                  index={idx}
-                  productsVariantsPrices={productsVariantsPrices}
-                  setProductsVariantsPrices={setProductsVariantsPrices}
-                  isProductInStore={isProductInStore}
-                  productInfoFromTheStore={productInfoFromTheStore}
-                />
+                <VariantCard variant={variant} index={idx} />
               </MenuItem>
             ))}
           </TextField>
@@ -144,17 +132,9 @@ function VariantMappingComponent({
             value={selectedVariantB || ''}
             onChange={(event) => setSelectedVariantB(event.target.value)}
           >
-            {product.variants.list.map((variant, idx) => (
+            {product.variants.map((variant, idx) => (
               <MenuItem key={variant.id} value={variant}>
-                <VariantCard
-                  isCurrentSalesSessionActive={isCurrentSalesSessionActive}
-                  variant={variant}
-                  index={idx}
-                  productsVariantsPrices={productsVariantsPrices}
-                  setProductsVariantsPrices={setProductsVariantsPrices}
-                  isProductInStore={isProductInStore}
-                  productInfoFromTheStore={productInfoFromTheStore}
-                />
+                <VariantCard variant={variant} index={idx} />
               </MenuItem>
             ))}
           </TextField>
@@ -162,14 +142,20 @@ function VariantMappingComponent({
       </Stack>
 
       <Stack spacing="10px">
-        <Typography>Prices</Typography>
+        <Typography variant="h5">Mapped Variant Ratio</Typography>
+
         <TextField
           type="number"
-          label="No. of items per Case/Box"
+          label="No. of items per Case/Box/Package"
           inputProps={{ inputMode: 'numeric', min: 0, pattern: '[0-9]*' }}
           value={noOfItemPerCase}
           onChange={(e) => setNoOfItemPerCase(e.target.value)}
         />
+
+        <Divider />
+
+        <Typography variant="h5">Markup</Typography>
+
         <Stack direction="row" spacing="20px" width="100%">
           <TextField
             sx={{
@@ -177,7 +163,7 @@ function VariantMappingComponent({
             }}
             type="number"
             inputProps={{ inputMode: 'numeric', min: 0, pattern: '[0-9]*' }}
-            label="Adding Price Value/Percentage"
+            label="Markup : Adding Price Value/Percentage"
             value={addedValue}
             onChange={(e) => setAddedValue(e.target.value)}
           />
@@ -213,6 +199,7 @@ function VariantMappingComponent({
             })}
           />
         </Stack>
+        <Divider />
         <TextField
           type="number"
           variant="filled"

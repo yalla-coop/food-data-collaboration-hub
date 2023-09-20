@@ -1,6 +1,7 @@
 import { DeliveryMethod } from '@shopify/shopify-api';
 import handleProductDeleteWebhookHandler from './webhooks/handleProductDeleteWebhookHandler.js';
 import handleOrderPaidWebhookHandler from './webhooks/handleOrderPaidWebhookHandler.js';
+import handleCartsCreateUpdateCheckoutCreateUpdateWebhookHandler from './webhooks/handleCartsCreateUpdateCheckoutCreateUpdateWebhookHandler.js';
 
 const GDPRWebhookHandlers = {
   CUSTOMERS_DATA_REQUEST: {
@@ -30,5 +31,16 @@ const GDPRWebhookHandlers = {
 export default {
   ...GDPRWebhookHandlers,
   ...handleProductDeleteWebhookHandler,
-  ...handleOrderPaidWebhookHandler
+  ...handleOrderPaidWebhookHandler,
+  ...handleCartsCreateUpdateCheckoutCreateUpdateWebhookHandler,
+  PRODUCTS_UPDATE: {
+    deliveryMethod: DeliveryMethod.Http,
+    callbackUrl: '/api/webhooks',
+    callback: async (topic, shop, body, webhookId) => {
+      const payload = JSON.parse(body);
+      return {
+        statusCode: 200
+      };
+    }
+  }
 };
