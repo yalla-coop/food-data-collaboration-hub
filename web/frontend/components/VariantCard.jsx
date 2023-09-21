@@ -25,7 +25,7 @@ function VariantCard({ variant, index }) {
         {variant.inventory_policy}
       </p>
 
-      {variant.inventory_policy !== 'CONTINUE' && (
+      {variant?.inventory_policy?.toUpperCase() !== 'CONTINUE' && (
         <p>
           <strong>inventory Quantity:</strong>
           {variant.inventory_quantity}
