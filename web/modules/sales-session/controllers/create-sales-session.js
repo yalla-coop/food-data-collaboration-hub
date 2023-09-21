@@ -6,7 +6,7 @@ import moment from 'moment';
 
 const createSalesSession = async (req, res, next) => {
   const {
-    body: { startDate, sessionDurationInDays },
+    body: { startDate, sessionDurationInDays, partiallySoldEnabled },
     user
   } = req;
 
@@ -49,7 +49,8 @@ const createSalesSession = async (req, res, next) => {
         startDate,
         sessionDurationInDays,
         user,
-        session
+        session,
+        partiallySoldEnabled
       },
       client
     );

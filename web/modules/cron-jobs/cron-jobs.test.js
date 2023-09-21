@@ -9,6 +9,7 @@ describe('CreateSalesSession Cron job', () => {
     await UseCases.createSalesSessionUseCase({
       startDate: new Date('2021-09-01'),
       sessionDurationInDays: 10,
+      partiallySoldEnabled: true,
       user: {
         id: 1,
         accessToken: 'access_token'

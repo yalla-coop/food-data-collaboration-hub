@@ -7,7 +7,9 @@ import {
   TextField,
   Alert,
   Box,
-  Typography
+  Typography,
+  FormControlLabel,
+  Checkbox
 } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import { useAppBridge } from '@shopify/app-bridge-react';
@@ -41,6 +43,8 @@ export default function SalesSession() {
 
   const [startDate, setStartDate] = useState(dayjs(new Date()));
   const [sessionDurationInDays, setSessionDurationInDays] = useState(7);
+  const [partiallySoldCasesIsEnabled, setSetPartiallySoldCasesIsEnabled] =
+    useState(false);
 
   const redirect = Redirect.create(app);
 
@@ -66,8 +70,12 @@ export default function SalesSession() {
         const currentSalesSessionSessionDurationInDays =
           data?.currentSalesSession?.sessionDuration;
 
+        const currentPartialSoldCasesIsEnabled =
+          data?.currentSalesSession?.partiallySoldEnabled;
+
         setStartDate(currentSalesStartDate);
         setSessionDurationInDays(currentSalesSessionSessionDurationInDays);
+        setSetPartiallySoldCasesIsEnabled(currentPartialSoldCasesIsEnabled);
       }
     }
   });
@@ -146,7 +154,8 @@ export default function SalesSession() {
         },
         body: JSON.stringify({
           startDate: startDate.toISOString(),
-          sessionDurationInDays: Number(sessionDurationInDays)
+          sessionDurationInDays: Number(sessionDurationInDays),
+          partiallySoldEnabled: partiallySoldCasesIsEnabled
         })
       }
     });
@@ -175,6 +184,7 @@ export default function SalesSession() {
       }
     });
   };
+
   const handleOnCreateSalesSessionClick = async () => {
     await createSalesSession({
       url: '/api/sales-session',
@@ -185,7 +195,8 @@ export default function SalesSession() {
         },
         body: JSON.stringify({
           startDate: startDate.toISOString(),
-          sessionDurationInDays: Number(sessionDurationInDays)
+          sessionDurationInDays: Number(sessionDurationInDays),
+          partiallySoldEnabled: partiallySoldCasesIsEnabled
         })
       }
     });
@@ -262,6 +273,18 @@ export default function SalesSession() {
               dayjs(newValue).diff(startDate, 'day', false)
             );
           }}
+        />
+
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={partiallySoldCasesIsEnabled}
+              onChange={(event) =>
+                setSetPartiallySoldCasesIsEnabled(event.target.checked)
+              }
+            />
+          }
+          label="Enable Partial Sold cases"
         />
 
         <Button

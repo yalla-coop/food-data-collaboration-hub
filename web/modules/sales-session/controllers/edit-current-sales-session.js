@@ -4,7 +4,7 @@ import moment from 'moment';
 const editCurrentSalesSession = async (req, res, next) => {
   try {
     const {
-      body: { startDate, sessionDurationInDays }
+      body: { startDate, sessionDurationInDays, partiallySoldEnabled }
     } = req;
 
     // validate the startDate should be in the future
@@ -31,7 +31,8 @@ const editCurrentSalesSession = async (req, res, next) => {
 
     await editCurrentSalesSessionUseCase({
       startDate,
-      sessionDurationInDays
+      sessionDurationInDays,
+      partiallySoldEnabled
     });
     return res.status(200).json({
       message: 'Sales session updated successfully'

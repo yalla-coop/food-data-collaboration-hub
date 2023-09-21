@@ -35,7 +35,9 @@ export const updateCurrentVariantInventory = async ({
   hubVariantId,
   noOfItemsPerPackage,
   mappedProducerVariantId,
-  numberOfExcessOrders
+  numberOfExcessOrders,
+  numberOfRemainingOrders,
+  isPartiallySoldCasesEnabled
 }) => {
   try {
     const sessions = await shopify.config.sessionStorage.findSessionsByShop(
@@ -82,9 +84,19 @@ export const updateCurrentVariantInventory = async ({
       session
     });
 
-    const availableItemsInTheStore =
-      noOfItemsPerPackage * Number(mappedProducerVariant.inventory_quantity) +
-      Number(numberOfExcessOrders);
+    let availableItemsInTheStore = 0;
+
+    if (isPartiallySoldCasesEnabled) {
+      availableItemsInTheStore =
+        noOfItemsPerPackage * Number(mappedProducerVariant.inventory_quantity) +
+        Number(numberOfExcessOrders);
+    } else {
+      availableItemsInTheStore =
+        noOfItemsPerPackage * Number(mappedProducerVariant.inventory_quantity) -
+        Number(numberOfRemainingOrders);
+    }
+
+    console.log('availableItemsInTheStore', availableItemsInTheStore);
 
     await inventoryLevel.set({
       inventory_item_id: inventoryItemId,

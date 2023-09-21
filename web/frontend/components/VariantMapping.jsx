@@ -29,7 +29,8 @@ const getAddingPriceMethodOption = (value) => {
 function VariantMappingComponent({
   product,
   setVariantsMappingData,
-  exitingProductVariant
+  exitingProductVariant,
+  isPartiallySoldCasesEnabled
 }) {
   const exitingVariantA =
     product?.variants?.find(
@@ -225,6 +226,34 @@ function VariantMappingComponent({
           value={profitValue}
           disabled
         />
+
+        <Divider />
+
+        {exitingProductVariant &&
+        exitingProductVariant.hubVariantId &&
+        isPartiallySoldCasesEnabled ? (
+          <Stack spacing="12px">
+            <Typography>
+              <strong>Partially Sold Cases</strong> are enabled for this
+              product.
+            </Typography>
+            <Typography>
+              Number Of Excess Orders:
+              {exitingProductVariant?.numberOfExcessOrders || 0}
+            </Typography>
+          </Stack>
+        ) : (
+          <Stack spacing="12px">
+            <Typography>
+              <strong>Partially Sold Cases</strong> are disabled for this
+              product.
+            </Typography>
+            <Typography>
+              Number Of Remaining Orders:
+              {exitingProductVariant?.numberOfRemainingOrders || 0}
+            </Typography>
+          </Stack>
+        )}
 
         <FormControlLabel
           control={

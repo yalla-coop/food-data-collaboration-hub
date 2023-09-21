@@ -5,7 +5,7 @@ const getShopifyProducts = async (req, res, next) => {
 
   const session = res.locals.shopify.session;
 
-  const products = await ProductUseCases.getShopifyProducts({session});
+  const products = await ProductUseCases.getShopifyProducts({ session });
 
   console.log('shopify products are', products);
   res.locals.products = products;

@@ -15,7 +15,8 @@ const updateSingleProduct = async ({
   hubProductId,
   session,
   storedVariants,
-  producerLatestProductData
+  producerLatestProductData,
+  isPartiallySoldCasesEnabled
 }) => {
   const hubProduct = new shopify.api.rest.Product({
     session
@@ -31,7 +32,9 @@ const updateSingleProduct = async ({
       hubVariantId: hubVariant.hubVariantId,
       noOfItemsPerPackage: hubVariant.noOfItemsPerPackage,
       mappedProducerVariantId: hubVariant.mappedVariantId,
-      numberOfExcessOrders: hubVariant.numberOfExcessOrders
+      numberOfExcessOrders: hubVariant.numberOfExcessOrders,
+      numberOfRemainingOrders: hubVariant.numberOfRemainingOrders,
+      isPartiallySoldCasesEnabled
     });
     await delayFun(1000 / MAX_REQUESTS_PER_SECOND);
   }
@@ -47,6 +50,21 @@ const updateExistingProductsCronJob = async () => {
 
     const session = sessions[0];
 
+    const selectActiveSalesSessionSql = `
+    SELECT * FROM sales_sessions WHERE is_active = true LIMIT 1
+    `;
+
+    const { rows: activeSalesSessions } = await query(
+      selectActiveSalesSessionSql
+    );
+
+    if (activeSalesSessions.length === 0) {
+      return;
+    }
+
+    const isPartiallySoldCasesEnabled =
+      activeSalesSessions?.[0]?.partiallySoldEnabled;
+
     const productsWithVariants = await getProducerProducts();
 
     if (productsWithVariants.length === 0) {
@@ -61,7 +79,8 @@ const updateExistingProductsCronJob = async () => {
         session,
         storedVariants,
         producerVariants: product.updatedProductJsonData.variants,
-        producerLatestProductData: product.updatedProductJsonData
+        producerLatestProductData: product.updatedProductJsonData,
+        isPartiallySoldCasesEnabled
       });
 
       await delayFun(1000 / MAX_REQUESTS_PER_SECOND);

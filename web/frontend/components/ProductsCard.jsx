@@ -31,6 +31,9 @@ export function ProductsCard({ product, exitingProduct }) {
   const isCurrentSalesSessionActive =
     currentSalesSessionData?.currentSalesSession?.isActive;
 
+  const isPartiallySoldCasesEnabled =
+    currentSalesSessionData?.currentSalesSession?.partiallySoldEnabled;
+
   const isProductInStore = !!exitingProduct?.producerProductId;
 
   const {
@@ -117,6 +120,7 @@ export function ProductsCard({ product, exitingProduct }) {
               setVariantsMappingData={setVariantsMappingData}
               product={product}
               exitingProductVariant={exitingProduct?.variants?.[index] || {}}
+              isPartiallySoldCasesEnabled={isPartiallySoldCasesEnabled}
             />
           ))}
         </Stack>

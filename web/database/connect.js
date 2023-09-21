@@ -74,7 +74,7 @@ const getClient = async () => {
     console.log(
       `The last executed query on this client was: ${client.lastQuery}`
     );
-  }, 5000);
+  }, 9000);
 
   const done = (err2) => {
     // call the actual 'done' method, returning this client to the pool

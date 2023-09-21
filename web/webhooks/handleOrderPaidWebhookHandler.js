@@ -5,6 +5,7 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import { updateCurrentVariantInventory } from './updateCurrentVariantInventory.js';
 import { calculateTheExcessOrders } from './calculateTheExcessOrders.js';
+import { calculateTheRemainingOrders } from './calculateTheRemainingOrders.js';
 dotenv.config();
 
 const PRODUCER_SHOP_URL = process.env.PRODUCER_SHOP_URL;
@@ -55,12 +56,28 @@ export const processOrderPaidWebhook = async (v) => {
       throw new Error('Variant not found');
     }
 
+    const selectActiveSalesSessionQuery = `
+      SELECT
+        *
+      FROM sales_sessions
+      WHERE is_active = true
+    `;
+
+    const activeSalesSessionResult = await query(
+      selectActiveSalesSessionQuery,
+      [],
+      sqlClient
+    );
+
+    if (activeSalesSessionResult.rows.length === 0) {
+      throw new Error('No active sales session found');
+    }
+
     const { variantId: hubVariantId, quantity } = v;
 
     const sqlClient = await getClient();
 
     try {
-      await sqlClient.query('BEGIN');
       const selectVariantQuery = `
         SELECT
           v.*,
@@ -85,41 +102,56 @@ export const processOrderPaidWebhook = async (v) => {
       const numberOfExitingExcessOrders = Number(
         result.rows[0].numberOfExcessOrders
       );
+      const numberOfExitingRemainingOrders = Number(
+        result.rows[0].numberOfRemainingOrders
+      );
 
-      const { numberOfExcessOrders, numberOfPackages } =
-        calculateTheExcessOrders({
+      const isPartiallySoldCasesEnabled =
+        activeSalesSessionResult.rows[0].partiallySoldEnabled;
+
+      let remainingOrdersData = {};
+      let excessOrdersData = {};
+
+      if (isPartiallySoldCasesEnabled) {
+        excessOrdersData = calculateTheExcessOrders({
           noOfItemsPerPackage,
           quantity,
           numberOfExitingExcessOrders
         });
+      } else {
+        remainingOrdersData = calculateTheRemainingOrders({
+          numberOfExitingRemainingOrders,
+          noOfItemsPerPackage,
+          quantity
+        });
+      }
+
+      const numberOfPackages = isPartiallySoldCasesEnabled
+        ? excessOrdersData.numberOfPackages
+        : remainingOrdersData.numberOfPackages;
+
+      const numberOfExcessOrders = excessOrdersData?.numberOfExcessOrders || 0;
+      const numberOfRemainingOrders =
+        remainingOrdersData?.numberOfRemainingOrders || 0;
+
+      console.log('isPartiallySoldCasesEnabled', isPartiallySoldCasesEnabled);
+      console.log('numberOfExcessOrders', numberOfExcessOrders);
+      console.log('numberOfRemainingOrders', numberOfRemainingOrders);
+      console.log('numberOfPackages', numberOfPackages);
 
       const updateVariantQuery = `
         UPDATE variants
-        SET number_of_excess_orders = $1
-        WHERE hub_variant_id = $2
+        SET number_of_excess_orders = $1,
+        number_of_remaining_orders = $2
+        WHERE hub_variant_id = $3
     `;
+
+      await sqlClient.query('BEGIN');
       await query(
         updateVariantQuery,
-        [numberOfExcessOrders, hubVariantId],
+        [numberOfExcessOrders, numberOfRemainingOrders, hubVariantId],
         sqlClient
       );
-
-      const selectActiveSalesSessionQuery = `
-    SELECT
-      *
-    FROM sales_sessions
-    WHERE is_active = true
-    `;
-
-      const activeSalesSessionResult = await query(
-        selectActiveSalesSessionQuery,
-        [],
-        sqlClient
-      );
-
-      if (activeSalesSessionResult.rows.length === 0) {
-        throw new Error('No active sales session found');
-      }
 
       const activeSalesSession = activeSalesSessionResult.rows[0];
 
@@ -152,7 +184,9 @@ export const processOrderPaidWebhook = async (v) => {
           hubVariantId,
           noOfItemsPerPackage,
           mappedProducerVariantId,
-          numberOfExcessOrders
+          numberOfExcessOrders,
+          numberOfRemainingOrders,
+          isPartiallySoldCasesEnabled
         });
       }
     } catch (err) {
@@ -167,24 +201,24 @@ export const processOrderPaidWebhook = async (v) => {
   }
 };
 
-const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
+export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
   try {
     const sqlClient = await getClient();
     try {
-      await sqlClient.query('BEGIN');
       const selectWebhookQuery = `
           SELECT
           *
           FROM webhooks
           WHERE id = $1
           `;
-      const result = await query(selectWebhookQuery, [webhookId], sqlClient);
+      const result = await query(selectWebhookQuery, [webhookId]);
       if (result.rows.length > 0) {
         return {
           statusCode: 200
         };
       }
       const payload = JSON.parse(body);
+      await sqlClient.query('BEGIN');
       const insertWebhookQuery = `
           INSERT INTO webhooks (id,topic,data)
           VALUES ($1,$2,$3)

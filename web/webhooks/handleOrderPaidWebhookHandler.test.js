@@ -1,7 +1,8 @@
 import {
   processOrderPaidWebhook,
   updateCurrentVariantInventory,
-  calculateTheExcessOrders
+  calculateTheExcessOrders,
+  handleOrderPaidWebhook
 } from './handleOrderPaidWebhookHandler';
 
 describe('web/webhooks/handleOrderPaidWebhookHandler.test.js', () => {
@@ -56,4 +57,22 @@ describe('web/webhooks/handleOrderPaidWebhookHandler.test.js', () => {
 
     expect(true).toBe(true);
   });
+
+  it('handleOrderPaidWebhook', async () => {
+    const payload = JSON.stringify({
+      line_items: [
+        {
+          variant_id: 42821112561816,
+          quantity: 15
+        }
+      ]
+    });
+
+    await handleOrderPaidWebhook(
+      'orders/paid',
+      'hub-test-store.myshopify.com',
+      payload,
+      Math.random()
+    );
+  }, 100000);
 });

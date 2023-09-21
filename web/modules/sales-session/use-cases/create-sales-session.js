@@ -61,7 +61,7 @@ export const updateHubVariantInventoryLevels = async ({
 };
 
 const createSalesSessionUseCase = async (
-  { startDate, sessionDurationInDays, user, session },
+  { startDate, sessionDurationInDays, user, session, partiallySoldEnabled },
   client
 ) => {
   try {
@@ -75,14 +75,15 @@ const createSalesSessionUseCase = async (
     );
 
     const sql =
-      'INSERT INTO sales_sessions (start_date, end_date,session_duration,is_active ) VALUES ($1,$2,$3,$4) RETURNING id';
+      'INSERT INTO sales_sessions (start_date, end_date,session_duration,is_active,partially_sold_enabled ) VALUES ($1,$2,$3,$4,$5) RETURNING id';
     const result = await query(
       sql,
       [
         startDateValue.toISOString(),
         endDate.toISOString(),
         sessionDurationInDays,
-        true
+        true,
+        partiallySoldEnabled
       ],
       client
     );
