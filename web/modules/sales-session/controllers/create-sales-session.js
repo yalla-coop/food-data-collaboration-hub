@@ -1,6 +1,6 @@
-import createSalesSessionUseCase from '../use-cases/create-sales-session.js';
-import { getClient } from '../../../database/connect.js';
 import moment from 'moment';
+import { getClient } from '../../../database/connect.js';
+import createSalesSessionUseCase from '../use-cases/create-sales-session.js';
 
 // Interval will be in days
 

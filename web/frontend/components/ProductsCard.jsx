@@ -118,6 +118,7 @@ export function ProductsCard({ product, exitingProduct }) {
             <VariantMappingComponent
               key={index}
               setVariantsMappingData={setVariantsMappingData}
+              isCurrentSalesSessionActive={isCurrentSalesSessionActive}
               product={product}
               exitingProductVariant={exitingProduct?.variants?.[index] || {}}
               isPartiallySoldCasesEnabled={isPartiallySoldCasesEnabled}

@@ -5,7 +5,7 @@ const getCurrentSalesSession = async (req, res, next) => {
     const currentSalesSession = await getCurrentSalesSessionUseCase();
     return res.status(200).json({
       message: 'Sales session retrieved successfully',
-      currentSalesSession
+      currentSalesSession: currentSalesSession || null
     });
   } catch (err) {
     console.log('err', err);

@@ -1,17 +1,16 @@
-import shopify from '../shopify.js';
 import axios from 'axios';
 import dotenv from 'dotenv';
+import shopify from '../shopify.js';
 import { convertShopifyGraphQLIdToNumber } from '../utils/index.js';
+
 dotenv.config();
-
-const PRODUCER_SHOP_URL = process.env.PRODUCER_SHOP_URL;
-const PRODUCER_SHOP = process.env.PRODUCER_SHOP;
-
-const HUB_SHOP_NAME = process.env.HUB_SHOP_NAME;
+const { PRODUCER_SHOP_URL, PRODUCER_SHOP, HUB_SHOP_NAME } = process.env;
 
 const getLatestProducerProductData = async (producerProductId) => {
   try {
-    const { data } = await axios.post(
+    const {
+      data
+    } = await axios.post(
       `${PRODUCER_SHOP_URL}fdc/products/all?shop=${PRODUCER_SHOP}`,
       {
         ids: `${producerProductId}`
@@ -88,19 +87,19 @@ export const updateCurrentVariantInventory = async ({
 
     if (isPartiallySoldCasesEnabled) {
       availableItemsInTheStore =
-        noOfItemsPerPackage * Number(mappedProducerVariant.inventory_quantity) +
+        noOfItemsPerPackage *
+          Number(mappedProducerVariant.inventory_quantity) +
         Number(numberOfExcessOrders);
     } else {
       availableItemsInTheStore =
-        noOfItemsPerPackage * Number(mappedProducerVariant.inventory_quantity) -
+        noOfItemsPerPackage *
+          Number(mappedProducerVariant.inventory_quantity) -
         Number(numberOfRemainingOrders);
     }
 
-    console.log('availableItemsInTheStore', availableItemsInTheStore);
-
     await inventoryLevel.set({
       inventory_item_id: inventoryItemId,
-      available: !!availableItemsInTheStore ? availableItemsInTheStore : 0,
+      available: availableItemsInTheStore || 0,
       location_id: inventoryLevels.find(
         (l) => l.inventory_item_id === inventoryItemId
       ).location_id

@@ -1,5 +1,5 @@
-import editCurrentSalesSessionUseCase from '../use-cases/edit-current-sales-session.js';
 import moment from 'moment';
+import editCurrentSalesSessionUseCase from '../use-cases/edit-current-sales-session.js';
 
 const editCurrentSalesSession = async (req, res, next) => {
   try {

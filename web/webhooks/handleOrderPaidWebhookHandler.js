@@ -134,11 +134,6 @@ export const processOrderPaidWebhook = async (v) => {
       const numberOfRemainingOrders =
         remainingOrdersData?.numberOfRemainingOrders || 0;
 
-      console.log('isPartiallySoldCasesEnabled', isPartiallySoldCasesEnabled);
-      console.log('numberOfExcessOrders', numberOfExcessOrders);
-      console.log('numberOfRemainingOrders', numberOfRemainingOrders);
-      console.log('numberOfPackages', numberOfPackages);
-
       const updateVariantQuery = `
         UPDATE variants
         SET number_of_excess_orders = $1,

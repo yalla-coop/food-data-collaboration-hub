@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable function-paren-newline */
 import { useState } from 'react';
 import {
@@ -30,7 +31,8 @@ function VariantMappingComponent({
   product,
   setVariantsMappingData,
   exitingProductVariant,
-  isPartiallySoldCasesEnabled
+  isPartiallySoldCasesEnabled,
+  isCurrentSalesSessionActive
 }) {
   const exitingVariantA =
     product?.variants?.find(
@@ -229,31 +231,35 @@ function VariantMappingComponent({
 
         <Divider />
 
-        {exitingProductVariant &&
-        exitingProductVariant.hubVariantId &&
-        isPartiallySoldCasesEnabled ? (
-          <Stack spacing="12px">
-            <Typography>
-              <strong>Partially Sold Cases</strong> are enabled for this
-              product.
-            </Typography>
-            <Typography>
-              Number Of Excess Orders:
-              {exitingProductVariant?.numberOfExcessOrders || 0}
-            </Typography>
-          </Stack>
-        ) : (
-          <Stack spacing="12px">
-            <Typography>
-              <strong>Partially Sold Cases</strong> are disabled for this
-              product.
-            </Typography>
-            <Typography>
-              Number Of Remaining Orders:
-              {exitingProductVariant?.numberOfRemainingOrders || 0}
-            </Typography>
-          </Stack>
-        )}
+        {isCurrentSalesSessionActive && exitingVariantA && exitingVariantB ? (
+          isPartiallySoldCasesEnabled ? (
+            <Stack spacing="12px">
+              <Typography>
+                <strong>Partially Sold Cases</strong> are enabled for this
+                product.
+              </Typography>
+              <Typography>
+                Number Of Excess Orders:
+                <Typography variant="span" ml="4px">
+                  {exitingProductVariant?.numberOfExcessOrders || 0}
+                </Typography>
+              </Typography>
+            </Stack>
+          ) : (
+            <Stack spacing="12px">
+              <Typography>
+                <strong>Partially Sold Cases</strong> are disabled for this
+                product.
+              </Typography>
+              <Typography>
+                Number Of Remaining Orders:
+                <Typography variant="span" ml="4px">
+                  {exitingProductVariant?.numberOfRemainingOrders || 0}
+                </Typography>
+              </Typography>
+            </Stack>
+          )
+        ) : null}
 
         <FormControlLabel
           control={
