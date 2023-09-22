@@ -19,9 +19,9 @@ const updateSingleProduct = async ({
   session,
   storedVariants,
   producerLatestProductData,
-  isPartiallySoldCasesEnabled
+  isPartiallySoldCasesEnabled,
+  shouldUpdateThePrice = false
 }) => {
-  console.log('update Single Product');
   const hubProduct = new shopify.api.rest.Product({
     session
   });
@@ -33,24 +33,22 @@ const updateSingleProduct = async ({
     await updateCurrentVariantInventory({
       producerProductData: producerLatestProductData,
       hubProductId,
-      hubVariantId: hubVariant.hubVariantId,
-      noOfItemsPerPackage: hubVariant.noOfItemsPerPackage,
-      mappedProducerVariantId: hubVariant.mappedVariantId,
-      numberOfExcessOrders: hubVariant.numberOfExcessOrders,
-      numberOfRemainingOrders: hubVariant.numberOfRemainingOrders,
-      isPartiallySoldCasesEnabled
+      storedHubVariant: hubVariant,
+      isPartiallySoldCasesEnabled,
+      shouldUpdateThePrice
     });
     await delayFun(1000 / MAX_REQUESTS_PER_SECOND);
   });
 };
 
 const updateExistingProductsUseCase = async ({
-  isPartiallySoldCasesEnabled
+  isPartiallySoldCasesEnabled,
+  shouldUpdateThePrice = false
 }) => {
   try {
     const sessionId = shopify.api.session.getOfflineId(HUB_SHOP_NAME);
 
-    const session = shopify.config.sessionStorage.loadSession(sessionId);
+    const session = await shopify.config.sessionStorage.loadSession(sessionId);
 
     if (!session) {
       throw new Error('Shopify Session not found');
@@ -58,13 +56,11 @@ const updateExistingProductsUseCase = async ({
 
     const productsWithVariants = await getProducerProducts();
 
-    console.log('productsWithVariants', productsWithVariants);
     if (productsWithVariants.length === 0) {
       return;
     }
 
     productsWithVariants.forEach(async (product) => {
-      console.log('updateExistingProductsUseCase');
       const { hubProductId } = product;
       const storedVariants = product.variants;
       await updateSingleProduct({
@@ -73,7 +69,8 @@ const updateExistingProductsUseCase = async ({
         storedVariants,
         producerVariants: product.updatedProductJsonData.variants,
         producerLatestProductData: product.updatedProductJsonData,
-        isPartiallySoldCasesEnabled
+        isPartiallySoldCasesEnabled,
+        shouldUpdateThePrice
       });
 
       await delayFun(1000 / MAX_REQUESTS_PER_SECOND);

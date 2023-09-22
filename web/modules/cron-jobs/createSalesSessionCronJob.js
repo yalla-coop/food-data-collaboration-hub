@@ -24,7 +24,7 @@ const createSalesSessionCronJob = async () => {
   try {
     const sessionId = shopify.api.session.getOfflineId(HUB_SHOP_NAME);
 
-    const session = shopify.config.sessionStorage.loadSession(sessionId);
+    const session = await shopify.config.sessionStorage.loadSession(sessionId);
 
     if (!session) {
       throw new Error('Shopify Session not found');

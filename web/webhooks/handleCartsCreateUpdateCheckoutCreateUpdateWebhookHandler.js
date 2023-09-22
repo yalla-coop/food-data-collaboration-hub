@@ -1,8 +1,8 @@
 import { DeliveryMethod } from '@shopify/shopify-api';
-import { getClient } from '../database/connect.js';
+import { getClient, query } from '../database/connect.js';
 import { updateCurrentVariantInventory } from './updateCurrentVariantInventory.js';
 import { getStoredHubVariant } from './getStoredHubVariant.js';
-import { query } from '../database/connect.js';
+
 export const handleHubVariantUpdate = async (v) => {
   const { variantId, quantity } = v;
 
@@ -17,7 +17,8 @@ export const handleHubVariantUpdate = async (v) => {
       hubVariantId,
       noOfItemsPerPackage,
       mappedProducerVariantId,
-      numberOfExitingExcessOrders
+      numberOfExitingExcessOrders,
+      numberOfExitingRemainingOrders
     } = await getStoredHubVariant({
       variantId,
       quantity
@@ -25,11 +26,14 @@ export const handleHubVariantUpdate = async (v) => {
 
     await updateCurrentVariantInventory({
       hubProductId,
-      producerProductId,
-      hubVariantId,
-      noOfItemsPerPackage,
-      mappedProducerVariantId,
-      numberOfExcessOrders: numberOfExitingExcessOrders
+      storedHubVariant: {
+        hubVariantId,
+        noOfItemsPerPackage,
+        mappedVariantId: mappedProducerVariantId,
+        numberOfExcessOrders: numberOfExitingExcessOrders,
+        numberOfRemainingOrders: numberOfExitingRemainingOrders
+      },
+      producerProductId
     });
   } catch (e) {
     console.log(e);
@@ -42,8 +46,6 @@ const handleCartCreateUpdateCheckoutCreateUpdateWebhook = async (
   body,
   webhookId
 ) => {
-  // The value of this function just to check the inventory of the product and update the inventory of the product
-
   try {
     const sqlClient = await getClient();
     try {
@@ -74,11 +76,7 @@ const handleCartCreateUpdateCheckoutCreateUpdateWebhook = async (
         quantity: Number(lineItem.quantity)
       }));
 
-      console.log('variants', variants);
-
-      const promises = variants.map(
-        async (v) => await handleHubVariantUpdate(v)
-      );
+      const promises = variants.map(async (v) => handleHubVariantUpdate(v));
 
       await Promise.all(promises);
     } catch (err) {
@@ -99,7 +97,6 @@ const handleCartCreateUpdateCheckoutCreateUpdateWebhookCallback = async (
   webhookId
 ) => {
   console.log('topic new ----', topic);
-  //without waiting
   handleCartCreateUpdateCheckoutCreateUpdateWebhook(
     topic,
     shop,

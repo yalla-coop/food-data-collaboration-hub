@@ -1,15 +1,17 @@
+/* eslint-disable function-paren-newline */
+/* eslint-disable object-curly-newline */
 import shopify from '../../../shopify.js';
 import { getClient, query } from '../../../database/connect.js';
 
 const convertShopifyGraphQLIdToNumber = (id) => {
   if (!id) return null;
   if (typeof id === 'number') return id;
-  return parseInt(id.split('/').pop());
+  return parseInt(id.split('/').pop(), 10);
 };
 
-const createShopifyProduct = async (req, res, next) => {
+const createShopifyProduct = async (req, res) => {
   try {
-    const session = res.locals.shopify.session;
+    const { session } = res.locals.shopify;
 
     const { title, handle, producerProductId, customVariants, productData } =
       req.body;
@@ -43,30 +45,27 @@ const createShopifyProduct = async (req, res, next) => {
       }
     ];
 
-    tempHubProduct.variants = customVariants.map((v) => {
-      return {
-        inventory_item: v.variantA.inventory_item,
-        inventory_policy: v.variantA.inventory_policy,
-        metafields: [
-          {
-            key: 'producer_variant_id',
-            namespace: 'global',
-            value: v.variantA.id,
-            type: 'single_line_text_field'
-          }
-        ],
+    tempHubProduct.variants = customVariants.map((v) => ({
+      inventory_item: v.variantA.inventory_item,
+      metafields: [
+        {
+          key: 'producer_variant_id',
+          namespace: 'global',
+          value: v.variantA.id,
+          type: 'single_line_text_field'
+        }
+      ],
 
-        option1: v.variantA.title,
-        title: v.variantA.title,
-        price: v.price,
-        inventory_policy: v.variantB.inventory_policy,
-        fulfillment_service: v.variantB.fulfillment_service,
-        inventory_management: v.variantB.inventory_management,
-        inventory_quantity:
-          Number(v.noOfItemPerCase) * Number(v.variantB.inventory_quantity),
-        old_inventory_quantity: v.variantB.old_inventory_quantity
-      };
-    });
+      option1: v.variantA.title,
+      title: v.variantA.title,
+      price: v.price,
+      inventory_policy: v.variantB.inventory_policy,
+      fulfillment_service: v.variantB.fulfillment_service,
+      inventory_management: v.variantB.inventory_management,
+      inventory_quantity:
+        Number(v.noOfItemPerCase) * Number(v.variantB.inventory_quantity),
+      old_inventory_quantity: v.variantB.old_inventory_quantity
+    }));
 
     await tempHubProduct.saveAndUpdate();
 
@@ -95,16 +94,16 @@ const createShopifyProduct = async (req, res, next) => {
 
     await hubProduct.saveAndUpdate();
 
-    for (let variant of hubProduct.variants) {
-      const inventory_item = new shopify.api.rest.InventoryItem({
+    hubProduct.variants.forEach(async (variant) => {
+      const inventoryItem = new shopify.api.rest.InventoryItem({
         session
       });
-      inventory_item.id = variant.inventory_item_id;
-      inventory_item.tracked =
+      inventoryItem.id = variant.inventory_item_id;
+      inventoryItem.tracked =
         customVariants.find((v) => v.variantA.title === variant.title)?.variantB
           ?.tracked || false;
-      await inventory_item.saveAndUpdate();
-    }
+      await inventoryItem.saveAndUpdate();
+    });
 
     const client = await getClient();
 
@@ -121,7 +120,7 @@ const createShopifyProduct = async (req, res, next) => {
 
       const { id: productId } = products.rows[0];
 
-      for (let customVariant of customVariants) {
+      customVariants.forEach(async (customVariant) => {
         await query(
           `INSERT INTO variants (
             producer_variant_id,
@@ -152,7 +151,7 @@ const createShopifyProduct = async (req, res, next) => {
           ],
           client
         );
-      }
+      });
 
       await client.query('COMMIT');
     } catch (err) {

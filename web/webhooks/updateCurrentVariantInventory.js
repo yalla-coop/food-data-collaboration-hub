@@ -6,6 +6,28 @@ import { convertShopifyGraphQLIdToNumber } from '../utils/index.js';
 dotenv.config();
 const { PRODUCER_SHOP_URL, PRODUCER_SHOP, HUB_SHOP_NAME } = process.env;
 
+const calculateThePrice = ({
+  originalPrice,
+  _addingPriceType,
+  markUpValue = 0,
+  noOfItemsPerPackage
+}) => {
+  if (!originalPrice || !_addingPriceType || !noOfItemsPerPackage) return 0;
+
+  const itemPrice = Number(originalPrice) / Number(noOfItemsPerPackage);
+
+  if (noOfItemsPerPackage === 0) return 0;
+
+  if (!markUpValue || markUpValue === 0) return itemPrice;
+
+  const increasedPrice =
+    _addingPriceType === 'fixed'
+      ? Number(markUpValue) + itemPrice
+      : itemPrice + (itemPrice * Number(markUpValue)) / 100;
+
+  return increasedPrice;
+};
+
 const getLatestProducerProductData = async (producerProductId) => {
   try {
     const { data } = await axios.post(
@@ -25,21 +47,57 @@ const getLatestProducerProductData = async (producerProductId) => {
   }
 };
 
+const updateCurrentVariantPrice = async ({
+  hubVariantId,
+  session,
+  storedHubVariant,
+  mappedVariantPrice
+}) => {
+  try {
+    const hubVariantNewPrice = calculateThePrice({
+      originalPrice: mappedVariantPrice.price,
+      addingPriceType: storedHubVariant.addedValueMethod,
+      markupValue: storedHubVariant.addedValue,
+      noOfItemsPerPackage: storedHubVariant.noOfItemsPerPackage
+    });
+
+    if (Number(hubVariantNewPrice) === Number(storedHubVariant.price)) {
+      return;
+    }
+
+    const exitingVariant = new shopify.api.rest.Variant({
+      session
+    });
+    exitingVariant.id = hubVariantId;
+    exitingVariant.price = hubVariantNewPrice;
+
+    await exitingVariant.saveAndUpdate();
+  } catch (err) {
+    console.log(err);
+    throw new Error(err);
+  }
+};
+
 export const updateCurrentVariantInventory = async ({
   hubProductId,
   producerProductId,
   producerProductData,
-  hubVariantId,
-  noOfItemsPerPackage,
-  mappedProducerVariantId,
-  numberOfExcessOrders,
-  numberOfRemainingOrders,
-  isPartiallySoldCasesEnabled
+  isPartiallySoldCasesEnabled,
+  shouldUpdateThePrice = false,
+  storedHubVariant
 }) => {
   try {
+    const {
+      hubVariantId,
+      noOfItemsPerPackage,
+      mappedVariantId,
+      numberOfExcessOrders,
+      numberOfRemainingOrders
+    } = storedHubVariant;
+
     const sessionId = shopify.api.session.getOfflineId(HUB_SHOP_NAME);
 
-    const session = shopify.config.sessionStorage.loadSession(sessionId);
+    const session = await shopify.config.sessionStorage.loadSession(sessionId);
 
     if (!session) {
       throw new Error('Shopify Session not found');
@@ -56,8 +114,17 @@ export const updateCurrentVariantInventory = async ({
     const mappedProducerVariant = producerProduct.variants.find(
       (v) =>
         convertShopifyGraphQLIdToNumber(v.id) ===
-        convertShopifyGraphQLIdToNumber(mappedProducerVariantId)
+        convertShopifyGraphQLIdToNumber(mappedVariantId)
     );
+
+    if (shouldUpdateThePrice) {
+      await updateCurrentVariantPrice({
+        hubVariantId,
+        session,
+        storedHubVariant,
+        mappedVariantPrice: mappedProducerVariant.price
+      });
+    }
 
     const hubProductVariants = await shopify.api.rest.Variant.all({
       session,

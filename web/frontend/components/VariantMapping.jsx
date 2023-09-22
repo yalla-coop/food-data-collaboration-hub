@@ -27,6 +27,8 @@ const getAddingPriceMethodOption = (value) => {
   };
 };
 
+// Here I should change the price of variantA to be the price of variantB and then the hub user can add the mark up value
+
 function VariantMappingComponent({
   product,
   setVariantsMappingData,
@@ -67,12 +69,21 @@ function VariantMappingComponent({
   const calculateThePrice = ({
     originalPrice,
     _addingPriceType,
-    _priceOfItem
+    markUpValue = 0,
+    noOfItemsPerPackage
   }) => {
+    if (!originalPrice || !_addingPriceType || !noOfItemsPerPackage) return 0;
+
+    const itemPrice = Number(originalPrice) / Number(noOfItemsPerPackage);
+
+    if (noOfItemsPerPackage === 0) return 0;
+
+    if (!markUpValue || markUpValue === 0) return itemPrice;
+
     const increasedPrice =
       _addingPriceType.value === 'fixed'
-        ? Number(_priceOfItem) + originalPrice
-        : originalPrice + (originalPrice * Number(_priceOfItem)) / 100;
+        ? Number(markUpValue) + itemPrice
+        : itemPrice + (itemPrice * Number(markUpValue)) / 100;
 
     return increasedPrice;
   };
@@ -90,16 +101,21 @@ function VariantMappingComponent({
     return false;
   };
 
+  const itemNewPrice = calculateThePrice({
+    originalPrice: Number(selectedVariantB?.price) || 0,
+    _addingPriceType: addedValueMethod,
+    markUpValue: Number(addedValue),
+    noOfItemsPerPackage: Number(noOfItemPerCase)
+  });
+
   const profitValue =
-    (selectedVariantA &&
-      selectedVariantA?.price &&
-      calculateThePrice({
-        originalPrice: Number(selectedVariantA?.price) || 0,
-        _addingPriceType: addedValueMethod,
-        _priceOfItem: Number(addedValue)
-      }) *
-        noOfItemPerCase -
-        Number(selectedVariantB?.price).toFixed(2)) ||
+    (selectedVariantB &&
+      selectedVariantB?.price &&
+      noOfItemPerCase &&
+      (
+        itemNewPrice * noOfItemPerCase -
+        Number(selectedVariantB?.price)
+      ).toFixed(2)) ||
     0;
 
   return (
@@ -130,7 +146,6 @@ function VariantMappingComponent({
           <TextField
             fullWidth
             label="Select"
-            helperText="Please select a variant to order from producer"
             select
             value={selectedVariantB || ''}
             onChange={(event) => setSelectedVariantB(event.target.value)}
@@ -164,6 +179,18 @@ function VariantMappingComponent({
             sx={{
               flexGrow: 1
             }}
+            error={
+              selectedVariantA &&
+              selectedVariantB &&
+              addedValue &&
+              itemNewPrice <= Number(selectedVariantA?.price)
+            }
+            helperText={
+              selectedVariantA &&
+              selectedVariantB &&
+              itemNewPrice <= Number(selectedVariantA?.price) &&
+              'The price of the mapped variant is less than the price of the variant to display on my store'
+            }
             type="number"
             inputProps={{ inputMode: 'numeric', min: 0, pattern: '[0-9]*' }}
             label="Markup : Adding Price Value/Percentage"
@@ -195,11 +222,7 @@ function VariantMappingComponent({
             label="New Item Price"
             disabled
             variant="filled"
-            value={calculateThePrice({
-              originalPrice: Number(selectedVariantA?.price) || 0,
-              _addingPriceType: addedValueMethod,
-              _priceOfItem: Number(addedValue)
-            })}
+            value={itemNewPrice.toFixed(2)}
           />
         </Stack>
         <Divider />
@@ -207,21 +230,14 @@ function VariantMappingComponent({
           type="number"
           variant="filled"
           label="Box Price"
-          value={
-            noOfItemPerCase *
-            calculateThePrice({
-              originalPrice: Number(selectedVariantA?.price) || 0,
-              _addingPriceType: addedValueMethod,
-              _priceOfItem: Number(addedValue)
-            })
-          }
+          value={(noOfItemPerCase * itemNewPrice).toFixed(2)}
           disabled
         />
         {/* {This calculated as fixed price} */}
         <TextField
           variant="filled"
           label="Profit"
-          error={profitValue < 0}
+          error={selectedVariantA && selectedVariantB && profitValue <= 0}
           helperText={
             profitValue <= 0 && 'Profit is negative, please check the prices'
           }
@@ -265,7 +281,11 @@ function VariantMappingComponent({
           control={
             <Checkbox
               checked={exitingProductVariant?.producerVariantId && true}
-              disabled={!isFormValid() || profitValue <= 0}
+              disabled={
+                !isFormValid() ||
+                profitValue <= 0 ||
+                itemNewPrice <= Number(selectedVariantA?.price)
+              }
               onChange={(_e) => {
                 if (_e.target.checked) {
                   setVariantsMappingData((prev) => [
@@ -273,12 +293,9 @@ function VariantMappingComponent({
                     {
                       variantA: selectedVariantA,
                       variantB: selectedVariantB,
-                      price: calculateThePrice({
-                        originalPrice: Number(selectedVariantA?.price) || 0,
-                        _addingPriceType: addedValueMethod,
-                        _priceOfItem: Number(addedValue)
-                      }),
-                      originalPrice: Number(selectedVariantA?.price) || 0,
+                      price: itemNewPrice,
+                      originalPrice:
+                        Number(selectedVariantB?.price / noOfItemPerCase) || 0,
                       noOfItemPerCase,
                       addedValue,
                       addedValueMethod: addedValueMethod.value,

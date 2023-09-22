@@ -169,13 +169,15 @@ export const processOrderPaidWebhook = async (v) => {
         await sqlClient.query('COMMIT');
 
         await updateCurrentVariantInventory({
+          storedHubVariant: {
+            hubVariantId,
+            noOfItemsPerPackage,
+            mappedVariantId: mappedProducerVariantId,
+            numberOfExcessOrders,
+            numberOfRemainingOrders
+          },
           hubProductId,
           producerProductId,
-          hubVariantId,
-          noOfItemsPerPackage,
-          mappedProducerVariantId,
-          numberOfExcessOrders,
-          numberOfRemainingOrders,
           isPartiallySoldCasesEnabled
         });
       }

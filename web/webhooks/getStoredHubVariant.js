@@ -1,5 +1,6 @@
 import { query } from '../database/connect.js';
-export const getStoredHubVariant = async ({ variantId, quantity }) => {
+
+export const getStoredHubVariant = async ({ variantId }) => {
   const selectVariantQuery = `
     SELECT
     v.*,
@@ -17,12 +18,14 @@ export const getStoredHubVariant = async ({ variantId, quantity }) => {
     throw new Error('Variant not found');
   }
 
-  const hubProductId = result.rows[0].hubProductId;
-  const producerProductId = result.rows[0].producerProductId;
+  const { hubProductId, producerProductId } = result.rows[0];
   const mappedProducerVariantId = result.rows[0].mappedVariantId;
   const noOfItemsPerPackage = Number(result.rows[0].noOfItemsPerPackage);
   const numberOfExitingExcessOrders = Number(
     result.rows[0].numberOfExcessOrders
+  );
+  const numberOfExitingRemainingOrders = Number(
+    result.rows[0].numberOfRemainingOrders
   );
 
   return {
@@ -31,6 +34,7 @@ export const getStoredHubVariant = async ({ variantId, quantity }) => {
     hubVariantId: variantId,
     noOfItemsPerPackage,
     mappedProducerVariantId,
-    numberOfExitingExcessOrders
+    numberOfExitingExcessOrders,
+    numberOfExitingRemainingOrders
   };
 };

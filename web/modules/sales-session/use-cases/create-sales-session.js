@@ -46,9 +46,10 @@ const createSalesSessionUseCase = async (
       [order.id, salesSessionId],
       client
     );
-
+    // TODO : this function should update the price also
     await updateExistingProductsUseCase({
-      isPartiallySoldCasesEnabled: partiallySoldEnabled
+      isPartiallySoldCasesEnabled: partiallySoldEnabled,
+      shouldUpdateThePrice: true
     });
   } catch (error) {
     console.error(error);
