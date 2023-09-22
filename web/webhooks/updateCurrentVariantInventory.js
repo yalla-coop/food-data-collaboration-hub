@@ -8,9 +8,7 @@ const { PRODUCER_SHOP_URL, PRODUCER_SHOP, HUB_SHOP_NAME } = process.env;
 
 const getLatestProducerProductData = async (producerProductId) => {
   try {
-    const {
-      data
-    } = await axios.post(
+    const { data } = await axios.post(
       `${PRODUCER_SHOP_URL}fdc/products/all?shop=${PRODUCER_SHOP}`,
       {
         ids: `${producerProductId}`
@@ -39,11 +37,13 @@ export const updateCurrentVariantInventory = async ({
   isPartiallySoldCasesEnabled
 }) => {
   try {
-    const sessions = await shopify.config.sessionStorage.findSessionsByShop(
-      HUB_SHOP_NAME
-    );
+    const sessionId = shopify.api.session.getOfflineId(HUB_SHOP_NAME);
 
-    const session = sessions[0];
+    const session = shopify.config.sessionStorage.loadSession(sessionId);
+
+    if (!session) {
+      throw new Error('Shopify Session not found');
+    }
 
     let producerProduct;
 
@@ -87,13 +87,11 @@ export const updateCurrentVariantInventory = async ({
 
     if (isPartiallySoldCasesEnabled) {
       availableItemsInTheStore =
-        noOfItemsPerPackage *
-          Number(mappedProducerVariant.inventory_quantity) +
+        noOfItemsPerPackage * Number(mappedProducerVariant.inventory_quantity) +
         Number(numberOfExcessOrders);
     } else {
       availableItemsInTheStore =
-        noOfItemsPerPackage *
-          Number(mappedProducerVariant.inventory_quantity) -
+        noOfItemsPerPackage * Number(mappedProducerVariant.inventory_quantity) -
         Number(numberOfRemainingOrders);
     }
 
