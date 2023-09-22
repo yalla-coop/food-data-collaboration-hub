@@ -1,17 +1,14 @@
 import { DeliveryMethod } from '@shopify/shopify-api';
-import shopify from '../shopify.js';
-import { getClient, query } from '../database/connect.js';
 import axios from 'axios';
 import dotenv from 'dotenv';
+import { getClient, query } from '../database/connect.js';
 import { updateCurrentVariantInventory } from './updateCurrentVariantInventory.js';
 import { calculateTheExcessOrders } from './calculateTheExcessOrders.js';
 import { calculateTheRemainingOrders } from './calculateTheRemainingOrders.js';
+
 dotenv.config();
 
-const PRODUCER_SHOP_URL = process.env.PRODUCER_SHOP_URL;
-const PRODUCER_SHOP = process.env.PRODUCER_SHOP;
-
-const HUB_SHOP_NAME = process.env.HUB_SHOP_NAME;
+const { PRODUCER_SHOP_URL, PRODUCER_SHOP } = process.env;
 
 const sendOrderToProducer = async ({
   mappedProducerVariantId,
@@ -65,8 +62,7 @@ export const processOrderPaidWebhook = async (v) => {
 
     const activeSalesSessionResult = await query(
       selectActiveSalesSessionQuery,
-      [],
-      sqlClient
+      []
     );
 
     if (activeSalesSessionResult.rows.length === 0) {
@@ -95,8 +91,7 @@ export const processOrderPaidWebhook = async (v) => {
         throw new Error('Variant not found');
       }
 
-      const hubProductId = result.rows[0].hubProductId;
-      const producerProductId = result.rows[0].producerProductId;
+      const { hubProductId, producerProductId } = result.rows[0].hubProductId;
       const mappedProducerVariantId = result.rows[0].mappedVariantId;
       const noOfItemsPerPackage = Number(result.rows[0].noOfItemsPerPackage);
       const numberOfExitingExcessOrders = Number(
@@ -226,9 +221,7 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
         quantity: Number(lineItem.quantity)
       }));
 
-      const promises = variants.map(
-        async (v) => await processOrderPaidWebhook(v)
-      );
+      const promises = variants.map(async (v) => processOrderPaidWebhook(v));
 
       await Promise.all(promises);
 
