@@ -1,13 +1,13 @@
-import { getClient, query } from '../../database/connect.js';
 import moment from 'moment';
 import dotenv from 'dotenv';
+import { getClient, query } from '../../database/connect.js';
 import createSalesSessionUseCase from '../sales-session/use-cases/create-sales-session.js';
 import completeOrderAtProducerStoreUseCase from '../orders/use-cases/complete-order-at-producer-store.js';
 import shopify from '../../shopify.js';
 
 dotenv.config();
 
-const HUB_SHOP_NAME = process.env.HUB_SHOP_NAME;
+const { HUB_SHOP_NAME } = process.env;
 
 // what's happened when the sales session is created
 
@@ -22,11 +22,13 @@ const HUB_SHOP_NAME = process.env.HUB_SHOP_NAME;
 
 const createSalesSessionCronJob = async () => {
   try {
-    const sessions = await shopify.config.sessionStorage.findSessionsByShop(
-      HUB_SHOP_NAME
-    );
+    const sessionId = shopify.api.session.getOfflineId(HUB_SHOP_NAME);
 
-    const session = sessions[0];
+    const session = shopify.config.sessionStorage.loadSession(sessionId);
+
+    if (!session) {
+      throw new Error('Shopify Session not found');
+    }
 
     const sql =
       'SELECT * FROM sales_sessions WHERE is_active = true ORDER BY end_date DESC LIMIT 1';
@@ -41,18 +43,7 @@ const createSalesSessionCronJob = async () => {
         const newStartDate = moment(latestSessionEndDate).clone();
         const client = await getClient();
         try {
-          await client.query('BEGIN');
-
           // get the latest sales session
-
-          const latestSessionSql = `
-            SELECT * FROM sales_sessions
-            WHERE is_active = true
-            `;
-
-          const latestSessionResult = await query(latestSessionSql, [], client);
-
-          const latestSession = latestSessionResult.rows[0];
 
           const latestSessionOrder = latestSession.orderId;
 
@@ -68,6 +59,7 @@ const createSalesSessionCronJob = async () => {
 
           const deActivePreviousSessionsSql =
             'UPDATE sales_sessions SET is_active = false WHERE is_active = true';
+          await client.query('BEGIN');
           await query(deActivePreviousSessionsSql, [], client);
 
           // create a new sales session

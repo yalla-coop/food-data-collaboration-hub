@@ -48,14 +48,13 @@ const updateExistingProductsUseCase = async ({
   isPartiallySoldCasesEnabled
 }) => {
   try {
-    console.log('updateExistingProductsUseCase');
-    const shopName = HUB_SHOP_NAME;
+    const sessionId = shopify.api.session.getOfflineId(HUB_SHOP_NAME);
 
-    const sessions = await shopify.config.sessionStorage.findSessionsByShop(
-      shopName
-    );
+    const session = shopify.config.sessionStorage.loadSession(sessionId);
 
-    const session = sessions[0];
+    if (!session) {
+      throw new Error('Shopify Session not found');
+    }
 
     const productsWithVariants = await getProducerProducts();
 
