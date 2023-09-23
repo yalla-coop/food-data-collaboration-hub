@@ -35,8 +35,6 @@ export const deleteVariantsAndProductCachedData = async (hubProductId) => {
     } finally {
       client.release();
     }
-
-    throw new Error('test error');
   } catch (err) {
     console.log(err);
     Sentry.captureException(err);
