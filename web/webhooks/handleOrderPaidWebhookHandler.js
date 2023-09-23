@@ -91,7 +91,7 @@ export const processOrderPaidWebhook = async (v) => {
         throw new Error('Variant not found');
       }
 
-      const { hubProductId, producerProductId } = result.rows[0].hubProductId;
+      const { hubProductId, producerProductId } = result.rows[0];
       const mappedProducerVariantId = result.rows[0].mappedVariantId;
       const noOfItemsPerPackage = Number(result.rows[0].noOfItemsPerPackage);
       const numberOfExitingExcessOrders = Number(
