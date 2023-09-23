@@ -107,6 +107,17 @@ export const processOrderPaidWebhook = async (v) => {
       let remainingOrdersData = {};
       let excessOrdersData = {};
 
+      console.log('Some logs', {
+        isPartiallySoldCasesEnabled,
+        numberOfExitingRemainingOrders,
+        noOfItemsPerPackage,
+        quantity,
+        hubProductId,
+        producerProductId,
+        mappedProducerVariantId,
+        numberOfExitingExcessOrders
+      });
+
       if (isPartiallySoldCasesEnabled) {
         excessOrdersData = calculateTheExcessOrders({
           noOfItemsPerPackage,
