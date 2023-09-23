@@ -249,6 +249,7 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
 
 const handleOrderPaidWebhookCallback = async (topic, shop, body, webhookId) => {
   // without awaiting
+  console.log('handleOrderPaidWebhookCallback');
   handleOrderPaidWebhook(topic, shop, body, webhookId);
   return {
     statusCode: 200

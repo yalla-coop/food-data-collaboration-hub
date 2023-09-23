@@ -41,7 +41,9 @@ const handleProductDeleteCallback = async (topic, shop, body, webhookId) => {
   const payload = JSON.parse(body);
 
   const { id: producerProductId } = payload;
-  // we should not await this function because it will take a long time and we should reply to shopify as soon as possible
+  // we should not await this
+  // function because it will take a long time and we should reply to shopify as soon as possible
+  console.log('deleting product webhook');
   deleteVariantsAndProductCachedData(producerProductId);
 
   return {

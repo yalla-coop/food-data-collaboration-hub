@@ -96,7 +96,7 @@ const handleCartCreateUpdateCheckoutCreateUpdateWebhookCallback = async (
   body,
   webhookId
 ) => {
-  console.log('topic new ----', topic);
+  console.log('handleCartCreateUpdateCheckoutCreateUpdateWebhookCallback');
   handleCartCreateUpdateCheckoutCreateUpdateWebhook(
     topic,
     shop,
