@@ -71,8 +71,6 @@ export const processOrderPaidWebhook = async (v) => {
 
     const { variantId: hubVariantId, quantity } = v;
 
-    const sqlClient = await getClient();
-
     try {
       const selectVariantQuery = `
         SELECT
@@ -85,7 +83,7 @@ export const processOrderPaidWebhook = async (v) => {
         WHERE hub_variant_id = $1
     `;
 
-      const result = await query(selectVariantQuery, [hubVariantId], sqlClient);
+      const result = await query(selectVariantQuery, [hubVariantId]);
 
       if (result.rows.length === 0) {
         throw new Error('Variant not found');
@@ -140,6 +138,12 @@ export const processOrderPaidWebhook = async (v) => {
       const numberOfRemainingOrders =
         remainingOrdersData?.numberOfRemainingOrders || 0;
 
+      console.log('Some logs', {
+        numberOfPackages,
+        numberOfExcessOrders,
+        numberOfRemainingOrders
+      });
+
       const updateVariantQuery = `
         UPDATE variants
         SET number_of_excess_orders = $1,
@@ -147,12 +151,11 @@ export const processOrderPaidWebhook = async (v) => {
         WHERE hub_variant_id = $3
     `;
 
-      await sqlClient.query('BEGIN');
-      await query(
-        updateVariantQuery,
-        [numberOfExcessOrders, numberOfRemainingOrders, hubVariantId],
-        sqlClient
-      );
+      await query(updateVariantQuery, [
+        numberOfExcessOrders,
+        numberOfRemainingOrders,
+        hubVariantId
+      ]);
 
       const activeSalesSession = activeSalesSessionResult.rows[0];
 
@@ -172,13 +175,10 @@ export const processOrderPaidWebhook = async (v) => {
       SET order_id = $1
       WHERE id = $2
       `;
-        await query(
-          updateSalesSessionQuery,
-          [newProducerOrderId, activeSalesSessionId],
-          sqlClient
-        );
-        await sqlClient.query('COMMIT');
-
+        await query(updateSalesSessionQuery, [
+          newProducerOrderId,
+          activeSalesSessionId
+        ]);
         await updateCurrentVariantInventory({
           storedHubVariant: {
             hubVariantId,
@@ -193,10 +193,7 @@ export const processOrderPaidWebhook = async (v) => {
         });
       }
     } catch (err) {
-      console.log(err);
-      await sqlClient.query('ROLLBACK');
-    } finally {
-      sqlClient.release();
+      throw new Error(err);
     }
   } catch (err) {
     console.log(err);
