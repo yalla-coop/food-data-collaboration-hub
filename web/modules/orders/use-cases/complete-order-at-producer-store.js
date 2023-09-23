@@ -1,4 +1,5 @@
 import axios from 'axios';
+import * as Sentry from '@sentry/node';
 import dotenv from 'dotenv';
 import { join } from 'path';
 
@@ -32,6 +33,7 @@ const completeOrderAtProducerStoreUseCase = async ({
     return data;
   } catch (err) {
     console.log('err from axios', err);
+    Sentry.captureException(err);
     throw new Error(err);
   }
 };

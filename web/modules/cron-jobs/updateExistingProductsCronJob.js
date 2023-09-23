@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import updateExistingProductsUseCase from '../sales-session/use-cases/updateExistingProducts.js';
 import { query } from '../../database/connect.js';
 
@@ -21,6 +22,7 @@ const updateExistingProductsCronJob = async () => {
     });
   } catch (err) {
     console.log('Error in updateExistingProductsCronJob', err);
+    Sentry.captureException(err);
   }
 };
 

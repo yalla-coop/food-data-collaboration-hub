@@ -1,4 +1,5 @@
 import moment from 'moment';
+import * as Sentry from '@sentry/node';
 import dotenv from 'dotenv';
 import { getClient, query } from '../../database/connect.js';
 import createSalesSessionUseCase from '../sales-session/use-cases/create-sales-session.js';
@@ -87,6 +88,7 @@ const createSalesSessionCronJob = async () => {
     }
   } catch (err) {
     console.log('err', err);
+    Sentry.captureException(err);
   }
 };
 

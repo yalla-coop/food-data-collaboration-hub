@@ -1,4 +1,5 @@
 import { DeliveryMethod } from '@shopify/shopify-api';
+import * as Sentry from '@sentry/node';
 import axios from 'axios';
 import dotenv from 'dotenv';
 import { getClient, query } from '../database/connect.js';
@@ -105,17 +106,6 @@ export const processOrderPaidWebhook = async (v) => {
       let remainingOrdersData = {};
       let excessOrdersData = {};
 
-      console.log('Some logs', {
-        isPartiallySoldCasesEnabled,
-        numberOfExitingRemainingOrders,
-        noOfItemsPerPackage,
-        quantity,
-        hubProductId,
-        producerProductId,
-        mappedProducerVariantId,
-        numberOfExitingExcessOrders
-      });
-
       if (isPartiallySoldCasesEnabled) {
         excessOrdersData = calculateTheExcessOrders({
           noOfItemsPerPackage,
@@ -137,12 +127,6 @@ export const processOrderPaidWebhook = async (v) => {
       const numberOfExcessOrders = excessOrdersData?.numberOfExcessOrders || 0;
       const numberOfRemainingOrders =
         remainingOrdersData?.numberOfRemainingOrders || 0;
-
-      console.log('Some logs', {
-        numberOfPackages,
-        numberOfExcessOrders,
-        numberOfRemainingOrders
-      });
 
       const updateVariantQuery = `
         UPDATE variants
@@ -197,6 +181,7 @@ export const processOrderPaidWebhook = async (v) => {
     }
   } catch (err) {
     console.log(err);
+
     throw new Error(err);
   }
 };
@@ -241,14 +226,13 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
     } catch (err) {
       console.log(err);
       await sqlClient.query('ROLLBACK');
-      return {
-        statusCode: 500
-      };
+      throw new Error(err);
     } finally {
       sqlClient.release();
     }
   } catch (err) {
     console.log(err);
+    Sentry.captureException(err);
     return {
       statusCode: 500
     };

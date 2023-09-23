@@ -1,6 +1,8 @@
 // @ts-check
 import * as dotenv from 'dotenv';
 import { join } from 'path';
+import * as Sentry from '@sentry/node';
+import { ProfilingIntegration } from '@sentry/profiling-node';
 
 import cron from 'node-cron';
 
@@ -42,6 +44,28 @@ const STATIC_PATH =
     : `${process.cwd()}/frontend/`;
 
 const app = express();
+
+Sentry.init({
+  dsn: 'https://5d1f7047270c68c7b7bcd15995a09391@o4505932100927488.ingest.sentry.io/4505932103548928',
+  integrations: [
+    // enable HTTP calls tracing
+    new Sentry.Integrations.Http({ tracing: true }),
+    // enable Express.js middleware tracing
+    new Sentry.Integrations.Express({ app }),
+    new ProfilingIntegration()
+  ],
+  enabled: process.env.NODE_ENV === 'production',
+  // Performance Monitoring
+  tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
+  // Set sampling rate for profiling - this is relative to tracesSampleRate
+  profilesSampleRate: 1.0 // Capture 100% of the transactions, reduce in production!
+});
+
+// The request handler must be the first middleware on the app
+app.use(Sentry.Handlers.requestHandler());
+
+// TracingHandler creates a trace for every incoming request
+app.use(Sentry.Handlers.tracingHandler());
 
 app.post(
   shopify.config.webhooks.path,
@@ -210,6 +234,9 @@ cron.schedule('0 * * * *', async () => {
   await updateExistingProductsCronJob();
   await createSalesSessionCronJob();
 });
+
+// The error handler must be registered before any other error middleware and after all controllers
+app.use(Sentry.Handlers.errorHandler());
 
 app.use((err, _req, res, _next) => {
   if (err.name === 'ValidationError') {

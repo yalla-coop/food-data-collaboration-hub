@@ -1,4 +1,6 @@
 import { DeliveryMethod } from '@shopify/shopify-api';
+import * as Sentry from '@sentry/node';
+
 import { getClient, query } from '../database/connect.js';
 import { updateCurrentVariantInventory } from './updateCurrentVariantInventory.js';
 import { getStoredHubVariant } from './getStoredHubVariant.js';
@@ -87,6 +89,7 @@ const handleCartCreateUpdateCheckoutCreateUpdateWebhook = async (
     }
   } catch (err) {
     console.log('Error:----', err);
+    Sentry.captureException(err);
   }
 };
 

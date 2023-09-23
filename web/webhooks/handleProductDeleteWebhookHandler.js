@@ -1,4 +1,6 @@
 import { DeliveryMethod } from '@shopify/shopify-api';
+import * as Sentry from '@sentry/node';
+
 import { query, getClient } from '../database/connect.js';
 
 export const deleteVariantsAndProductCachedData = async (hubProductId) => {
@@ -29,11 +31,13 @@ export const deleteVariantsAndProductCachedData = async (hubProductId) => {
       console.log(err);
 
       await client.query('ROLLBACK');
+      throw new Error(err);
     } finally {
       client.release();
     }
   } catch (err) {
     console.log(err);
+    Sentry.captureException(err);
   }
 };
 
