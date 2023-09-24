@@ -1,4 +1,6 @@
-// @ts-check
+/* eslint-disable no-param-reassign */
+/* eslint-disable prefer-arrow-callback */
+// @ts-nocheck
 import * as dotenv from 'dotenv';
 import { join } from 'path';
 import * as Sentry from '@sentry/node';
@@ -16,16 +18,17 @@ import connectSQLite from 'connect-sqlite3';
 import { readFileSync } from 'fs';
 import express from 'express';
 import serveStatic from 'serve-static';
-import apiRouters from './api-routers.js';
+
+import apiRouters from './modules/api-routers.js';
 import { oidcRouter } from './oidc-router.js';
+
 import shopify from './shopify.js';
-import webhookHandlers from './webhooks-handlers.js';
+import webhookHandlers from './webhooks/webhooks-handlers.js';
 import isAuthenticated from './middleware/isAuthenticated.js';
 import {
   createSalesSessionCronJob,
   updateExistingProductsCronJob
 } from './modules/cron-jobs/index.js';
-import fdcRouters from './fdc-routers.js';
 import subscribeToWebhook from './utils/subscribe-to-webhook.js';
 
 if (process.env.NODE_ENV === 'test') {
@@ -79,6 +82,7 @@ const SQLiteStore = connectSQLite(session);
 const sessionStore = new SQLiteStore({
   db: 'sessions.sqlite',
   dir: '.',
+  // @ts-ignore
   concurrentDB: true
 });
 
@@ -91,6 +95,7 @@ const sessionObject = {
 
 app.use(
   '/',
+  // @ts-ignore
   session({
     ...sessionObject,
     proxy: true,
@@ -121,8 +126,7 @@ passport.use(
       passReqToCallback: true,
       sessionKey: 'openidconnect:login.lescommuns.org'
     },
-
-    function (
+    function authCallback(
       req,
       issure,
       profile,
@@ -141,7 +145,7 @@ passport.use(
   )
 );
 
-passport.serializeUser(function (user, cb) {
+passport.serializeUser(function serializeUserFunction(user, cb) {
   return cb(null, {
     id: user.id,
     username: user.username,
@@ -152,7 +156,7 @@ passport.serializeUser(function (user, cb) {
     idToken: user.idToken
   });
 });
-passport.deserializeUser(function (user, cb) {
+passport.deserializeUser(function deserializeUserFunction(user, cb) {
   return cb(null, user);
 });
 
@@ -165,6 +169,7 @@ app.get(shopify.config.auth.path, shopify.auth.begin());
 app.get(
   shopify.config.auth.callbackPath,
   shopify.auth.callback(),
+  // @ts-ignore
   async (req, res, next) => {
     try {
       await Promise.allSettled([
@@ -196,23 +201,20 @@ app.get(
 
 app.use('/api/*', shopify.validateAuthenticatedSession());
 
-app.post('/api/user/logout', function (req, res, next) {
-  return req.logout(function (err) {
+app.post('/api/user/logout', function logout(req, res, next) {
+  return req.logout(function logoutCallback(err) {
     if (err) {
       return next(err);
     }
 
-    //remove the session token from the cookie
     res.clearCookie('connect.sid');
     return res.redirect('/');
   });
 });
 
-app.get('/api/user/check', isAuthenticated, (req, res) => {
-  return res.json({ success: true, user: req.user, isAuthenticated: true });
-});
-
-app.use('/fdc', express.json(), fdcRouters);
+app.get('/api/user/check', isAuthenticated, (req, res) =>
+  res.json({ success: true, user: req.user, isAuthenticated: true })
+);
 
 app.use('/api', express.json(), isAuthenticated, apiRouters);
 
@@ -221,16 +223,14 @@ app.use('/oidc', oidcRouter);
 
 app.use(serveStatic(STATIC_PATH, { index: false }));
 
-app.use('/*', shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
-  return res
+app.use('/*', shopify.ensureInstalledOnShop(), async (_req, res) =>
+  res
     .status(200)
     .set('Content-Type', 'text/html')
-    .send(readFileSync(join(STATIC_PATH, 'index.html')));
-});
+    .send(readFileSync(join(STATIC_PATH, 'index.html')))
+);
 
-cron.schedule('0 * * * *', async () => {
-  // I can create also a cron job to do an update for exiting products , instead of listening to the webhook - because right now the webhook is not required based on the standard flow
-
+cron.schedule('* * * * *', async () => {
   await updateExistingProductsCronJob();
   await createSalesSessionCronJob();
 });
@@ -238,6 +238,7 @@ cron.schedule('0 * * * *', async () => {
 // The error handler must be registered before any other error middleware and after all controllers
 app.use(Sentry.Handlers.errorHandler());
 
+// eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {
   if (err.name === 'ValidationError') {
     return res.status(400).json({

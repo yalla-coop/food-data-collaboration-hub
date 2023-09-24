@@ -1,7 +1,7 @@
 import shopify from '../../../shopify.js';
 
 const getShopifyProductById = async (req, res, next) => {
-  const session = res.locals.shopify.session;
+  const { session } = res.locals.shopify;
   try {
     await shopify.api.rest.Product.find({
       id: req.params.id,
@@ -13,7 +13,7 @@ const getShopifyProductById = async (req, res, next) => {
     });
   } catch (err) {
     console.warn('Could not get Shopify product', err);
-    next(err);
+    return next(err);
   }
 };
 

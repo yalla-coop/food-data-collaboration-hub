@@ -1,5 +1,5 @@
 import { config } from '../../../config.js';
-import WebhookUseCases from '../use-cases/index.js';
+import WebhookUseCases from '../modules/webhooks/use-cases/index.js';
 
 const verifyShopifyWebhook = async (req, res, next) => {
   console.log('----------------------------------');

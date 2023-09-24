@@ -1,17 +1,15 @@
 module.exports = {
   env: {
     es2021: true,
-    node: true,
+    node: true
   },
   extends: 'airbnb-base',
   overrides: [
     {
       env: {
-        node: true,
+        node: true
       },
-      files: [
-        '.eslintrc.{js,cjs}'
-      ],
+      files: ['.eslintrc.{js,cjs}'],
       parserOptions: {
         sourceType: 'script'
       }
@@ -19,7 +17,7 @@ module.exports = {
   ],
   parserOptions: {
     ecmaVersion: 'latest',
-    sourceType: 'module',
+    sourceType: 'module'
   },
   rules: {
     'comma-dangle': ['error', 'never'],
@@ -35,6 +33,7 @@ module.exports = {
     'react/jsx-wrap-multilines': 'off',
     'import/prefer-default-export': 'off',
     'import/no-useless-path-segments': 'off',
-    'no-await-in-loop': 'off'
+    'no-await-in-loop': 'off',
+    'function-paren-newline': 'off'
   }
 };

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
-import ProductsModules from './modules/products/index.js';
-import SalesSessionModules from './modules/sales-session/index.js';
+import ProductsModules from './products/index.js';
+import SalesSessionModules from './sales-session/index.js';
 
 const apiRouter = Router();
 

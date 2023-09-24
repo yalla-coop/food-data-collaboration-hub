@@ -6,14 +6,15 @@ const issuerURL = process.env.OIDC_ISSUER;
 
 const isAuthenticated = async (req, res, next) => {
   try {
-    if (!req.user)
+    if (!req.user) {
       return res.status(401).json({
         success: false,
         message: 'User not authenticated',
         isAuthenticated: false
       });
+    }
 
-    const accessToken = req.user.accessToken;
+    const { accessToken } = req.user;
 
     const issuer = await Issuer.discover(issuerURL);
 

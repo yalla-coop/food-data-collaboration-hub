@@ -19,7 +19,7 @@ const getProducts = async (req, res) => {
         'number_of_remaining_orders', v.number_of_remaining_orders,
         'added_value_method', v.added_value_method)
     ) as variants
-	FROM products as p INNER JOIN variants as v ON p.id = v.product_id
+FROM products as p INNER JOIN variants as v ON p.id = v.product_id
     GROUP BY p.id
     `;
     const result = await query(sql);

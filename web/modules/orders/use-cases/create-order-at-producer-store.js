@@ -6,18 +6,17 @@ dotenv.config({
   path: join(process.cwd(), '.env')
 });
 
-const PRODUCER_SHOP_URL = process.env.PRODUCER_SHOP_URL;
-const PRODUCER_SHOP = process.env.PRODUCER_SHOP;
+const { PRODUCER_SHOP_URL, PRODUCER_SHOP } = process.env;
 
 const createOrderAtProducerStore = async ({ user }) => {
-  const accessToken = user.accessToken;
+  const { accessToken } = user;
 
   try {
     const { data } = await axios.post(
       `${PRODUCER_SHOP_URL}fdc/orders?shop=${PRODUCER_SHOP}`,
       {
         userId: user.id,
-        accessToken: accessToken
+        accessToken
       },
       {
         headers: {

@@ -6,21 +6,20 @@ dotenv.config({
   path: join(process.cwd(), '.env')
 });
 
-const PRODUCER_SHOP_URL = process.env.PRODUCER_SHOP_URL;
-const PRODUCER_SHOP = process.env.PRODUCER_SHOP;
+const { PRODUCER_SHOP_URL, PRODUCER_SHOP } = process.env;
 
 const getFDCProducts = async (req, res, next) => {
   const { sinceId } = req.query;
-
-  const user = req.user;
-  const accessToken = user.accessToken;
+  const {
+    user: { accessToken, id: userId }
+  } = req;
 
   try {
     const { data } = await axios.post(
       `${PRODUCER_SHOP_URL}fdc/products?shop=${PRODUCER_SHOP}&sinceId=${sinceId}`,
       {
-        userId: user.id,
-        accessToken: accessToken
+        userId,
+        accessToken
       },
       {
         headers: {
