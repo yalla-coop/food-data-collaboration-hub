@@ -126,20 +126,17 @@ export const updateCurrentVariantInventory = async ({
       });
     }
 
-    const hubProductVariants = await shopify.api.rest.Variant.all({
-      session,
-      product_id: hubProductId
+    const currentHubVariant = new shopify.api.rest.Variant({
+      session
     });
 
-    const currentVariant = hubProductVariants.find(
-      (v) => Number(v.id) === Number(hubVariantId)
-    );
+    currentHubVariant.id = hubVariantId;
 
-    if (!currentVariant) {
-      throw new Error('Variant not found');
-    }
+    currentHubVariant.inventory_policy = mappedProducerVariant.inventory_policy;
 
-    const inventoryItemId = currentVariant.inventory_item_id;
+    await currentHubVariant.saveAndUpdate();
+
+    const inventoryItemId = currentHubVariant.inventory_item_id;
 
     const inventoryLevels = await shopify.api.rest.InventoryLevel.all({
       session,
