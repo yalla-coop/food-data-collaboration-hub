@@ -84,7 +84,7 @@ export default function ProductsList() {
           alignItems: 'center'
         }}
       >
-        <CircularProgress size={200} />
+        <CircularProgress size={30} />
       </Stack>
     );
   }
@@ -116,36 +116,21 @@ export default function ProductsList() {
   return (
     <Box>
       <Button
-        sx={{
-          p: '12px',
-          position: 'fixed',
-          top: '12px',
-          right: '12px'
-        }}
-        variant="contained"
         type="button"
-        onClick={handleShowMore}
-        disabled={isLoading || !producerProductsData?.lastId}
-      >
-        {isLoading
-          ? 'Loading...'
-          : !producerProductsData?.lastId
-          ? 'No more products'
-          : 'Show More'}
-      </Button>
-
-      <Button
-        type="button"
+        color="success"
         sx={{
-          p: '12px',
+          p: '6px',
           position: 'fixed',
-          top: '12px',
-          left: '12px'
+          right: '12px',
+          bottom: '16px',
+          borderRadius: '16px',
+          zIndex: 1000,
+          textTransform: 'none'
         }}
         variant="contained"
         onClick={() => setHelpTextVisible((prev) => !prev)}
       >
-        Help
+        Info
       </Button>
 
       <Typography variant="h2" textAlign="center">
@@ -270,21 +255,43 @@ export default function ProductsList() {
         </Alert>
       )}
 
-      <ul>
-        {productsList.map((product) => (
-          <ProductsCard
-            key={product.id}
-            product={product}
-            exitingProduct={
-              exitingProductsList?.find(
-                (exitingProduct) =>
-                  Number(exitingProduct.producerProductId) ===
-                  convertShopifyGraphQLIdToNumber(product.id)
-              ) || {}
-            }
-          />
-        ))}
-      </ul>
+      <Stack spacing="12px" px="60px" py="12px">
+        {isLoading ? (
+          <CircularProgress size={30} />
+        ) : (
+          productsList.map((product) => (
+            <ProductsCard
+              key={product.id}
+              product={product}
+              exitingProduct={
+                exitingProductsList?.find(
+                  (exitingProduct) =>
+                    Number(exitingProduct.producerProductId) ===
+                    convertShopifyGraphQLIdToNumber(product.id)
+                ) || {}
+              }
+            />
+          ))
+        )}
+        <Button
+          sx={{
+            p: '12px',
+            margin: '0 auto',
+            width: '200px',
+            display: 'block'
+          }}
+          variant="contained"
+          type="button"
+          onClick={handleShowMore}
+          disabled={isLoading || !producerProductsData?.lastId}
+        >
+          {isLoading
+            ? 'Loading...'
+            : !producerProductsData?.lastId
+            ? 'No more products'
+            : 'Load more products'}
+        </Button>
+      </Stack>
     </Box>
   );
 }

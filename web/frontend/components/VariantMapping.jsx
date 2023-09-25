@@ -1,6 +1,6 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable function-paren-newline */
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Stack,
   TextField,
@@ -8,10 +8,13 @@ import {
   MenuItem,
   Checkbox,
   FormControlLabel,
-  Divider
+  Divider,
+  IconButton
 } from '@mui/material';
+import { useDebouncedValue } from '@shopify/react-hooks';
 import { VariantCard } from '../components/VariantCard';
-
+import { InfoIcon } from '../components/InfoIcon';
+import { CustomTooltip } from '../components/CustomTooltip';
 import { convertShopifyGraphQLIdToNumber } from '../utils/index.js';
 
 const getAddingPriceMethodOption = (value) => {
@@ -26,8 +29,6 @@ const getAddingPriceMethodOption = (value) => {
     label: 'Increase price by'
   };
 };
-
-// Here I should change the price of variantA to be the price of variantB and then the hub user can add the mark up value
 
 function VariantMappingComponent({
   product,
@@ -66,21 +67,30 @@ function VariantMappingComponent({
     exitingAddedValueMethod
   );
 
+  const noOfItemPerCaseDebounced = useDebouncedValue(noOfItemPerCase, {
+    timeoutMs: 400
+  });
+
   useEffect(() => {
     if (
       selectedVariantA &&
       selectedVariantB &&
-      noOfItemPerCase &&
+      noOfItemPerCaseDebounced &&
       addedValue === ''
     ) {
       setAddedValue(
         (
           Number(selectedVariantA?.price) -
-          Number(selectedVariantB?.price) / Number(noOfItemPerCase)
+          Number(selectedVariantB?.price) / Number(noOfItemPerCaseDebounced)
         ).toFixed(2)
       );
     }
-  }, [selectedVariantA, selectedVariantB, addedValue, noOfItemPerCase]);
+  }, [
+    selectedVariantA,
+    selectedVariantB,
+    addedValue,
+    noOfItemPerCaseDebounced
+  ]);
 
   const calculateThePrice = ({
     originalPrice,
@@ -135,7 +145,12 @@ function VariantMappingComponent({
     0;
 
   return (
-    <Stack spacing="16px" border="2px solid black" padding="12px">
+    <Stack
+      spacing="16px"
+      border="2px solid #E0E0E0"
+      borderRadius="12px"
+      padding="12px"
+    >
       <Stack direction="row" spacing="20px" width="100%">
         <Stack flexGrow={1} spacing="10px">
           <Typography>Variant to display on my store</Typography>
@@ -144,6 +159,11 @@ function VariantMappingComponent({
             label="Select"
             helperText="Please select a variant to display on my store"
             select
+            sx={{
+              '& .MuiInputBase-root': {
+                listStyle: 'none'
+              }
+            }}
             value={selectedVariantA || ''}
             onChange={(_e) => {
               setSelectedVariantA(_e.target.value);
@@ -162,7 +182,13 @@ function VariantMappingComponent({
           <TextField
             fullWidth
             label="Select"
+            helperText="Please select a variant to order from producer"
             select
+            sx={{
+              '& .MuiInputBase-root': {
+                listStyle: 'none'
+              }
+            }}
             value={selectedVariantB || ''}
             onChange={(event) => setSelectedVariantB(event.target.value)}
           >
@@ -176,7 +202,23 @@ function VariantMappingComponent({
       </Stack>
 
       <Stack spacing="10px">
-        <Typography variant="h5">Mapped Variant Ratio</Typography>
+        <Stack direction="row" spacing="6px" alignItems="center">
+          <Typography variant="h5">Mapped Variant Ratio</Typography>
+          <CustomTooltip
+            title={
+              <Typography variant="h6">
+                A number that indicates the multiplier to apply before ordering
+                another of the mapped variant (for example if a box/case has 6
+                bottles and you're selling individual bottles, the number would
+                be 6)
+              </Typography>
+            }
+          >
+            <IconButton>
+              <InfoIcon />
+            </IconButton>
+          </CustomTooltip>
+        </Stack>
 
         <TextField
           type="number"
@@ -188,7 +230,21 @@ function VariantMappingComponent({
 
         <Divider />
 
-        <Typography variant="h5">Markup</Typography>
+        <Stack direction="row" spacing="6px" alignItems="center">
+          <Typography variant="h5">Markup</Typography>
+          <CustomTooltip
+            title={
+              <Typography variant="h6">
+                A number that indicates the markup value that will be added to
+                the price of the mapped variant
+              </Typography>
+            }
+          >
+            <IconButton>
+              <InfoIcon />
+            </IconButton>
+          </CustomTooltip>
+        </Stack>
 
         <Stack direction="row" spacing="20px" width="100%">
           <TextField
@@ -205,15 +261,19 @@ function VariantMappingComponent({
               selectedVariantA &&
               selectedVariantB &&
               itemNewPrice <= Number(selectedVariantA?.price) &&
-              'The price of the mapped variant is less than the price of the variant to display on my store'
+              'The price of the mapped variant is less than/equal the price of the variant to display on my store'
             }
             type="number"
-            inputProps={{ inputMode: 'numeric', min: 0, pattern: '[0-9]*' }}
+            inputProps={{
+              inputMode: 'numeric',
+              min: 0,
+              pattern: '[0-9]*',
+              step: 0.1
+            }}
             label="Markup : Adding Price Value/Percentage"
             value={addedValue}
             onChange={(e) => setAddedValue(e.target.value)}
           />
-
           <TextField
             select
             label="Adding Price Type"
@@ -271,7 +331,7 @@ function VariantMappingComponent({
                 product.
               </Typography>
               <Typography>
-                Number Of Excess Orders:
+                Number of excess items:
                 <Typography variant="span" ml="4px">
                   {exitingProductVariant?.numberOfExcessOrders || 0}
                 </Typography>
@@ -284,7 +344,7 @@ function VariantMappingComponent({
                 product.
               </Typography>
               <Typography>
-                Number Of Remaining Orders:
+                Number of outstanding items:
                 <Typography variant="span" ml="4px">
                   {exitingProductVariant?.numberOfRemainingOrders || 0}
                 </Typography>

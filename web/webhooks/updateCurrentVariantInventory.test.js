@@ -1,6 +1,21 @@
-import { updateCurrentVariantInventory } from './updateCurrentVariantInventory.js';
+/* eslint-disable no-undef */
+import {
+  updateCurrentVariantInventory,
+  calculateThePrice
+} from './updateCurrentVariantInventory.js';
 
 describe('updateCurrentVariantInventory', () => {
+  it('should calculate the price', () => {
+    const newPrice = calculateThePrice({
+      originalPrice: 10.0,
+      _addingPriceType: 'fixed',
+      markUpValue: 4.0,
+      noOfItemsPerPackage: 1
+    });
+
+    expect(newPrice).toEqual(14.0);
+  });
+
   it('should update the inventory of a variant', async () => {
     await updateCurrentVariantInventory(
       {

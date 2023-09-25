@@ -6,7 +6,7 @@ import { convertShopifyGraphQLIdToNumber } from '../utils/index.js';
 dotenv.config();
 const { PRODUCER_SHOP_URL, PRODUCER_SHOP, HUB_SHOP_NAME } = process.env;
 
-const calculateThePrice = ({
+export const calculateThePrice = ({
   originalPrice,
   _addingPriceType,
   markUpValue = 0,
@@ -55,21 +55,19 @@ const updateCurrentVariantPrice = async ({
 }) => {
   try {
     const hubVariantNewPrice = calculateThePrice({
-      originalPrice: mappedVariantPrice.price,
-      addingPriceType: storedHubVariant.addedValueMethod,
-      markupValue: storedHubVariant.addedValue,
+      originalPrice: mappedVariantPrice,
+      _addingPriceType: storedHubVariant.addedValueMethod,
+      markUpValue: storedHubVariant.addedValue,
       noOfItemsPerPackage: storedHubVariant.noOfItemsPerPackage
     });
 
-    if (Number(hubVariantNewPrice) === Number(storedHubVariant.price)) {
-      return;
-    }
+    console.log('hubVariantNewPrice', hubVariantNewPrice);
 
     const exitingVariant = new shopify.api.rest.Variant({
       session
     });
     exitingVariant.id = hubVariantId;
-    exitingVariant.price = hubVariantNewPrice;
+    exitingVariant.price = hubVariantNewPrice.toFixed(2);
 
     await exitingVariant.saveAndUpdate();
   } catch (err) {
@@ -79,7 +77,6 @@ const updateCurrentVariantPrice = async ({
 };
 
 export const updateCurrentVariantInventory = async ({
-  hubProductId,
   producerProductId,
   producerProductData,
   isPartiallySoldCasesEnabled,
@@ -154,9 +151,10 @@ export const updateCurrentVariantInventory = async ({
         noOfItemsPerPackage * Number(mappedProducerVariant.inventory_quantity) +
         Number(numberOfExcessOrders);
     } else {
-      availableItemsInTheStore =
+      availableItemsInTheStore = Math.abs(
         noOfItemsPerPackage * Number(mappedProducerVariant.inventory_quantity) -
-        Number(numberOfRemainingOrders);
+          Number(numberOfRemainingOrders)
+      );
     }
 
     await inventoryLevel.set({

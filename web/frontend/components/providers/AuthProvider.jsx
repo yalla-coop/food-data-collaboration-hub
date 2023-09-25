@@ -36,7 +36,7 @@ export function AuthProvider({ children }) {
           alignItems: 'center'
         }}
       >
-        <CircularProgress size={200} />
+        <CircularProgress size={30} />
       </Stack>
     );
 

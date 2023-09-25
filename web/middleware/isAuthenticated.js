@@ -14,7 +14,7 @@ const isAuthenticated = async (req, res, next) => {
       });
     }
 
-    const { accessToken } = req.user;
+    const { refreshToken } = req.user;
 
     const issuer = await Issuer.discover(issuerURL);
 
@@ -23,9 +23,13 @@ const isAuthenticated = async (req, res, next) => {
       client_secret: clientSecret
     });
 
-    const tokenSet = await client.introspect(accessToken);
+    const tokenSet = await client.refresh(refreshToken);
 
-    if (!tokenSet.active) {
+    const accessTokenSet = await client.introspect(tokenSet.access_token);
+
+    req.user.accessToken = tokenSet.access_token;
+
+    if (!accessTokenSet.active) {
       return res.status(403).json({
         success: false,
         message: 'User not authenticated',

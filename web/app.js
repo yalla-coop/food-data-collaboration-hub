@@ -102,7 +102,7 @@ app.use(
     cookie: {
       secure: true, // Set to true if you're using HTTPS
       httpOnly: true, // Ensures the cookie is only accessible via HTTP/HTTPS
-      maxAge: 1000 * 60 * 60 * 24 * 7, // Sets cookie to expire in 7 days
+      maxAge: 1000 * 60 * 60 * 24 * 7, // Sets cookie to expire in 7 days,
       sameSite: 'none' // Can be 'strict', 'lax', 'none', or boolean (true)
     }
   })

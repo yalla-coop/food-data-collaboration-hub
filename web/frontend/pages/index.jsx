@@ -33,7 +33,7 @@ export default function Home() {
       }}
     >
       {loading ? (
-        <CircularProgress />
+        <CircularProgress size={30} />
       ) : (
         <>
           <Typography variant="h2">Welcome to the Shopify App</Typography>
