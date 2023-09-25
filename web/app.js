@@ -113,18 +113,15 @@ app.use(cookieParser());
 passport.use(
   new OpenIDConnectStrategy(
     {
-      issuer: 'https://login.lescommuns.org/auth/realms/data-food-consortium',
-      authorizationURL:
-        'https://login.lescommuns.org/auth/realms/data-food-consortium/protocol/openid-connect/auth',
-      tokenURL:
-        'https://login.lescommuns.org/auth/realms/data-food-consortium/protocol/openid-connect/token',
-      userInfoURL:
-        'https://login.lescommuns.org/auth/realms/data-food-consortium/protocol/openid-connect/userinfo',
+      issuer: process.env.OIDC_ISSUER || '',
+      authorizationURL: process.env.OIDC_AUTHORIZATION_URL || '',
+      tokenURL: process.env.OIDC_TOKEN_URL || '',
+      userInfoURL: process.env.OIDC_USER_INFO_URL || '',
       clientID: process.env.OIDC_CLIENT_ID || '',
       clientSecret: process.env.OIDC_CLIENT_SECRET || '',
       callbackURL: process.env.OIDC_CALLBACK_URL || '',
       passReqToCallback: true,
-      sessionKey: 'openidconnect:login.lescommuns.org'
+      sessionKey: process.env.OIDC_SESSION_KEY || ''
     },
     function authCallback(
       req,
