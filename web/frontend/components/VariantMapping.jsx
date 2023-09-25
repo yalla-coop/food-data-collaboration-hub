@@ -1,6 +1,6 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable function-paren-newline */
-import { useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   Stack,
   TextField,
@@ -51,7 +51,7 @@ function VariantMappingComponent({
     ) || null;
 
   const exitingNoOfItemPerCase = exitingProductVariant?.noOfItemsPerPackage;
-  const exitingAddedValue = exitingProductVariant?.addedValue;
+  const exitingAddedValue = exitingProductVariant?.addedValue || '';
   const exitingAddedValueMethod = getAddingPriceMethodOption(
     exitingProductVariant?.addedValueMethod
   );
@@ -65,6 +65,22 @@ function VariantMappingComponent({
   const [addedValueMethod, setAddedValueMethod] = useState(
     exitingAddedValueMethod
   );
+
+  useEffect(() => {
+    if (
+      selectedVariantA &&
+      selectedVariantB &&
+      noOfItemPerCase &&
+      addedValue === ''
+    ) {
+      setAddedValue(
+        (
+          Number(selectedVariantA?.price) -
+          Number(selectedVariantB?.price) / Number(noOfItemPerCase)
+        ).toFixed(2)
+      );
+    }
+  }, [selectedVariantA, selectedVariantB, addedValue, noOfItemPerCase]);
 
   const calculateThePrice = ({
     originalPrice,
