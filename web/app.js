@@ -49,7 +49,7 @@ const STATIC_PATH =
 const app = express();
 
 Sentry.init({
-  dsn: 'https://5d1f7047270c68c7b7bcd15995a09391@o4505932100927488.ingest.sentry.io/4505932103548928',
+  dsn: process.env.SENTRY_DNS,
   integrations: [
     // enable HTTP calls tracing
     new Sentry.Integrations.Http({ tracing: true }),
