@@ -113,22 +113,6 @@ export default function SalesSession() {
   });
 
   const {
-    mutateAsync: deleteCurrentSalesSession,
-    isLoading: deleteCurrentSalesSessionIsLoading,
-    error: deleteCurrentSalesSessionError
-  } = useAppMutation({
-    reactQueryOptions: {
-      onSuccess: async () => {
-        await queryClient.invalidateQueries('/api/sales-session');
-        setShowSuccessAlert({
-          show: true,
-          type: 'deleted'
-        });
-      }
-    }
-  });
-
-  const {
     mutateAsync: completeCurrentSalesSession,
     isLoading: completeCurrentSalesSessionIsLoading,
     error: completeCurrentSalesSessionError
@@ -157,18 +141,6 @@ export default function SalesSession() {
           sessionDurationInDays: Number(sessionDurationInDays),
           partiallySoldEnabled: partiallySoldCasesIsEnabled
         })
-      }
-    });
-  };
-
-  const handleOnDeleteCurrentSalesSessionClick = async () => {
-    await deleteCurrentSalesSession({
-      url: '/api/sales-session/current',
-      fetchInit: {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        }
       }
     });
   };
@@ -316,20 +288,6 @@ export default function SalesSession() {
         <Button
           variant="contained"
           type="button"
-          onClick={handleOnDeleteCurrentSalesSessionClick}
-          disabled={
-            deleteCurrentSalesSessionIsLoading ||
-            !currentSalesSessionData?.currentSalesSession?.isActive
-          }
-        >
-          {editCurrentSalesSessionIsLoading
-            ? 'Loading...'
-            : 'Delete Current Sales Session'}
-        </Button>
-
-        <Button
-          variant="contained"
-          type="button"
           onClick={handleOnFinishCurrentSalesSessionClick}
           disabled={
             completeCurrentSalesSessionIsLoading ||
@@ -347,12 +305,6 @@ export default function SalesSession() {
 
         {editCurrentSalesSessionError && (
           <Alert severity="error">{editCurrentSalesSessionError.message}</Alert>
-        )}
-
-        {deleteCurrentSalesSessionError && (
-          <Alert severity="error">
-            {deleteCurrentSalesSessionError.message}
-          </Alert>
         )}
 
         {completeCurrentSalesSessionError && (
