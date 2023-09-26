@@ -10,6 +10,7 @@ import {
   Checkbox
 } from '@mui/material';
 import Badge from '@mui/material/Badge';
+import Tooltip from '@mui/material/Tooltip';
 
 import { ExpandMoreIcon } from '../components/ExpandMoreIcon';
 
@@ -78,6 +79,17 @@ export function ProductsCard({ product, exitingProduct }) {
     });
   };
 
+  const numberOfExitingProductVariants = exitingProduct?.variants?.length || 0;
+
+  const numberOfExcessOutstandingItems =
+    exitingProduct?.variants?.reduce(
+      (acc, v) =>
+        acc + isPartiallySoldCasesEnabled
+          ? v?.numberOfExcessOrders || 0
+          : v?.numberOfRemainingOrders || 0,
+      0
+    ) || 0;
+
   return (
     <Accordion key={product.title}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -87,29 +99,36 @@ export function ProductsCard({ product, exitingProduct }) {
           {isCurrentSalesSessionActive && (
             <Stack spacing="20px" direction="row" alignItems="center">
               {exitingProduct?.variants?.length > 0 && (
-                <Badge
-                  badgeContent={exitingProduct?.variants?.length || 0}
-                  color="secondary"
-                >
-                  <ProductsIcon />
-                </Badge>
+                <Tooltip title="Number of variants">
+                  <Badge
+                    badgeContent={numberOfExitingProductVariants}
+                    color="secondary"
+                  >
+                    <ProductsIcon />
+                  </Badge>
+                </Tooltip>
               )}
               {exitingProduct?.variants?.length > 0 && (
-                <Badge
-                  showZero
-                  badgeContent={
-                    (exitingProduct?.variants?.reduce(
-                      (acc, v) =>
-                        acc + v?.numberOfExcessOrders ||
-                        0 + v?.numberOfRemainingOrders ||
-                        0
-                    ),
-                    0)
-                  }
-                  color="primary"
+                <Tooltip
+                  title={`Number of ${
+                    isPartiallySoldCasesEnabled ? 'excess' : 'outstanding'
+                  } items`}
                 >
-                  <ItemsIcon />
-                </Badge>
+                  <Badge
+                    showZero
+                    badgeContent={
+                      numberOfExcessOutstandingItems === 0
+                        ? 0
+                        : `
+                    ${
+                      isPartiallySoldCasesEnabled ? '+' : '-'
+                    }${numberOfExcessOutstandingItems}`
+                    }
+                    color="primary"
+                  >
+                    <ItemsIcon />
+                  </Badge>
+                </Tooltip>
               )}
 
               <FormControlLabel
