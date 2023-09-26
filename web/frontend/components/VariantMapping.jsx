@@ -206,7 +206,7 @@ function VariantMappingComponent({
           <Typography variant="h5">Mapped Variant Ratio</Typography>
           <CustomTooltip
             title={
-              <Typography variant="h6">
+              <Typography variant="body1">
                 A number that indicates the multiplier to apply before ordering
                 another of the mapped variant (for example if a box/case has 6
                 bottles and you're selling individual bottles, the number would
@@ -234,7 +234,7 @@ function VariantMappingComponent({
           <Typography variant="h5">Markup</Typography>
           <CustomTooltip
             title={
-              <Typography variant="h6">
+              <Typography variant="body1">
                 A number that indicates the markup value that will be added to
                 the price of the mapped variant
               </Typography>

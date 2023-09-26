@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
@@ -60,15 +60,17 @@ export default function ProductsList() {
     isLoading,
     error: getProductDataError
   } = useAppQuery({
-    reactQueryOptions: {
-      onSuccess: ({ products }) => {
-        setProductsList([...productsList, ...products]);
-      }
-    },
+    reactQueryOptions: {},
     url: `/api/products/fdc?sinceId=${productSinceId}&remainingProductsCountBeforeNextFetch=${
       remainingProductsCountBeforeNextFetch || 0
     }`
   });
+
+  useLayoutEffect(() => {
+    if (producerProductsData?.products) {
+      setProductsList((prev) => [...prev, ...producerProductsData?.products]);
+    }
+  }, [producerProductsData]);
 
   const isCurrentSalesSessionCreated =
     currentSalesSessionData?.currentSalesSession;
