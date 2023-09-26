@@ -14,6 +14,7 @@ import {
   ListItemText,
   CircularProgress
 } from '@mui/material';
+
 import { useAppQuery } from '../hooks';
 import { useAuth } from '../components/providers/AuthProvider';
 import { ProductsCard } from '../components/ProductsCard';
@@ -21,6 +22,10 @@ import { convertShopifyGraphQLIdToNumber } from '../utils/index.js';
 
 export default function ProductsList() {
   const [productSinceId, setProductSinceId] = useState(0);
+  const [
+    remainingProductsCountBeforeNextFetch,
+    setRemainingProductsCountBeforeNextFetch
+  ] = useState(0);
   const [productsList, setProductsList] = useState([]);
   const [helpTextVisible, setHelpTextVisible] = useState(false);
 
@@ -60,7 +65,9 @@ export default function ProductsList() {
         setProductsList([...productsList, ...products]);
       }
     },
-    url: `/api/products/fdc?sinceId=${productSinceId}`
+    url: `/api/products/fdc?sinceId=${productSinceId}&remainingProductsCountBeforeNextFetch=${
+      remainingProductsCountBeforeNextFetch || 0
+    }`
   });
 
   const isCurrentSalesSessionCreated =
@@ -111,6 +118,9 @@ export default function ProductsList() {
       return;
     }
     setProductSinceId(producerProductsData?.lastId);
+    setRemainingProductsCountBeforeNextFetch(
+      producerProductsData?.remainingProductsCountAfter
+    );
   };
 
   return (
@@ -256,23 +266,19 @@ export default function ProductsList() {
       )}
 
       <Stack spacing="12px" px="60px" py="12px">
-        {isLoading ? (
-          <CircularProgress size={30} />
-        ) : (
-          productsList.map((product) => (
-            <ProductsCard
-              key={product.id}
-              product={product}
-              exitingProduct={
-                exitingProductsList?.find(
-                  (exitingProduct) =>
-                    Number(exitingProduct.producerProductId) ===
-                    convertShopifyGraphQLIdToNumber(product.id)
-                ) || {}
-              }
-            />
-          ))
-        )}
+        {productsList.map((product) => (
+          <ProductsCard
+            key={product.id}
+            product={product}
+            exitingProduct={
+              exitingProductsList?.find(
+                (exitingProduct) =>
+                  Number(exitingProduct.producerProductId) ===
+                  convertShopifyGraphQLIdToNumber(product.id)
+              ) || {}
+            }
+          />
+        ))}
         <Button
           sx={{
             p: '12px',
@@ -283,7 +289,11 @@ export default function ProductsList() {
           variant="contained"
           type="button"
           onClick={handleShowMore}
-          disabled={isLoading || !producerProductsData?.lastId}
+          disabled={
+            isLoading ||
+            producerProductsData?.remainingProductsCountAfter === 0 ||
+            !producerProductsData?.lastId
+          }
         >
           {isLoading
             ? 'Loading...'

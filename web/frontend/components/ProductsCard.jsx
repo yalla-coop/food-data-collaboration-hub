@@ -9,6 +9,7 @@ import {
   FormControlLabel,
   Checkbox
 } from '@mui/material';
+import Badge from '@mui/material/Badge';
 
 import { ExpandMoreIcon } from '../components/ExpandMoreIcon';
 
@@ -19,6 +20,8 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import { useQueryClient } from 'react-query';
 import { useAppMutation, useAppQuery } from '../hooks';
 import { VariantMappingComponent } from '../components/VariantMapping';
+import { ItemsIcon } from './ItemsIcon';
+import { ProductsIcon } from './ProductsIcon';
 
 export function ProductsCard({ product, exitingProduct }) {
   const queryClient = useQueryClient();
@@ -82,7 +85,33 @@ export function ProductsCard({ product, exitingProduct }) {
           <Typography variant="h6">{product.title}</Typography>
 
           {isCurrentSalesSessionActive && (
-            <Stack spacing="12px" direction="row">
+            <Stack spacing="20px" direction="row" alignItems="center">
+              {exitingProduct?.variants?.length > 0 && (
+                <Badge
+                  badgeContent={exitingProduct?.variants?.length || 0}
+                  color="secondary"
+                >
+                  <ProductsIcon />
+                </Badge>
+              )}
+              {exitingProduct?.variants?.length > 0 && (
+                <Badge
+                  showZero
+                  badgeContent={
+                    (exitingProduct?.variants?.reduce(
+                      (acc, v) =>
+                        acc + v?.numberOfExcessOrders ||
+                        0 + v?.numberOfRemainingOrders ||
+                        0
+                    ),
+                    0)
+                  }
+                  color="primary"
+                >
+                  <ItemsIcon />
+                </Badge>
+              )}
+
               <FormControlLabel
                 control={
                   <Checkbox

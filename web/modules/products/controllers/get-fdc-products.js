@@ -9,14 +9,14 @@ dotenv.config({
 const { PRODUCER_SHOP_URL, PRODUCER_SHOP } = process.env;
 
 const getFDCProducts = async (req, res, next) => {
-  const { sinceId } = req.query;
+  const { sinceId, remainingProductsCountBeforeNextFetch } = req.query;
   const {
     user: { accessToken, id: userId }
   } = req;
 
   try {
     const { data } = await axios.post(
-      `${PRODUCER_SHOP_URL}fdc/products?shop=${PRODUCER_SHOP}&sinceId=${sinceId}`,
+      `${PRODUCER_SHOP_URL}fdc/products?shop=${PRODUCER_SHOP}&sinceId=${sinceId}&remainingProductsCountBeforeNextFetch=${remainingProductsCountBeforeNextFetch}`,
       {
         userId,
         accessToken
