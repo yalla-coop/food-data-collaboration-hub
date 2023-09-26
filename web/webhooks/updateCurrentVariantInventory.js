@@ -1,6 +1,7 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
 import shopify from '../shopify.js';
+import { query } from '../database/connect.js';
 import { convertShopifyGraphQLIdToNumber } from '../utils/index.js';
 
 dotenv.config();
@@ -61,15 +62,22 @@ const updateCurrentVariantPrice = async ({
       noOfItemsPerPackage: storedHubVariant.noOfItemsPerPackage
     });
 
-    console.log('hubVariantNewPrice', hubVariantNewPrice);
-
     const exitingVariant = new shopify.api.rest.Variant({
       session
     });
     exitingVariant.id = hubVariantId;
     exitingVariant.price = hubVariantNewPrice.toFixed(2);
-
+    // we should update also the existing price of this variant
     await exitingVariant.saveAndUpdate();
+    const updateVariantQuery =
+      'UPDATE variants SET price = $1 WHERE hub_variant_id = $2';
+
+    try {
+      await query(updateVariantQuery, [hubVariantNewPrice, hubVariantId]);
+    } catch (err) {
+      console.log(err);
+      throw new Error(err);
+    }
   } catch (err) {
     console.log(err);
     throw new Error(err);

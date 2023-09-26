@@ -11,6 +11,8 @@ import {
   Divider,
   IconButton
 } from '@mui/material';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import { useDebouncedValue } from '@shopify/react-hooks';
 import { VariantCard } from '../components/VariantCard';
 import { InfoIcon } from '../components/InfoIcon';
@@ -35,8 +37,12 @@ function VariantMappingComponent({
   setVariantsMappingData,
   exitingProductVariant,
   isPartiallySoldCasesEnabled,
-  isCurrentSalesSessionActive
+  isCurrentSalesSessionActive,
+  setIsProductPriceChanged,
+  isProductPriceChanged
 }) {
+  const isProductInStore = !!exitingProductVariant?.producerVariantId;
+
   const exitingVariantA =
     product?.variants?.find(
       (v) =>
@@ -56,6 +62,8 @@ function VariantMappingComponent({
   const exitingAddedValueMethod = getAddingPriceMethodOption(
     exitingProductVariant?.addedValueMethod
   );
+
+  const exitingProductVariantPrice = exitingProductVariant?.price;
 
   const [selectedVariantA, setSelectedVariantA] = useState(exitingVariantA);
   const [selectedVariantB, setSelectedVariantB] = useState(exitingVariantB);
@@ -127,12 +135,35 @@ function VariantMappingComponent({
     return false;
   };
 
-  const itemNewPrice = calculateThePrice({
-    originalPrice: Number(selectedVariantB?.price) || 0,
-    _addingPriceType: addedValueMethod,
-    markUpValue: Number(addedValue),
-    noOfItemsPerPackage: Number(noOfItemPerCase)
-  });
+  useEffect(() => {
+    const isThePriceChanged = isProductInStore
+      ? calculateThePrice({
+          originalPrice: Number(selectedVariantB?.price) || 0,
+          _addingPriceType: addedValueMethod,
+          markUpValue: Number(addedValue),
+          noOfItemsPerPackage: Number(noOfItemPerCase)
+        }).toPrecision(2) !== Number(exitingProductVariantPrice).toPrecision(2)
+      : false;
+
+    if (isProductInStore && isThePriceChanged) {
+      setIsProductPriceChanged(true);
+    }
+  }, [
+    selectedVariantB,
+    addedValueMethod,
+    addedValue,
+    noOfItemPerCase,
+    exitingProductVariantPrice
+  ]);
+
+  const itemNewPrice = isProductInStore
+    ? Number(exitingProductVariantPrice)
+    : calculateThePrice({
+        originalPrice: Number(selectedVariantB?.price) || 0,
+        _addingPriceType: addedValueMethod,
+        markUpValue: Number(addedValue),
+        noOfItemsPerPackage: Number(noOfItemPerCase)
+      });
 
   const profitValue =
     (selectedVariantB &&
@@ -140,7 +171,9 @@ function VariantMappingComponent({
       noOfItemPerCase &&
       (
         itemNewPrice * noOfItemPerCase -
-        Number(selectedVariantB?.price)
+        (isProductInStore
+          ? Number(exitingProductVariantPrice)
+          : Number(selectedVariantB?.price))
       ).toFixed(2)) ||
     0;
 
@@ -151,7 +184,22 @@ function VariantMappingComponent({
       borderRadius="12px"
       padding="12px"
     >
-      <Stack direction="row" spacing="20px" width="100%">
+      {isProductPriceChanged && (
+        <Alert severity="warning">
+          <AlertTitle>Warning</AlertTitle>
+          The price of this variant changed — <strong>check it out!</strong>
+        </Alert>
+      )}
+
+      <Stack
+        direction="row"
+        spacing="20px"
+        width="100%"
+        sx={{
+          pointerEvents: isProductInStore ? 'none' : 'auto',
+          opacity: isProductInStore ? 0.6 : 1
+        }}
+      >
         <Stack flexGrow={1} spacing="10px">
           <Typography>Variant to display on my store</Typography>
           <TextField
@@ -201,7 +249,13 @@ function VariantMappingComponent({
         </Stack>
       </Stack>
 
-      <Stack spacing="10px">
+      <Stack
+        spacing="10px"
+        sx={{
+          pointerEvents: isProductInStore ? 'none' : 'auto',
+          opacity: isProductInStore ? 0.6 : 1
+        }}
+      >
         <Stack direction="row" spacing="6px" alignItems="center">
           <Typography variant="h5">Mapped Variant Ratio</Typography>
           <CustomTooltip

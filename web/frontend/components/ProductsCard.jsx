@@ -7,13 +7,14 @@ import {
   Typography,
   Button,
   FormControlLabel,
-  Checkbox
+  Checkbox,
+  IconButton
 } from '@mui/material';
 import Badge from '@mui/material/Badge';
 import Tooltip from '@mui/material/Tooltip';
 
 import { ExpandMoreIcon } from '../components/ExpandMoreIcon';
-
+import { WarningIcon } from '../components/WarningIcon';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -26,6 +27,8 @@ import { ProductsIcon } from './ProductsIcon';
 
 export function ProductsCard({ product, exitingProduct }) {
   const queryClient = useQueryClient();
+
+  const [isProductPriceChanged, setIsProductPriceChanged] = useState(false);
 
   const exitingCount = exitingProduct?.variants?.length || 1;
 
@@ -98,6 +101,16 @@ export function ProductsCard({ product, exitingProduct }) {
 
           {isCurrentSalesSessionActive && (
             <Stack spacing="20px" direction="row" alignItems="center">
+              {isProductInStore && isProductPriceChanged && (
+                <Tooltip
+                  title={`One of your variants price has changed, please update it`}
+                >
+                  <IconButton>
+                    <WarningIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+
               {exitingProduct?.variants?.length > 0 && (
                 <Tooltip title="Number of variants">
                   <Badge
@@ -158,16 +171,12 @@ export function ProductsCard({ product, exitingProduct }) {
       </AccordionSummary>
 
       <AccordionDetails>
-        <Stack
-          spacing="12px"
-          sx={{
-            pointerEvents: isProductInStore ? 'none' : 'auto',
-            opacity: isProductInStore ? 0.6 : 1
-          }}
-        >
+        <Stack spacing="12px">
           <Stack spacing="12px">
             {[...Array(variantMappingCount)].map((_, index) => (
               <VariantMappingComponent
+                isProductPriceChanged={isProductPriceChanged}
+                setIsProductPriceChanged={setIsProductPriceChanged}
                 key={index}
                 setVariantsMappingData={setVariantsMappingData}
                 isCurrentSalesSessionActive={isCurrentSalesSessionActive}
@@ -178,7 +187,14 @@ export function ProductsCard({ product, exitingProduct }) {
             ))}
           </Stack>
 
-          <Stack direction="row" justifyContent="space-between">
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            sx={{
+              pointerEvents: isProductInStore ? 'none' : 'auto',
+              opacity: isProductInStore ? 0.6 : 1
+            }}
+          >
             <Stack direction="row" spacing="12px">
               {variantMappingCount > 0 && (
                 <Button
