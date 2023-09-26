@@ -5,12 +5,14 @@ import { getClient, query } from '../database/connect.js';
 import { updateCurrentVariantInventory } from './updateCurrentVariantInventory.js';
 import { getStoredHubVariant } from './getStoredHubVariant.js';
 
-export const handleHubVariantUpdate = async (v) => {
+export const handleHubVariantUpdate = async (v, activeSalesSession) => {
   const { variantId, quantity } = v;
 
   if (!variantId || !quantity) {
     return;
   }
+
+  const isPartiallySoldCasesEnabled = activeSalesSession.partiallySoldEnabled;
 
   try {
     const {
@@ -27,6 +29,7 @@ export const handleHubVariantUpdate = async (v) => {
     });
 
     await updateCurrentVariantInventory({
+      isPartiallySoldCasesEnabled,
       hubProductId,
       storedHubVariant: {
         hubVariantId,
@@ -39,6 +42,7 @@ export const handleHubVariantUpdate = async (v) => {
     });
   } catch (e) {
     console.log(e);
+    throw new Error(e);
   }
 };
 
@@ -73,12 +77,31 @@ const handleCartCreateUpdateCheckoutCreateUpdateWebhook = async (
       await query(insertWebhookQuery, [webhookId, topic, payload], sqlClient);
       await sqlClient.query('COMMIT');
 
+      const selectActiveSalesSessionQuery = `
+          SELECT
+          *
+          FROM sales_sessions
+          WHERE active = true
+        `;
+
+      const activeSalesSessionResult = await query(
+        selectActiveSalesSessionQuery
+      );
+
+      const activeSalesSession = activeSalesSessionResult.rows[0];
+
+      if (!activeSalesSession) {
+        throw new Error('No active sales session found');
+      }
+
       const variants = payload.line_items.map((lineItem) => ({
         variantId: lineItem.variant_id,
         quantity: Number(lineItem.quantity)
       }));
 
-      const promises = variants.map(async (v) => handleHubVariantUpdate(v));
+      const promises = variants.map(async (v) =>
+        handleHubVariantUpdate(v, activeSalesSession)
+      );
 
       await Promise.all(promises);
     } catch (err) {
