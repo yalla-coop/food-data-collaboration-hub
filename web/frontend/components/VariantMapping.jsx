@@ -135,26 +135,20 @@ function VariantMappingComponent({
     return false;
   };
 
-  useEffect(() => {
-    const isThePriceChanged = isProductInStore
-      ? calculateThePrice({
-          originalPrice: Number(selectedVariantB?.price) || 0,
-          _addingPriceType: addedValueMethod,
-          markUpValue: Number(addedValue),
-          noOfItemsPerPackage: Number(noOfItemPerCase)
-        }).toPrecision(2) !== Number(exitingProductVariantPrice).toPrecision(2)
-      : false;
+  const isThisVariantPriceChanged = isProductInStore
+    ? calculateThePrice({
+        originalPrice: Number(selectedVariantB?.price) || 0,
+        _addingPriceType: addedValueMethod,
+        markUpValue: Number(addedValue),
+        noOfItemsPerPackage: Number(noOfItemPerCase)
+      }).toPrecision(2) !== Number(exitingProductVariantPrice).toPrecision(2)
+    : false;
 
-    if (isProductInStore && isThePriceChanged) {
+  useEffect(() => {
+    if (isProductInStore && isThisVariantPriceChanged) {
       setIsProductPriceChanged(true);
     }
-  }, [
-    selectedVariantB,
-    addedValueMethod,
-    addedValue,
-    noOfItemPerCase,
-    exitingProductVariantPrice
-  ]);
+  }, [isThisVariantPriceChanged, isProductInStore]);
 
   const itemNewPrice = isProductInStore
     ? Number(exitingProductVariantPrice)
@@ -184,7 +178,7 @@ function VariantMappingComponent({
       borderRadius="12px"
       padding="12px"
     >
-      {isProductPriceChanged && (
+      {isProductPriceChanged && isThisVariantPriceChanged && (
         <Alert severity="warning">
           <AlertTitle>Warning</AlertTitle>
           The price of this variant changed — <strong>check it out!</strong>
