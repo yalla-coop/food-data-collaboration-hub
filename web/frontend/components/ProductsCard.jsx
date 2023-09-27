@@ -85,13 +85,15 @@ export function ProductsCard({ product, exitingProduct }) {
   const numberOfExitingProductVariants = exitingProduct?.variants?.length || 0;
 
   const numberOfExcessOutstandingItems =
-    exitingProduct?.variants?.reduce(
-      (acc, v) =>
-        acc + isPartiallySoldCasesEnabled
-          ? v?.numberOfExcessOrders || 0
-          : v?.numberOfRemainingOrders || 0,
-      0
-    ) || 0;
+    exitingProduct?.variants?.reduce((acc, v) => {
+      const addedValue = isPartiallySoldCasesEnabled
+        ? v?.numberOfExcessOrders || 0
+        : v?.numberOfRemainingOrders || 0;
+
+      acc = acc + addedValue;
+
+      return acc;
+    }, 0) || 0;
 
   return (
     <Accordion key={product.title}>
