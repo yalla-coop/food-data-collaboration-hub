@@ -31,8 +31,7 @@ const editCurrentSalesSession = async (req, res, next) => {
 
     await editCurrentSalesSessionUseCase({
       startDate,
-      sessionDurationInDays,
-      partiallySoldEnabled
+      sessionDurationInDays
     });
     return res.status(200).json({
       message: 'Sales session updated successfully'

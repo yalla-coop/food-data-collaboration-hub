@@ -138,8 +138,7 @@ export default function SalesSession() {
         },
         body: JSON.stringify({
           startDate: startDate.toISOString(),
-          sessionDurationInDays: Number(sessionDurationInDays),
-          partiallySoldEnabled: partiallySoldCasesIsEnabled
+          sessionDurationInDays: Number(sessionDurationInDays)
         })
       }
     });
@@ -250,6 +249,7 @@ export default function SalesSession() {
         <FormControlLabel
           control={
             <Checkbox
+              disabled={currentSalesSessionData?.currentSalesSession?.isActive}
               checked={partiallySoldCasesIsEnabled}
               onChange={(event) =>
                 setSetPartiallySoldCasesIsEnabled(event.target.checked)
