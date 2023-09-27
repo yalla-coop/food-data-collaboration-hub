@@ -159,15 +159,14 @@ function VariantMappingComponent({
         noOfItemsPerPackage: Number(noOfItemPerCase)
       });
 
-  const exitingCasePrice = isProductInStore
-    ? Number(exitingProductVariantPrice) * Number(noOfItemPerCase)
-    : Number(selectedVariantB?.price);
-
   const profitValue =
     (selectedVariantB &&
       selectedVariantB?.price &&
       noOfItemPerCase &&
-      (itemNewPrice * noOfItemPerCase - exitingCasePrice).toFixed(2)) ||
+      (
+        itemNewPrice * noOfItemPerCase -
+        Number(selectedVariantB?.price)
+      ).toFixed(2)) ||
     0;
 
   return (
