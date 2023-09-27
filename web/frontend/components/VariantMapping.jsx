@@ -303,13 +303,13 @@ function VariantMappingComponent({
               selectedVariantA &&
               selectedVariantB &&
               addedValue &&
-              itemNewPrice <= Number(selectedVariantA?.price)
+              itemNewPrice < Number(selectedVariantA?.price)
             }
             helperText={
               selectedVariantA &&
               selectedVariantB &&
-              itemNewPrice <= Number(selectedVariantA?.price) &&
-              'The price of the mapped variant is less than/equal the price of the variant to display on my store'
+              itemNewPrice < Number(selectedVariantA?.price) &&
+              'The price of the mapped variant is less than the price of the variant to display on my store'
             }
             type="number"
             inputProps={{
@@ -361,9 +361,9 @@ function VariantMappingComponent({
         <TextField
           variant="filled"
           label="Profit"
-          error={selectedVariantA && selectedVariantB && profitValue <= 0}
+          error={selectedVariantA && selectedVariantB && profitValue < 0}
           helperText={
-            profitValue <= 0 && 'Profit is negative, please check the prices'
+            profitValue < 0 && 'Profit is negative, please check the prices'
           }
           value={profitValue}
           disabled
@@ -407,8 +407,8 @@ function VariantMappingComponent({
               checked={exitingProductVariant?.producerVariantId && true}
               disabled={
                 !isFormValid() ||
-                profitValue <= 0 ||
-                itemNewPrice <= Number(selectedVariantA?.price)
+                profitValue < 0 ||
+                itemNewPrice < Number(selectedVariantA?.price)
               }
               onChange={(_e) => {
                 if (_e.target.checked) {
