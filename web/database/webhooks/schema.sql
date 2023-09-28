@@ -13,4 +13,7 @@ BEFORE UPDATE ON "webhooks"
 FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_timestamp();
 
+
+CREATE INDEX IF NOT EXISTS webhooks_id_idx ON webhooks (id);
+
 COMMIT;

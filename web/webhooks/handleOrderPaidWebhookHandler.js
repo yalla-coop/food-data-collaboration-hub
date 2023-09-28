@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { DeliveryMethod } from '@shopify/shopify-api';
 import * as Sentry from '@sentry/node';
 import axios from 'axios';
@@ -12,10 +13,14 @@ dotenv.config();
 const { PRODUCER_SHOP_URL, PRODUCER_SHOP } = process.env;
 
 const sendOrderToProducer = async ({
-  mappedProducerVariantId,
-  numberOfPackages,
-  activeSalesSessionOrderId
+  activeSalesSessionOrderId,
+  variants = []
 }) => {
+  const lineItems = variants.map((variant) => ({
+    variant_id: Number(variant.mappedProducerVariantId),
+    quantity: variant.numberOfPackages
+  }));
+
   try {
     const { data } = await axios.patch(
       `${PRODUCER_SHOP_URL}fdc/orders/${activeSalesSessionOrderId}?shop=${PRODUCER_SHOP}`,
@@ -23,12 +28,7 @@ const sendOrderToProducer = async ({
         userId: '123',
         accessToken: 'access-token',
         orderId: activeSalesSessionOrderId,
-        lineItems: [
-          {
-            variant_id: mappedProducerVariantId,
-            quantity: numberOfPackages
-          }
-        ]
+        lineItems
       },
       {
         headers: {
@@ -38,152 +38,108 @@ const sendOrderToProducer = async ({
     );
     return data.order.id;
   } catch (err) {
-    console.log('err from axios', err);
+    console.log('err from axios', err.message);
     throw new Error(err);
   }
 };
 
-export const processOrderPaidWebhook = async (v) => {
-  // increase the number of orders for this variant
-  try {
-    if (!v) {
-      throw new Error('Variant not found');
-    }
+const handleSendOrderToProducerAndUpdateSalesSessionOrderId = async ({
+  activeSalesSessionOrderId,
+  variants,
+  activeSalesSessionId
+}) => {
+  const newProducerOrderId = await sendOrderToProducer({
+    activeSalesSessionOrderId,
+    variants
+  });
 
-    if (!v.variantId || !v.quantity) {
-      throw new Error('Variant not found');
-    }
-
-    const selectActiveSalesSessionQuery = `
-      SELECT
-        *
-      FROM sales_sessions
-      WHERE is_active = true
-    `;
-
-    const activeSalesSessionResult = await query(
-      selectActiveSalesSessionQuery,
-      []
-    );
-
-    if (activeSalesSessionResult.rows.length === 0) {
-      throw new Error('No active sales session found');
-    }
-
-    const { variantId: hubVariantId, quantity } = v;
-
-    try {
-      const selectVariantQuery = `
-        SELECT
-          v.*,
-          p.producer_product_id,
-          p.hub_product_id
-        FROM variants as v
-        INNER JOIN products as p
-        ON v.product_id = p.id
-        WHERE hub_variant_id = $1
-    `;
-
-      const result = await query(selectVariantQuery, [hubVariantId]);
-
-      if (result.rows.length === 0) {
-        throw new Error('Variant not found');
-      }
-
-      const { hubProductId, producerProductId } = result.rows[0];
-      const mappedProducerVariantId = result.rows[0].mappedVariantId;
-      const noOfItemsPerPackage = Number(result.rows[0].noOfItemsPerPackage);
-      const numberOfExitingExcessOrders = Number(
-        result.rows[0].numberOfExcessOrders
-      );
-      const numberOfExitingRemainingOrders = Number(
-        result.rows[0].numberOfRemainingOrders
-      );
-
-      const isPartiallySoldCasesEnabled =
-        activeSalesSessionResult.rows[0].partiallySoldEnabled;
-
-      let remainingOrdersData = {};
-      let excessOrdersData = {};
-
-      if (isPartiallySoldCasesEnabled) {
-        excessOrdersData = calculateTheExcessOrders({
-          noOfItemsPerPackage,
-          quantity,
-          numberOfExitingExcessOrders
-        });
-      } else {
-        remainingOrdersData = calculateTheRemainingOrders({
-          numberOfExitingRemainingOrders,
-          noOfItemsPerPackage,
-          quantity
-        });
-      }
-
-      const numberOfPackages = isPartiallySoldCasesEnabled
-        ? excessOrdersData.numberOfPackages
-        : remainingOrdersData.numberOfPackages;
-
-      const numberOfExcessOrders = excessOrdersData?.numberOfExcessOrders || 0;
-      const numberOfRemainingOrders =
-        remainingOrdersData?.numberOfRemainingOrders || 0;
-
-      const updateVariantQuery = `
-        UPDATE variants
-        SET number_of_excess_orders = $1,
-        number_of_remaining_orders = $2
-        WHERE hub_variant_id = $3
-    `;
-
-      await query(updateVariantQuery, [
-        numberOfExcessOrders,
-        numberOfRemainingOrders,
-        hubVariantId
-      ]);
-
-      const activeSalesSession = activeSalesSessionResult.rows[0];
-
-      const activeSalesSessionId = activeSalesSession.id;
-
-      const activeSalesSessionOrderId = activeSalesSession.orderId;
-
-      if (numberOfPackages > 0) {
-        const newProducerOrderId = await sendOrderToProducer({
-          mappedProducerVariantId,
-          numberOfPackages,
-          activeSalesSessionOrderId
-        });
-
-        const updateSalesSessionQuery = `
+  const updateSalesSessionQuery = `
       UPDATE sales_sessions
       SET order_id = $1
       WHERE id = $2
       `;
-        await query(updateSalesSessionQuery, [
-          newProducerOrderId,
-          activeSalesSessionId
-        ]);
-        await updateCurrentVariantInventory({
-          storedHubVariant: {
-            hubVariantId,
-            noOfItemsPerPackage,
-            mappedVariantId: mappedProducerVariantId,
-            numberOfExcessOrders,
-            numberOfRemainingOrders
-          },
-          hubProductId,
-          producerProductId,
-          isPartiallySoldCasesEnabled
-        });
-      }
-    } catch (err) {
-      throw new Error(err);
-    }
-  } catch (err) {
-    console.log(err);
+  await query(updateSalesSessionQuery, [
+    newProducerOrderId,
+    activeSalesSessionId
+  ]);
+};
 
-    throw new Error(err);
+export const handleVariantItemsCount = async ({
+  v,
+  activeSalesSessionResult,
+  exitingVariant
+}) => {
+  if (!v) {
+    throw new Error('Variant not found');
   }
+
+  if (!v.variantId || !v.quantity) {
+    throw new Error('Variant not found');
+  }
+
+  const { variantId: hubVariantId, quantity } = v;
+
+  const { hubProductId, producerProductId } = exitingVariant;
+  const mappedProducerVariantId = exitingVariant.mappedVariantId;
+  const noOfItemsPerPackage = Number(exitingVariant.noOfItemsPerPackage);
+  const numberOfExitingExcessOrders = Number(
+    exitingVariant.numberOfExcessOrders
+  );
+  const numberOfExitingRemainingOrders = Number(
+    exitingVariant.numberOfRemainingOrders
+  );
+
+  const isPartiallySoldCasesEnabled =
+    activeSalesSessionResult.rows[0].partiallySoldEnabled;
+
+  let remainingOrdersData = {};
+  let excessOrdersData = {};
+
+  if (isPartiallySoldCasesEnabled) {
+    excessOrdersData = calculateTheExcessOrders({
+      noOfItemsPerPackage,
+      quantity,
+      numberOfExitingExcessOrders
+    });
+  } else {
+    remainingOrdersData = calculateTheRemainingOrders({
+      numberOfExitingRemainingOrders,
+      noOfItemsPerPackage,
+      quantity
+    });
+  }
+
+  const numberOfPackages = isPartiallySoldCasesEnabled
+    ? excessOrdersData.numberOfPackages
+    : remainingOrdersData.numberOfPackages;
+
+  const numberOfExcessOrders = excessOrdersData?.numberOfExcessOrders || 0;
+  const numberOfRemainingOrders =
+    remainingOrdersData?.numberOfRemainingOrders || 0;
+
+  const updateVariantQuery = `
+      UPDATE variants
+      SET number_of_excess_orders = $1,
+      number_of_remaining_orders = $2
+      WHERE hub_variant_id = $3
+  `;
+
+  await query(updateVariantQuery, [
+    numberOfExcessOrders,
+    numberOfRemainingOrders,
+    hubVariantId
+  ]);
+
+  return {
+    noOfItemsPerPackage,
+    numberOfPackages,
+    numberOfExcessOrders,
+    numberOfRemainingOrders,
+    mappedProducerVariantId,
+    hubVariantId,
+    hubProductId,
+    producerProductId
+  };
 };
 
 export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
@@ -205,8 +161,8 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
       const payload = JSON.parse(body);
       await sqlClient.query('BEGIN');
       const insertWebhookQuery = `
-          INSERT INTO webhooks (id,topic,data)
-          VALUES ($1,$2,$3)
+            INSERT INTO webhooks (id,topic,data)
+            VALUES ($1,$2,$3)
     `;
       await query(insertWebhookQuery, [webhookId, topic, payload], sqlClient);
       await sqlClient.query('COMMIT');
@@ -216,9 +172,108 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
         quantity: Number(lineItem.quantity)
       }));
 
-      const promises = variants.map(async (v) => processOrderPaidWebhook(v));
+      const selectActiveSalesSessionQuery = `
+          SELECT
+            *
+          FROM sales_sessions
+          WHERE is_active = true
+    `;
 
-      await Promise.all(promises);
+      const activeSalesSessionResult = await query(
+        selectActiveSalesSessionQuery,
+        []
+      );
+
+      if (activeSalesSessionResult.rows.length === 0) {
+        throw new Error('No active sales session found');
+      }
+
+      const isPartiallySoldCasesEnabled =
+        activeSalesSessionResult.rows[0].partiallySoldEnabled;
+
+      const activeSalesSessionOrderId =
+        activeSalesSessionResult.rows[0].orderId;
+
+      const activeSalesSessionId = activeSalesSessionResult.rows[0].id;
+
+      const selectVariantsQuery = `
+        SELECT
+          v.*,
+          p.producer_product_id,
+          p.hub_product_id
+        FROM variants as v
+        INNER JOIN products as p
+        ON v.product_id = p.id
+        WHERE hub_variant_id = ANY($1)
+  `;
+
+      const exitingVariants = await query(selectVariantsQuery, [
+        variants.map((v) => v.variantId)
+      ]);
+
+      const handleVariantItemsCountPromises = await Promise.allSettled(
+        variants.map(async (v) => {
+          const exitingVariant = exitingVariants.rows.find(
+            (ev) => Number(ev.hubVariantId) === Number(v.variantId)
+          );
+          return handleVariantItemsCount({
+            v,
+            activeSalesSessionResult,
+            exitingVariant
+          });
+        })
+      );
+
+      const variantsData = handleVariantItemsCountPromises
+        .filter((p) => p.status === 'fulfilled')
+        .map((p) => p.value);
+
+      if (variantsData.length === 0) {
+        return {
+          statusCode: 200
+        };
+      }
+
+      const variantsLineItems = variantsData
+        .filter((v) => v.numberOfPackages > 0)
+        .map((v) => ({
+          mappedProducerVariantId: v.mappedProducerVariantId,
+          numberOfPackages: v.numberOfPackages
+        }));
+
+      await handleSendOrderToProducerAndUpdateSalesSessionOrderId({
+        activeSalesSessionOrderId,
+        variants: variantsLineItems,
+        activeSalesSessionId
+      });
+
+      const updateVariantsInventoryPromises = variantsData
+        .filter((v) => v.numberOfPackages > 0)
+        .map(
+          async ({
+            hubVariantId,
+            noOfItemsPerPackage,
+            mappedProducerVariantId,
+            numberOfExcessOrders,
+            numberOfRemainingOrders,
+            hubProductId,
+            producerProductId
+          }) =>
+            updateCurrentVariantInventory({
+              storedHubVariant: {
+                hubVariantId,
+                noOfItemsPerPackage,
+                mappedVariantId: mappedProducerVariantId,
+                numberOfExcessOrders,
+                numberOfRemainingOrders
+              },
+              hubProductId,
+              producerProductId,
+              isPartiallySoldCasesEnabled
+            })
+        );
+
+      await Promise.allSettled(updateVariantsInventoryPromises);
 
       return {
         statusCode: 200
