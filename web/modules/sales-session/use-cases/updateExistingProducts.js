@@ -29,7 +29,7 @@ const updateSingleProduct = async ({
   hubProduct.id = hubProductId;
   await hubProduct.saveAndUpdate();
 
-  storedVariants.forEach(async (hubVariant) => {
+  for (const hubVariant of storedVariants) {
     await updateCurrentVariantInventory({
       producerProductData: producerLatestProductData,
       hubProductId,
@@ -37,8 +37,7 @@ const updateSingleProduct = async ({
       isPartiallySoldCasesEnabled,
       shouldUpdateThePrice
     });
-    await delayFun(1000 / MAX_REQUESTS_PER_SECOND);
-  });
+  };
 };
 
 const updateExistingProductsUseCase = async ({
@@ -60,7 +59,7 @@ const updateExistingProductsUseCase = async ({
       return;
     }
 
-    productsWithVariants.forEach(async (product) => {
+    for (const product of productsWithVariants) {
       const { hubProductId } = product;
       const storedVariants = product.variants;
       await updateSingleProduct({
@@ -72,9 +71,7 @@ const updateExistingProductsUseCase = async ({
         isPartiallySoldCasesEnabled,
         shouldUpdateThePrice
       });
-
-      await delayFun(1000 / MAX_REQUESTS_PER_SECOND);
-    });
+    };
   } catch (e) {
     console.log(e);
     throw new Error('Failed to update existing products', e);

@@ -25,8 +25,7 @@ const updateSingleProduct = async ({
 
   hubProduct.id = hubProductId;
   await hubProduct.saveAndUpdate();
-
-  storedVariants.forEach(async (hubVariant) => {
+  for (const hubVariant of storedVariants) {
     await updateCurrentVariantInventory({
       producerProductData: producerLatestProductData,
       hubProductId,
@@ -34,8 +33,7 @@ const updateSingleProduct = async ({
       isPartiallySoldCasesEnabled,
       shouldUpdateThePrice
     });
-    await delayFun(1000 / MAX_REQUESTS_PER_SECOND);
-  });
+  };
 };
 
 export default updateSingleProduct;
