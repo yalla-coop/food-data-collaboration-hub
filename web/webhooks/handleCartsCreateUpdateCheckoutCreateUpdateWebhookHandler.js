@@ -81,7 +81,7 @@ const handleCartCreateUpdateCheckoutCreateUpdateWebhook = async (
           SELECT
           *
           FROM sales_sessions
-          WHERE active = true
+          WHERE sales_sessions.is_active = true
         `;
 
       const activeSalesSessionResult = await query(
