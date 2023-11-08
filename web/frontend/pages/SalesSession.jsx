@@ -191,10 +191,12 @@ export default function SalesSession() {
           p: 2
         }}
       >
-        <Typography variant="h4">Sales Session</Typography>
-        <Typography>
-          This is the sales session page. You can create a sales session here.
+        <Typography variant="h5">
+          Sales Session Management Console
         </Typography>
+        <Typography variant="h8">Sales Sessions (in other platforms sometimes called Order Cycles) allow you to manage your supplier orders around when you pack/deliver your orders.</Typography>
+        <Typography variant="h8">A Sales Session will end at midnight on the final day, any Supplier Orders will be Completed (and passed for fulfilment), and a new Sales Session (of the same duration) will be created to start on the following day.</Typography>
+        <Typography variant="h8">You MUST create a Sales Session to utilise the FDC Commons. You should set the duration to the frequency that you process your Customer Orders (i.e. for weekly, set the duration to 7 days, for fortnightly 14 days etc). If you want to place orders on a daily basis, set the duration to 1 day.</Typography>
 
         {currentSalesSessionData?.currentSalesSession?.isActive && (
           <Alert severity="warning">There is an active sales session </Alert>
