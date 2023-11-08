@@ -36,8 +36,8 @@ export default function Home() {
         <CircularProgress size={30} />
       ) : (
         <>
-          <Typography variant="h2">Welcome to the Shopify App</Typography>
-          <Typography variant="h3">Please login to continue</Typography>
+          <Typography variant="h4">Welcome to the Food Data Collaboration Shopify App.</Typography>
+          <Typography variant="h6">Please login into your OpenID Connect Account to access the Commons.</Typography>
 
           <Button
             variant="contained"
