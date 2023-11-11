@@ -301,12 +301,12 @@ function VariantMappingComponent({
               selectedVariantA &&
               selectedVariantB &&
               addedValue &&
-              itemNewPrice < Number(selectedVariantA?.price)
+                itemNewPrice.toFixed(2) < Number(selectedVariantA?.price)
             }
             helperText={
               selectedVariantA &&
               selectedVariantB &&
-              itemNewPrice < Number(selectedVariantA?.price) &&
+                itemNewPrice.toFixed(2) < Number(selectedVariantA?.price) &&
               'The price of the mapped variant is less than the price of the variant to display on my store'
             }
             type="number"
@@ -404,9 +404,7 @@ function VariantMappingComponent({
             <Checkbox
               checked={exitingProductVariant?.producerVariantId && true}
               disabled={
-                !isFormValid() ||
-                profitValue < 0 ||
-                itemNewPrice < Number(selectedVariantA?.price)
+                !isFormValid()
               }
               onChange={(_e) => {
                 if (_e.target.checked) {
