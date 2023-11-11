@@ -14,7 +14,8 @@ const { PRODUCER_SHOP_URL, PRODUCER_SHOP } = process.env;
 
 const sendOrderToProducer = async ({
   activeSalesSessionOrderId,
-  variants = []
+  variants = [],
+  customer
 }) => {
   const lineItems = variants.map((variant) => ({
     variant_id: Number(variant.mappedProducerVariantId),
@@ -28,7 +29,8 @@ const sendOrderToProducer = async ({
         userId: '123',
         accessToken: 'access-token',
         orderId: activeSalesSessionOrderId,
-        lineItems
+        lineItems,
+        customer
       },
       {
         headers: {
@@ -46,11 +48,13 @@ const sendOrderToProducer = async ({
 const handleSendOrderToProducerAndUpdateSalesSessionOrderId = async ({
   activeSalesSessionOrderId,
   variants,
-  activeSalesSessionId
+  activeSalesSessionId,
+  customer
 }) => {
   const newProducerOrderId = await sendOrderToProducer({
     activeSalesSessionOrderId,
-    variants
+    variants,
+    customer
   });
 
   const updateSalesSessionQuery = `
@@ -241,10 +245,17 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
           numberOfPackages: v.numberOfPackages
         }));
 
+      const customer = {
+        first_name: shop.split('.myshopify')[0],
+        last_name: '',
+        email: `${shop.split('.myshopify')[0]}@yallacooperative.com`
+      };
+
       await handleSendOrderToProducerAndUpdateSalesSessionOrderId({
         activeSalesSessionOrderId,
         variants: variantsLineItems,
-        activeSalesSessionId
+        activeSalesSessionId,
+        customer
       });
 
       const updateVariantsInventoryPromises = variantsData
