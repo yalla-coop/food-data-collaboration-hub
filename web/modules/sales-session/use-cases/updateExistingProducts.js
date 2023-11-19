@@ -37,6 +37,7 @@ const updateSingleProduct = async ({
       isPartiallySoldCasesEnabled,
       shouldUpdateThePrice
     });
+    await delayFun(500)
   };
 };
 
