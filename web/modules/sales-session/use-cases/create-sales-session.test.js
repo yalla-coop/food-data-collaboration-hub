@@ -1,7 +1,10 @@
-import {query} from '../../../database/connect.js';
+import { query } from '../../../database/connect.js';
 
 import createSalesSessionUseCase from './create-sales-session';
-import {getProducerProducts, updateSingleVariant} from './create-sales-session';
+import {
+  getProducerProducts,
+  updateSingleVariant
+} from './create-sales-session';
 describe('CreateSalesSession', () => {
   it('should get producer products', async () => {
     const data = await getProducerProducts();
