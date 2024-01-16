@@ -1,21 +1,12 @@
-import { useState, useEffect } from 'react';
+import {useState, useEffect} from 'react';
 import dayjs from 'dayjs';
-import { Redirect } from '@shopify/app-bridge/actions';
-import {
-  Button,
-  Stack,
-  TextField,
-  Alert,
-  Box,
-  Typography,
-  FormControlLabel,
-  Checkbox
-} from '@mui/material';
-import { useQueryClient } from 'react-query';
-import { useAppBridge } from '@shopify/app-bridge-react';
-import { useAppMutation, useAppQuery } from '../hooks';
-import { useAuth } from '../components/providers/AuthProvider';
-import { DatePickerComponent } from '../components/DatePicker';
+import {Redirect} from '@shopify/app-bridge/actions';
+import {Button, Stack, TextField, Alert, Box, Typography} from '@mui/material';
+import {useQueryClient} from 'react-query';
+import {useAppBridge} from '@shopify/app-bridge-react';
+import {useAppMutation, useAppQuery} from '../hooks';
+import {useAuth} from '../components/providers/AuthProvider';
+import {DatePickerComponent} from '../components/DatePicker';
 
 export default function SalesSession() {
   const app = useAppBridge();
@@ -43,12 +34,10 @@ export default function SalesSession() {
 
   const [startDate, setStartDate] = useState(dayjs(new Date()));
   const [sessionDurationInDays, setSessionDurationInDays] = useState(7);
-  const [partiallySoldCasesIsEnabled, setSetPartiallySoldCasesIsEnabled] =
-    useState(false);
 
   const redirect = Redirect.create(app);
 
-  const { data: userAuthData } = useAuth();
+  const {data: userAuthData} = useAuth();
 
   const {
     data: currentSalesSessionData,
@@ -70,12 +59,8 @@ export default function SalesSession() {
         const currentSalesSessionSessionDurationInDays =
           data?.currentSalesSession?.sessionDuration;
 
-        const currentPartialSoldCasesIsEnabled =
-          data?.currentSalesSession?.partiallySoldEnabled;
-
         setStartDate(currentSalesStartDate);
         setSessionDurationInDays(currentSalesSessionSessionDurationInDays);
-        setSetPartiallySoldCasesIsEnabled(currentPartialSoldCasesIsEnabled);
       }
     }
   });
@@ -166,8 +151,7 @@ export default function SalesSession() {
         },
         body: JSON.stringify({
           startDate: startDate.toISOString(),
-          sessionDurationInDays: Number(sessionDurationInDays),
-          partiallySoldEnabled: partiallySoldCasesIsEnabled
+          sessionDurationInDays: Number(sessionDurationInDays)
         })
       }
     });
@@ -191,19 +175,32 @@ export default function SalesSession() {
           p: 2
         }}
       >
-        <Typography variant="h5">
-          Sales Session Management Console
+        <Typography variant='h5'>Sales Session Management Console</Typography>
+        <Typography variant='h8'>
+          Sales Sessions (in other platforms sometimes called Order Cycles)
+          allow you to manage your supplier orders around when you pack/deliver
+          your orders.
         </Typography>
-        <Typography variant="h8">Sales Sessions (in other platforms sometimes called Order Cycles) allow you to manage your supplier orders around when you pack/deliver your orders.</Typography>
-        <Typography variant="h8">A Sales Session will end at midnight on the final day, any Supplier Orders will be Completed (and passed for fulfilment), and a new Sales Session (of the same duration) will be created to start on the following day.</Typography>
-        <Typography variant="h8">You MUST create a Sales Session to utilise the FDC Commons. You should set the duration to the frequency that you process your Customer Orders (i.e. for weekly, set the duration to 7 days, for fortnightly 14 days etc). If you want to place orders on a daily basis, set the duration to 1 day.</Typography>
+        <Typography variant='h8'>
+          A Sales Session will end at midnight on the final day, any Supplier
+          Orders will be Completed (and passed for fulfilment), and a new Sales
+          Session (of the same duration) will be created to start on the
+          following day.
+        </Typography>
+        <Typography variant='h8'>
+          You MUST create a Sales Session to utilise the FDC Commons. You should
+          set the duration to the frequency that you process your Customer
+          Orders (i.e. for weekly, set the duration to 7 days, for fortnightly
+          14 days etc). If you want to place orders on a daily basis, set the
+          duration to 1 day.
+        </Typography>
 
         {currentSalesSessionData?.currentSalesSession?.isActive && (
-          <Alert severity="warning">There is an active sales session </Alert>
+          <Alert severity='warning'>There is an active sales session </Alert>
         )}
 
         {showSuccessAlert.show && (
-          <Alert severity="success">
+          <Alert severity='success'>
             Sales session {showSuccessAlert.type} successfully
           </Alert>
         )}
@@ -221,16 +218,16 @@ export default function SalesSession() {
           sx={{
             width: '100%'
           }}
-          label="Start Date"
+          label='Start Date'
           value={startDate}
           onChange={(newValue) => setStartDate(newValue)}
         />
 
         <TextField
-          label="Session Duration (in days)"
+          label='Session Duration (in days)'
           fullWidth
-          type="number"
-          inputProps={{ min: 0 }}
+          type='number'
+          inputProps={{min: 0}}
           value={sessionDurationInDays}
           onChange={(event) => setSessionDurationInDays(event.target.value)}
         />
@@ -239,7 +236,7 @@ export default function SalesSession() {
           sx={{
             width: '100%'
           }}
-          label="End Date"
+          label='End Date'
           value={dayjs(startDate).add(sessionDurationInDays, 'day')}
           onChange={(newValue) => {
             setSessionDurationInDays(
@@ -248,22 +245,9 @@ export default function SalesSession() {
           }}
         />
 
-        <FormControlLabel
-          control={
-            <Checkbox
-              disabled={currentSalesSessionData?.currentSalesSession?.isActive}
-              checked={partiallySoldCasesIsEnabled}
-              onChange={(event) =>
-                setSetPartiallySoldCasesIsEnabled(event.target.checked)
-              }
-            />
-          }
-          label="Enable Partial Sold cases"
-        />
-
         <Button
-          variant="contained"
-          type="button"
+          variant='contained'
+          type='button'
           onClick={handleOnCreateSalesSessionClick}
           disabled={
             createSalesSessionIsLoading ||
@@ -274,8 +258,8 @@ export default function SalesSession() {
         </Button>
 
         <Button
-          variant="contained"
-          type="button"
+          variant='contained'
+          type='button'
           onClick={handleOnEditCurrentSalesSessionClick}
           disabled={
             editCurrentSalesSessionIsLoading ||
@@ -288,8 +272,8 @@ export default function SalesSession() {
         </Button>
 
         <Button
-          variant="contained"
-          type="button"
+          variant='contained'
+          type='button'
           onClick={handleOnFinishCurrentSalesSessionClick}
           disabled={
             completeCurrentSalesSessionIsLoading ||
@@ -302,15 +286,15 @@ export default function SalesSession() {
         </Button>
 
         {createSalesSessionError && (
-          <Alert severity="error">{createSalesSessionError.message}</Alert>
+          <Alert severity='error'>{createSalesSessionError.message}</Alert>
         )}
 
         {editCurrentSalesSessionError && (
-          <Alert severity="error">{editCurrentSalesSessionError.message}</Alert>
+          <Alert severity='error'>{editCurrentSalesSessionError.message}</Alert>
         )}
 
         {completeCurrentSalesSessionError && (
-          <Alert severity="error">
+          <Alert severity='error'>
             {completeCurrentSalesSessionError.message}
           </Alert>
         )}

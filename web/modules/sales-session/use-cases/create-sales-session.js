@@ -1,14 +1,14 @@
 /* eslint-disable object-curly-newline */
 import moment from 'moment';
 import dotenv from 'dotenv';
-import { query } from '../../../database/connect.js';
+import {query} from '../../../database/connect.js';
 import createOrderAtProducerStore from '../../../modules/orders/use-cases/create-order-at-producer-store.js';
 import updateExistingProductsUseCase from './updateExistingProducts.js';
 
 dotenv.config();
 
 const createSalesSessionUseCase = async (
-  { startDate, sessionDurationInDays, user, partiallySoldEnabled },
+  {startDate, sessionDurationInDays, user},
   client
 ) => {
   try {
@@ -30,14 +30,15 @@ const createSalesSessionUseCase = async (
         endDate.toISOString(),
         sessionDurationInDays,
         true,
-        partiallySoldEnabled
+        // setting partially sold enabled to true by default: https://github.com/yalla-coop/food-data-collaboration/issues/92
+        true
       ],
       client
     );
 
     const salesSessionId = result.rows[0].id;
 
-    const { order } = await createOrderAtProducerStore({
+    const {order} = await createOrderAtProducerStore({
       user
     });
 
@@ -48,7 +49,7 @@ const createSalesSessionUseCase = async (
     );
     // TODO : this function should update the price also
     await updateExistingProductsUseCase({
-      isPartiallySoldCasesEnabled: partiallySoldEnabled,
+      isPartiallySoldCasesEnabled: true,
       shouldUpdateThePrice: true
     });
   } catch (error) {

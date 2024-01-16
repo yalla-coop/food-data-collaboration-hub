@@ -1,10 +1,7 @@
-import { query } from '../../../database/connect.js';
+import {query} from '../../../database/connect.js';
 
 import createSalesSessionUseCase from './create-sales-session';
-import {
-  getProducerProducts,
-  updateSingleVariant
-} from './create-sales-session';
+import {getProducerProducts, updateSingleVariant} from './create-sales-session';
 describe('CreateSalesSession', () => {
   it('should get producer products', async () => {
     const data = await getProducerProducts();
@@ -58,7 +55,6 @@ describe('CreateSalesSession', () => {
     await createSalesSessionUseCase({
       sessionDurationInDays: 10,
       startDate: new Date('2021-09-01'),
-      partiallySoldEnabled: true,
       user: {
         id: 1,
         accessToken: '123'
