@@ -13,7 +13,8 @@ if (
   );
 }
 
-const BACKEND_PORT = process.env.BACKEND_PORT;
+// const BACKEND_PORT = process.env.BACKEND_PORT;
+const BACKEND_PORT = 58939;
 
 const proxyOptions = {
   target: `http://127.0.0.1:${BACKEND_PORT}`,

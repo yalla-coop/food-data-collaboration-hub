@@ -41,7 +41,7 @@ export default function ProductsList() {
   const redirect = Redirect.create(app);
 
   const { data: userAuthData } = useAuth();
-
+  console.log('userAuthData :>> ', userAuthData);
   const [exitingProductsList, setExitingProductsList] = useState([]);
 
   const { isLoading: exitingProductsIsLoading } = useAppQuery({
@@ -66,6 +66,8 @@ export default function ProductsList() {
     }`
   });
 
+  console.log('existing products :>> ', exitingProductsList);
+  console.log('producerProductsData :>> ', producerProductsData);
   useLayoutEffect(() => {
     if (producerProductsData?.products) {
       setProductsList((prev) => [...prev, ...producerProductsData?.products]);
@@ -107,7 +109,8 @@ export default function ProductsList() {
           fontSize: '20px'
         }}
       >
-          We're having some issues with connecting your Open ID Account to the Producer App - the error is :
+        We're having some issues with connecting your Open ID Account to the
+        Producer App - the error is :
         {getProductDataError?.message ||
           getProductDataError?.error ||
           'Unknown error'}
@@ -124,7 +127,7 @@ export default function ProductsList() {
       producerProductsData?.remainingProductsCountAfter
     );
   };
-
+  console.log('productsList :>> ', productsList);
   return (
     <Box>
       <Button
