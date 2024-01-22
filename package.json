@@ -14,7 +14,7 @@
     "build:db": "node ./web/database/build.js"
   },
   "dependencies": {
-    "@datafoodconsortium/connector": "^1.0.0-alpha.4",
+    "@datafoodconsortium/connector": "^1.0.0-alpha.7",
     "@shopify/app": "3.47.5",
     "@shopify/cli": "3.47.5",
     "@shopify/react-form": "^2.5.0",
@@ -24,6 +24,7 @@
     "body-parser": "^1.20.2",
     "connect-ensure-login": "^0.1.1",
     "connect-sqlite3": "^0.9.13",
+    "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dayjs": "^1.11.7",
     "dotenv": "^16.0.3",

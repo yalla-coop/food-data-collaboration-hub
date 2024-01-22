@@ -4,7 +4,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "debug": "node --inspect-brk index.js",
-    "dev": "cross-env NODE_ENV=development nodemon index.js --ignore ./frontend",
+    "dev": "cross-env NODE_ENV=test nodemon index.js --ignore ./frontend",
     "serve": "cross-env NODE_ENV=production node index.js"
   },
   "type": "module",
@@ -12,7 +12,6 @@
     "node": ">=14.13.1"
   },
   "dependencies": {
-    "@datafoodconsortium/connector": "^1.0.0-alpha.4",
     "@sentry/node": "^7.70.0",
     "@sentry/profiling-node": "^1.2.1",
     "@shopify/app": "3.47.5",
