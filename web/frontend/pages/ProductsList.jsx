@@ -41,7 +41,7 @@ export default function ProductsList() {
   const redirect = Redirect.create(app);
 
   const { data: userAuthData } = useAuth();
-  console.log('userAuthData :>> ', userAuthData);
+
   const [exitingProductsList, setExitingProductsList] = useState([]);
 
   const { isLoading: exitingProductsIsLoading } = useAppQuery({
@@ -66,8 +66,6 @@ export default function ProductsList() {
     }`
   });
 
-  console.log('existing products :>> ', exitingProductsList);
-  console.log('producerProductsData :>> ', producerProductsData);
   useLayoutEffect(() => {
     if (producerProductsData?.products) {
       setProductsList((prev) => [...prev, ...producerProductsData?.products]);

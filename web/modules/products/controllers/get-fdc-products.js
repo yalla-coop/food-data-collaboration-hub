@@ -2,7 +2,10 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import { join } from 'path';
 
-import { connector } from '../../../connector/index.js';
+import {
+  getSuppliedProducts,
+  importSuppliedProducts
+} from '../../../connector/index.js';
 
 dotenv.config({
   path: join(process.cwd(), '.env')
@@ -31,14 +34,21 @@ const getFDCProducts = async (req, res, next) => {
       }
     );
 
-    if (data?.exportedDFCProducts) {
-      const imports = await connector.import(data.exportedDFCProducts);
+    const imports = await importSuppliedProducts(data.exportedDFCProducts);
 
-      console.log('dfcTestProductImports :>> ', imports);
-    }
+    const suppliedProducts = await getSuppliedProducts(imports);
+
+    console.log(
+      'suppliedProducts :>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>> ',
+      suppliedProducts
+    );
 
     return res.json(data);
   } catch (err) {
+    console.log(
+      'GET FDC PRODUCTS err :>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>> ',
+      err
+    );
     return next(err);
   }
 };

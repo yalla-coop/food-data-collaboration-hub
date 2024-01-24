@@ -1,15 +1,4 @@
-import {
-  Connector
-  // QuantitativeValue,
-  // SuppliedProduct,
-  // AllergenCharacteristic,
-  // NutrientCharacteristic,
-  // Person,
-  // SaleSession,
-  // OrderLine,
-  // Order,
-  // PhysicalCharacteristic
-} from '@datafoodconsortium/connector';
+import { Connector } from '@datafoodconsortium/connector';
 import facets from './thesaurus/facets.json' assert { type: 'json' };
 import measures from './thesaurus/measures.json' assert { type: 'json' };
 import productTypes from './thesaurus/productTypes.json' assert { type: 'json' };
@@ -22,31 +11,27 @@ await Promise.all([
   connector.loadProductTypes(JSON.stringify(productTypes))
 ]);
 
-// function createSuppliedProduct(product) {
-//   let {
-//     id,
-//     description,
-//     descriptionHtml,
-//     productType,
-//     title,
-//     totalInventory,
-//     status,
-//     handle,
-//     metafields,
-//     priceRange
-//   } = product;
+async function importSuppliedProducts(dfcProducts) {
+  if (!dfcProducts.length) {
+    return [];
+  }
 
-//   let suppliedProduct = new SuppliedProduct(title, description);
+  return await connector.import(dfcProducts);
+}
 
-//   return suppliedProduct;
-// }
+async function getSuppliedProducts(dfcProductImports) {
+  return Promise.all(
+    dfcProductImports.map(async (suppliedProduct) => {
+      const productType = await suppliedProduct.getProductType();
 
-export {
-  Connector,
-  connector
-  // Person,
-  // SaleSession,
-  // OrderLine,
-  // Order,
-  // createSuppliedProduct
-};
+      return {
+        semanticId: suppliedProduct.getSemanticId(),
+        name: suppliedProduct.getName(),
+        description: suppliedProduct.getDescription(),
+        productType: productType
+      };
+    })
+  );
+}
+
+export { importSuppliedProducts, getSuppliedProducts };
