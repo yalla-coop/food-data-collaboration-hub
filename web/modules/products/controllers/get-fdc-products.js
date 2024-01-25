@@ -4,6 +4,7 @@ import { join } from 'path';
 
 import {
   getSuppliedProducts,
+  SuppliedProduct,
   importSuppliedProducts
 } from '../../../connector/index.js';
 
@@ -35,20 +36,16 @@ const getFDCProducts = async (req, res, next) => {
     );
 
     const imports = await importSuppliedProducts(data.exportedDFCProducts);
-
-    const suppliedProducts = await getSuppliedProducts(imports);
-
-    console.log(
-      'suppliedProducts :>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>> ',
-      suppliedProducts
+    const suppliedProducts = imports.filter(
+      (importedProduct) => importedProduct instanceof SuppliedProduct
     );
+    const output = await getSuppliedProducts(suppliedProducts);
+
+    // console.log('suppliedProducts :>> ', suppliedProducts);
 
     return res.json(data);
   } catch (err) {
-    console.log(
-      'GET FDC PRODUCTS err :>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>>:>> ',
-      err
-    );
+    console.error('Error fetching FDC products:', err);
     return next(err);
   }
 };
