@@ -1,6 +1,7 @@
 import { throwError } from '../utils/index.js';
 
 import { connector, SuppliedProduct } from './index.js';
+import { productTypes, quantityUnits } from './mappings.js';
 
 export function getTargetIdFromSemanticId(url, key) {
   const parts = url.split('/');
@@ -16,15 +17,16 @@ export function getTargetIdFromSemanticId(url, key) {
 
 async function getSingleSuppliedProduct(suppliedProduct) {
   try {
-    // const productType = await suppliedProduct.getProductType();
+    const productType = await suppliedProduct.getProductType();
     const semanticId = suppliedProduct.getSemanticId();
 
     return {
       id: getTargetIdFromSemanticId(semanticId, 'product'),
       title: suppliedProduct.getName(),
       description: suppliedProduct.getDescription(),
+      product_type: productTypes[productType],
+      // image: suppliedProduct.getImage(), TODO fix this
       // TODO: make these dynamic
-      product_type: 'BuckwheatFlour',
       vendor: 'Hodmedod',
       tags: 'fdc',
       status: 'active'
@@ -45,11 +47,22 @@ async function getSingleVariantSuppliedProduct(suppliedProduct, count) {
       suppliedProduct.getCatalogItems()
     ]);
 
-    const quantityValue = await quantity.getQuantityValue();
+    const [quantityValue, quantityUnit] = await Promise.all([
+      quantity.getQuantityValue(),
+      quantity.getQuantityUnit()
+    ]);
 
-    const offer = await catalogItems[0].getOfferers();
+    const catalogItem = catalogItems[0];
+
+    const sku = catalogItem.getSku();
+
+    const stockLimitation = catalogItem.getStockLimitation();
+
+    const offer = await catalogItem.getOfferers();
     const price = await offer[0].getPrice();
-    const priceValue = await price.getValue();
+    const priceValue = price.getValue();
+    const priceVatRate = price.getVatRate();
+    const hasVat = priceVatRate && Number(priceVatRate) > 0;
 
     const variantSuppliedProduct = {
       id: getTargetIdFromSemanticId(semanticId, 'variant'),
@@ -59,18 +72,18 @@ async function getSingleVariantSuppliedProduct(suppliedProduct, count) {
       price: priceValue,
       option1: productName, // mirrors variant title
       weight: quantityValue,
-      weight_unit: 'kg',
+      weight_unit: quantityUnits[quantityUnit],
       position: count,
-      // TODO make these dynamic
-      sku: 'OFBL/R5',
-      inventory_policy: 'deny',
-      compare_at_price: '2.99',
-      fulfillment_service: 'manual',
-      inventory_management: 'shopify',
-      taxable: false,
-      inventory_quantity: -15,
-      old_inventory_quantity: -15,
-      requires_shipping: true
+      inventory_quantity: stockLimitation,
+      sku,
+      taxable: hasVat
+      // TODO check if these are needed and make these dynamic
+      // inventory_policy: 'deny',
+      // compare_at_price: '2.99',
+      // fulfillment_service: 'manual',
+      // inventory_management: 'shopify',
+      // old_inventory_quantity: -15,
+      // requires_shipping: true
     };
 
     return variantSuppliedProduct;

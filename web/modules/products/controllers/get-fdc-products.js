@@ -29,10 +29,12 @@ const getFDCProducts = async (req, res, next) => {
         }
       }
     );
-    // console.log('data :>> ', data.products);
-    const output = await generateShopifyFDCProducts(data.exportedDFCProducts);
-    console.log('output :>> ', output);
-    return res.json(data);
+    const products = await generateShopifyFDCProducts(data.exportedDFCProducts);
+
+    return res.json({
+      ...data,
+      products
+    });
   } catch (err) {
     console.error('Error fetching FDC products:', err);
     return next(err);
