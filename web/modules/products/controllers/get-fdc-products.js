@@ -1,12 +1,7 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
 import { join } from 'path';
-
-import {
-  getSuppliedProducts,
-  SuppliedProduct,
-  importSuppliedProducts
-} from '../../../connector/index.js';
+import { generateShopifyFDCProducts } from '../../../connector/productUtils.js';
 
 dotenv.config({
   path: join(process.cwd(), '.env')
@@ -34,15 +29,9 @@ const getFDCProducts = async (req, res, next) => {
         }
       }
     );
-
-    const imports = await importSuppliedProducts(data.exportedDFCProducts);
-    const suppliedProducts = imports.filter(
-      (importedProduct) => importedProduct instanceof SuppliedProduct
-    );
-    const output = await getSuppliedProducts(suppliedProducts);
-
-    // console.log('suppliedProducts :>> ', suppliedProducts);
-
+    // console.log('data :>> ', data.products);
+    const output = await generateShopifyFDCProducts(data.exportedDFCProducts);
+    console.log('output :>> ', output);
     return res.json(data);
   } catch (err) {
     console.error('Error fetching FDC products:', err);
