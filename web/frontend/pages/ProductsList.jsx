@@ -125,7 +125,7 @@ export default function ProductsList() {
       producerProductsData?.remainingProductsCountAfter
     );
   };
-  console.log('productsList :>> ', productsList);
+
   return (
     <Box>
       <Button

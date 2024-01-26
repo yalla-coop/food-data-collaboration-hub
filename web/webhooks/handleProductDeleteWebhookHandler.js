@@ -4,7 +4,6 @@ import * as Sentry from '@sentry/node';
 import { query, getClient } from '../database/connect.js';
 
 export const deleteVariantsAndProductCachedData = async (hubProductId) => {
-  console.log('called delete webhook');
   try {
     const client = await getClient();
     try {
