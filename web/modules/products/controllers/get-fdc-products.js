@@ -29,7 +29,8 @@ const getFDCProducts = async (req, res, next) => {
         }
       }
     );
-    const products = await generateShopifyFDCProducts(data.exportedDFCProducts);
+
+    const products = await generateShopifyFDCProducts(data.products);
 
     return res.json({
       ...data,
