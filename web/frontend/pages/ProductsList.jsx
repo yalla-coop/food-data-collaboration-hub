@@ -66,8 +66,6 @@ export default function ProductsList() {
     }`
   });
 
-  console.log('producerProductsData :>> ', producerProductsData);
-
   useLayoutEffect(() => {
     if (producerProductsData?.products) {
       setProductsList((prev) => [...prev, ...producerProductsData?.products]);

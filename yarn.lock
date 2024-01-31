@@ -1062,10 +1062,10 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@datafoodconsortium/connector@^1.0.0-alpha.7":
-  version "1.0.0-alpha.7"
-  resolved "https://registry.yarnpkg.com/@datafoodconsortium/connector/-/connector-1.0.0-alpha.7.tgz#831760d460ee26e8c8a2cbfa460327b214f9f291"
-  integrity sha512-KgFtrfhNzHNkWFs8VWn/zZLQletc1Mp9bmKt4JnTIUCGhby+g1RHGn0eS2lU+9pbh21k6OQgWP4pWqIJ/ZzgZg==
+"@datafoodconsortium/connector@^1.0.0-alpha.8":
+  version "1.0.0-alpha.8"
+  resolved "https://registry.yarnpkg.com/@datafoodconsortium/connector/-/connector-1.0.0-alpha.8.tgz#625a9d7868778107508edf044cea3726a7ab12ee"
+  integrity sha512-N9TeUo0BzKPdxi10qv/U9xqdH4G/fjly6YpMOxrIm8N9FGyCcvpC+Z3ZCcZIG+yBZTo/mrJ6TJQGUQj/Am5UiQ==
   dependencies:
     "@rdfjs/serializer-jsonld-ext" "^4.0.0"
     "@virtual-assembly/semantizer" "^1.0.0-alpha.2"
@@ -2337,9 +2337,9 @@
     undici-types "~5.26.4"
 
 "@types/node@^18.0.0":
-  version "18.19.9"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.19.9.tgz#6c2624c3a05bfa3a2735c533f95597ffacbb5608"
-  integrity sha512-oZFKlC8l5YtzGQNT4zC2PiSSKzQVZ8bAwwd+EYdPLtyk0nSEq6O16SkK+rkkT2eflDAbormJgEF3QnH3oDrTSw==
+  version "18.19.11"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.19.11.tgz#355cf2a28a8c2edf154b275a5715401b18fe0b63"
+  integrity sha512-hzdHPKpDdp5bEcRq1XTlZ2ntVjLcHCTV73dEcGg02eSY/+9AZ+jlfz6i00+zOrunMWenjHuI49J8J7Y9uz50JQ==
   dependencies:
     undici-types "~5.26.4"
 

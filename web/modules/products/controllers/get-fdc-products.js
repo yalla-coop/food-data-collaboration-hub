@@ -37,7 +37,6 @@ const getFDCProducts = async (req, res, next) => {
       products
     });
   } catch (err) {
-    console.error('Error fetching FDC products:', err);
     return next(err);
   }
 };
