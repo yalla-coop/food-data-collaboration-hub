@@ -6,8 +6,6 @@ import { join } from 'path';
 import * as Sentry from '@sentry/node';
 import { ProfilingIntegration } from '@sentry/profiling-node';
 
-import cors from 'cors';
-
 import cron from 'node-cron';
 
 import cookieParser from 'cookie-parser';
@@ -49,7 +47,6 @@ const STATIC_PATH =
     : `${process.cwd()}/frontend/`;
 
 const app = express();
-app.use(cors());
 
 Sentry.init({
   dsn: process.env.SENTRY_DNS,
