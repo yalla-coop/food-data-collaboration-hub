@@ -12,6 +12,7 @@
     "node": ">=14.13.1"
   },
   "dependencies": {
+    "@datafoodconsortium/connector": "^1.0.0-alpha.8",
     "@sentry/node": "^7.70.0",
     "@sentry/profiling-node": "^1.2.1",
     "@shopify/app": "3.47.5",
