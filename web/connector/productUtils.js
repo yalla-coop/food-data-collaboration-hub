@@ -4,11 +4,12 @@ import {
   throwError
 } from '../utils/index.js';
 
-import { connector, SuppliedProduct } from './index.js';
-import { productTypes, quantityUnits } from './mappings.js';
+import { loadConnectorWithResources, SuppliedProduct } from './index.js';
+import { loadProductTypes, loadQuantityUnits } from './mappings.js';
 
 async function getSingleSuppliedProduct(suppliedProduct) {
   try {
+    const productTypesObj = await loadProductTypes();
     const productType = await suppliedProduct.getProductType();
     const semanticId = suppliedProduct.getSemanticId();
     const images = suppliedProduct.getImages();
@@ -19,7 +20,7 @@ async function getSingleSuppliedProduct(suppliedProduct) {
       id: getTargetStringFromSemanticId(semanticId, 'product'),
       title: suppliedProduct.getName(),
       body_html: suppliedProduct.getDescription(),
-      product_type: productTypes[productType],
+      product_type: productTypesObj[productType],
       handle: queryParamsObject.handle
     };
 
@@ -67,6 +68,7 @@ async function getSingleVariantSuppliedProduct(suppliedProduct) {
     const images = suppliedProduct.getImages();
 
     const queryParamsObject = getQueryParamsObjFromUrl(semanticId);
+    const quantityUnitsObj = await loadQuantityUnits();
 
     const variantSuppliedProduct = {
       id: getTargetStringFromSemanticId(semanticId, 'variant'),
@@ -75,7 +77,7 @@ async function getSingleVariantSuppliedProduct(suppliedProduct) {
       title: productName,
       price: priceValue,
       weight: quantityValue,
-      weight_unit: quantityUnits[quantityUnit],
+      weight_unit: quantityUnitsObj[quantityUnit],
       inventory_quantity: stockLimitation,
       sku,
       taxable: hasVat,
@@ -108,7 +110,7 @@ async function importSuppliedProducts(dfcProducts) {
   if (!dfcProducts.length) {
     return [];
   }
-
+  const connector = await loadConnectorWithResources();
   try {
     return connector.import(dfcProducts);
   } catch (error) {
