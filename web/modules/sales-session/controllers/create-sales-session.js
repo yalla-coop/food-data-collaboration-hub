@@ -6,7 +6,7 @@ import createSalesSessionUseCase from '../use-cases/create-sales-session.js';
 
 const createSalesSession = async (req, res, next) => {
   const {
-    body: { startDate, sessionDurationInDays, partiallySoldEnabled },
+    body: { startDate, sessionDurationInDays },
     user
   } = req;
 
@@ -49,8 +49,7 @@ const createSalesSession = async (req, res, next) => {
         startDate,
         sessionDurationInDays,
         user,
-        session,
-        partiallySoldEnabled
+        session
       },
       client
     );

@@ -58,7 +58,6 @@ describe('CreateSalesSession', () => {
     await createSalesSessionUseCase({
       sessionDurationInDays: 10,
       startDate: new Date('2021-09-01'),
-      partiallySoldEnabled: true,
       user: {
         id: 1,
         accessToken: '123'

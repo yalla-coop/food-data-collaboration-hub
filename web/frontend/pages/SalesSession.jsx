@@ -7,9 +7,7 @@ import {
   TextField,
   Alert,
   Box,
-  Typography,
-  FormControlLabel,
-  Checkbox
+  Typography
 } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import { useAppBridge } from '@shopify/app-bridge-react';
@@ -43,8 +41,6 @@ export default function SalesSession() {
 
   const [startDate, setStartDate] = useState(dayjs(new Date()));
   const [sessionDurationInDays, setSessionDurationInDays] = useState(7);
-  const [partiallySoldCasesIsEnabled, setSetPartiallySoldCasesIsEnabled] =
-    useState(false);
 
   const redirect = Redirect.create(app);
 
@@ -70,12 +66,8 @@ export default function SalesSession() {
         const currentSalesSessionSessionDurationInDays =
           data?.currentSalesSession?.sessionDuration;
 
-        const currentPartialSoldCasesIsEnabled =
-          data?.currentSalesSession?.partiallySoldEnabled;
-
         setStartDate(currentSalesStartDate);
         setSessionDurationInDays(currentSalesSessionSessionDurationInDays);
-        setSetPartiallySoldCasesIsEnabled(currentPartialSoldCasesIsEnabled);
       }
     }
   });
@@ -166,8 +158,7 @@ export default function SalesSession() {
         },
         body: JSON.stringify({
           startDate: startDate.toISOString(),
-          sessionDurationInDays: Number(sessionDurationInDays),
-          partiallySoldEnabled: partiallySoldCasesIsEnabled
+          sessionDurationInDays: Number(sessionDurationInDays)
         })
       }
     });
@@ -191,12 +182,25 @@ export default function SalesSession() {
           p: 2
         }}
       >
-        <Typography variant="h5">
-          Sales Session Management Console
+        <Typography variant="h5">Sales Session Management Console</Typography>
+        <Typography variant="h8">
+          Sales Sessions (in other platforms sometimes called Order Cycles)
+          allow you to manage your supplier orders around when you pack/deliver
+          your orders.
         </Typography>
-        <Typography variant="h8">Sales Sessions (in other platforms sometimes called Order Cycles) allow you to manage your supplier orders around when you pack/deliver your orders.</Typography>
-        <Typography variant="h8">A Sales Session will end at midnight on the final day, any Supplier Orders will be Completed (and passed for fulfilment), and a new Sales Session (of the same duration) will be created to start on the following day.</Typography>
-        <Typography variant="h8">You MUST create a Sales Session to utilise the FDC Commons. You should set the duration to the frequency that you process your Customer Orders (i.e. for weekly, set the duration to 7 days, for fortnightly 14 days etc). If you want to place orders on a daily basis, set the duration to 1 day.</Typography>
+        <Typography variant="h8">
+          A Sales Session will end at midnight on the final day, any Supplier
+          Orders will be Completed (and passed for fulfilment), and a new Sales
+          Session (of the same duration) will be created to start on the
+          following day.
+        </Typography>
+        <Typography variant="h8">
+          You MUST create a Sales Session to utilise the FDC Commons. You should
+          set the duration to the frequency that you process your Customer
+          Orders (i.e. for weekly, set the duration to 7 days, for fortnightly
+          14 days etc). If you want to place orders on a daily basis, set the
+          duration to 1 day.
+        </Typography>
 
         {currentSalesSessionData?.currentSalesSession?.isActive && (
           <Alert severity="warning">There is an active sales session </Alert>
@@ -246,19 +250,6 @@ export default function SalesSession() {
               dayjs(newValue).diff(startDate, 'day', false)
             );
           }}
-        />
-
-        <FormControlLabel
-          control={
-            <Checkbox
-              disabled={currentSalesSessionData?.currentSalesSession?.isActive}
-              checked={partiallySoldCasesIsEnabled}
-              onChange={(event) =>
-                setSetPartiallySoldCasesIsEnabled(event.target.checked)
-              }
-            />
-          }
-          label="Enable Partial Sold cases"
         />
 
         <Button
