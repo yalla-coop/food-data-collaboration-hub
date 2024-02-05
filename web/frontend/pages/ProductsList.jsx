@@ -107,7 +107,8 @@ export default function ProductsList() {
           fontSize: '20px'
         }}
       >
-          We're having some issues with connecting your Open ID Account to the Producer App - the error is :
+        We're having some issues with connecting your Open ID Account to the
+        Producer App - the error is :
         {getProductDataError?.message ||
           getProductDataError?.error ||
           'Unknown error'}
