@@ -112,7 +112,10 @@ async function importSuppliedProducts(dfcProducts) {
   }
   try {
     const connector = await loadConnectorWithResources();
-    return connector.import(dfcProducts);
+
+    const imports = await connector.import(dfcProducts);
+
+    return imports;
   } catch (error) {
     throwError('Error importing supplied products', error);
   }
