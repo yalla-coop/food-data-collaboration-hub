@@ -1,12 +1,12 @@
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import { CircularProgress, Typography } from '@mui/material';
-import { useState } from 'react';
-import { useAppBridge } from '@shopify/app-bridge-react';
-import { Redirect } from '@shopify/app-bridge/actions';
-import { useQueryClient } from 'react-query';
-import { useAuthenticatedFetch } from '../hooks/useAuthenticatedFetch';
-import { useAuth } from '../components/providers/AuthProvider';
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
+import { CircularProgress, Typography } from "@mui/material";
+import { useState } from "react";
+import { useAppBridge } from "@shopify/app-bridge-react";
+import { Redirect } from "@shopify/app-bridge/actions";
+import { useQueryClient } from "react-query";
+import { useAuthenticatedFetch } from "../hooks/useAuthenticatedFetch";
+import { useAuth } from "../components/providers/AuthProvider";
 
 export default function Home() {
   const authenticatedFetch = useAuthenticatedFetch();
@@ -15,10 +15,10 @@ export default function Home() {
   const redirect = Redirect.create(app);
   const qc = useQueryClient();
 
-  const { data: userAuthData } = useAuth();
+  const { data: userAuthData, isLoading } = useAuth();
 
   if (userAuthData?.isAuthenticated) {
-    redirect.dispatch(Redirect.Action.APP, '/productslist');
+    redirect.dispatch(Redirect.Action.APP, "/productslist");
     return null;
   }
 
@@ -26,34 +26,39 @@ export default function Home() {
     <Stack
       spacing="20px"
       sx={{
-        width: '100vw',
-        height: '100vh',
-        justifyContent: 'center',
-        alignItems: 'center'
+        width: "100vw",
+        height: "100vh",
+        justifyContent: "center",
+        alignItems: "center",
       }}
     >
       {loading ? (
         <CircularProgress size={30} />
       ) : (
         <>
-          <Typography variant="h4">Welcome to the Food Data Collaboration Shopify App.</Typography>
-          <Typography variant="h6">Please login into your OpenID Connect Account to access the Commons.</Typography>
+          <Typography variant="h4">
+            Welcome to the Food Data Collaboration Shopify App.
+          </Typography>
+          <Typography variant="h6">
+            Please login into your OpenID Connect Account to access the Commons.
+          </Typography>
 
           <Button
             variant="contained"
             type="button"
+            disabled={isLoading}
             sx={{
-              width: '200px',
-              height: '10px',
-              p: '30px',
-              fontSize: '20px',
-              fontWeight: 'bold'
+              width: "200px",
+              height: "10px",
+              p: "30px",
+              fontSize: "20px",
+              fontWeight: "bold",
             }}
-            onClick={() => {
+            onClick={async () => {
               window.open(
                 `https://${window.location.host}/oidc/login?host=${window.location.host}`,
-                '_blank',
-                'toolbar=yes,scrollbars=yes,resizable=yes,top=500,left=500,width=400,height=400'
+                "_blank",
+                "toolbar=yes,scrollbars=yes,resizable=yes,top=500,left=500,width=400,height=400"
               );
             }}
           >
@@ -64,22 +69,22 @@ export default function Home() {
             variant="contained"
             type="button"
             sx={{
-              width: '200px',
-              height: '10px',
-              p: '30px',
-              fontSize: '20px',
-              fontWeight: 'bold'
+              width: "200px",
+              height: "10px",
+              p: "30px",
+              fontSize: "20px",
+              fontWeight: "bold",
             }}
             onClick={async () => {
               setLoading(true);
-              await authenticatedFetch('/api/user/logout', {
-                method: 'POST',
+              await authenticatedFetch("/api/user/logout", {
+                method: "POST",
                 headers: {
-                  'Content-Type': 'application/json'
-                }
+                  "Content-Type": "application/json",
+                },
               });
-              await qc.invalidateQueries('/api/user/check');
-              redirect.dispatch(Redirect.Action.APP, '/');
+              await qc.invalidateQueries("/api/user/check");
+              redirect.dispatch(Redirect.Action.APP, "/");
               setLoading(false);
             }}
           >
