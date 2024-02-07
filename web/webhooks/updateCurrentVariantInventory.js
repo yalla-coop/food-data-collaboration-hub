@@ -137,7 +137,7 @@ export const updateCurrentVariantInventory = async ({
 
     currentHubVariant.inventory_policy = mappedProducerVariant.inventory_policy;
     currentHubVariant.inventory_management =
-      producerVariantData.inventory_management || 'shopify';
+      producerVariantData?.inventory_management || 'shopify';
     await currentHubVariant.saveAndUpdate();
 
     const inventoryItemId = currentHubVariant.inventory_item_id;
