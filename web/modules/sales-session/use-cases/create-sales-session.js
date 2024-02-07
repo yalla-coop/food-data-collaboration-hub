@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { query } from '../../../database/connect.js';
 import createOrderAtProducerStore from '../../../modules/orders/use-cases/create-order-at-producer-store.js';
 import updateExistingProductsUseCase from './updateExistingProducts.js';
+import { throwError } from '../../../utils/index.js';
 
 dotenv.config();
 
@@ -53,9 +54,7 @@ const createSalesSessionUseCase = async (
       shouldUpdateThePrice: true
     });
   } catch (error) {
-    console.error(error);
-    console.log('Failed to create sales session', error);
-    throw new Error('Failed to create sales session', error);
+    throwError('Error from createSalesSessionUseCase', error);
   }
 };
 

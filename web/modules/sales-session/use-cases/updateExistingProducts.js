@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import shopify from '../../../shopify.js';
 import getProducerProducts from './get-producer-products.js';
 import { updateCurrentVariantInventory } from '../../../webhooks/updateCurrentVariantInventory.js';
+import { throwError } from '../../../utils/index.js';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ const updateSingleProduct = async ({
   });
 
   hubProduct.id = hubProductId;
+
   await hubProduct.saveAndUpdate();
 
   for (const hubVariant of storedVariants) {
@@ -37,8 +39,8 @@ const updateSingleProduct = async ({
       isPartiallySoldCasesEnabled,
       shouldUpdateThePrice
     });
-    await delayFun(500)
-  };
+    await delayFun(500);
+  }
 };
 
 const updateExistingProductsUseCase = async ({
@@ -51,7 +53,9 @@ const updateExistingProductsUseCase = async ({
     const session = await shopify.config.sessionStorage.loadSession(sessionId);
 
     if (!session) {
-      throw new Error('Shopify Session not found');
+      throwError(
+        'Error from updateExistingProductsUseCase: Shopify Session not found'
+      );
     }
 
     const productsWithVariants = await getProducerProducts();
@@ -72,10 +76,9 @@ const updateExistingProductsUseCase = async ({
         isPartiallySoldCasesEnabled,
         shouldUpdateThePrice
       });
-    };
+    }
   } catch (e) {
-    console.log(e);
-    throw new Error('Failed to update existing products', e);
+    throwError('Error from updateExistingProductsUseCase', e);
   }
 };
 

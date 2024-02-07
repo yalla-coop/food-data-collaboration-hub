@@ -2,7 +2,7 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import shopify from '../shopify.js';
 import { query } from '../database/connect.js';
-import { convertShopifyGraphQLIdToNumber } from '../utils/index.js';
+import { convertShopifyGraphQLIdToNumber, throwError } from '../utils/index.js';
 
 dotenv.config();
 const { PRODUCER_SHOP_URL, PRODUCER_SHOP, HUB_SHOP_NAME } = process.env;
@@ -43,8 +43,7 @@ const getLatestProducerProductData = async (producerProductId) => {
     const producerProductData = producerProducts[0];
     return producerProductData;
   } catch (err) {
-    console.log(err);
-    throw new Error(err);
+    throwError('Error from getLatestProducerProductData', err);
   }
 };
 
@@ -75,12 +74,10 @@ const updateCurrentVariantPrice = async ({
     try {
       await query(updateVariantQuery, [hubVariantNewPrice, hubVariantId]);
     } catch (err) {
-      console.log(err);
-      throw new Error(err);
+      throwError('Error from updateCurrentVariantPrice db query', err);
     }
   } catch (err) {
-    console.log(err);
-    throw new Error(err);
+    throwError('Error from updateCurrentVariantPrice', err);
   }
 };
 
@@ -97,15 +94,17 @@ export const updateCurrentVariantInventory = async ({
       noOfItemsPerPackage,
       mappedVariantId,
       numberOfExcessOrders,
-      numberOfRemainingOrders
+      numberOfRemainingOrders,
+      producerVariantData
     } = storedHubVariant;
-
     const sessionId = shopify.api.session.getOfflineId(HUB_SHOP_NAME);
 
     const session = await shopify.config.sessionStorage.loadSession(sessionId);
 
     if (!session) {
-      throw new Error('Shopify Session not found');
+      throwError(
+        'Error from updateCurrentVariantInventory: Shopify Session not found'
+      );
     }
 
     let producerProduct;
@@ -130,7 +129,6 @@ export const updateCurrentVariantInventory = async ({
         mappedVariantPrice: mappedProducerVariant.price
       });
     }
-
     const currentHubVariant = new shopify.api.rest.Variant({
       session
     });
@@ -138,7 +136,8 @@ export const updateCurrentVariantInventory = async ({
     currentHubVariant.id = hubVariantId;
 
     currentHubVariant.inventory_policy = mappedProducerVariant.inventory_policy;
-
+    currentHubVariant.inventory_management =
+      producerVariantData.inventory_management || 'shopify';
     await currentHubVariant.saveAndUpdate();
 
     const inventoryItemId = currentHubVariant.inventory_item_id;
@@ -173,7 +172,6 @@ export const updateCurrentVariantInventory = async ({
       ).location_id
     });
   } catch (err) {
-    console.log(err);
-    throw new Error(err);
+    throwError('Error updating current variant inventory', err);
   }
 };
