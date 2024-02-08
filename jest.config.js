@@ -4,6 +4,7 @@ module.exports = {
     '^.+\\.(ts|tsx)?$': 'ts-jest',
     '^.+\\.(js|jsx)$': 'babel-jest'
   },
+  transformIgnorePatterns: [],
   testEnvironment: 'node',
   moduleNameMapper: {
     '@datafoodconsortium/connector': require.resolve(
