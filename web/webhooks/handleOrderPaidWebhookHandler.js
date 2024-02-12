@@ -7,6 +7,7 @@ import { getClient, query } from '../database/connect.js';
 import { updateCurrentVariantInventory } from './updateCurrentVariantInventory.js';
 import { calculateTheExcessOrders } from './calculateTheExcessOrders.js';
 import { calculateTheRemainingOrders } from './calculateTheRemainingOrders.js';
+import exportDFCConnectorOrder, { exportDFCConnectorCustomer } from '../connector/orderUtils.js';
 
 dotenv.config();
 
@@ -22,6 +23,14 @@ const sendOrderToProducer = async ({
     quantity: variant.numberOfPackages
   }));
 
+  const shopifyOrder = {
+    id: activeSalesSessionOrderId, lineItems, customer
+  };
+
+  const exportedOrder = await exportDFCConnectorOrder(shopifyOrder);
+
+  const exportedCustomer = await exportDFCConnectorCustomer(shopifyOrder);
+
   try {
     const { data } = await axios.patch(
       `${PRODUCER_SHOP_URL}fdc/orders/${activeSalesSessionOrderId}?shop=${PRODUCER_SHOP}`,
@@ -29,8 +38,8 @@ const sendOrderToProducer = async ({
         userId: '123',
         accessToken: 'access-token',
         orderId: activeSalesSessionOrderId,
-        lineItems,
-        customer
+        exportedOrder,
+        exportedCustomer
       },
       {
         headers: {
