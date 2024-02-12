@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import shopify from '../shopify.js';
 import { query } from '../database/connect.js';
 import { convertShopifyGraphQLIdToNumber, throwError } from '../utils/index.js';
+import { generateShopifyFDCProducts } from '../connector/productUtils.js';
 
 dotenv.config();
 const { PRODUCER_SHOP_URL, PRODUCER_SHOP, HUB_SHOP_NAME } = process.env;
@@ -38,7 +39,7 @@ const getLatestProducerProductData = async (producerProductId) => {
       }
     );
 
-    const { products: producerProducts } = data;
+    const producerProducts = await generateShopifyFDCProducts(data.products);
 
     const producerProductData = producerProducts[0];
     return producerProductData;
