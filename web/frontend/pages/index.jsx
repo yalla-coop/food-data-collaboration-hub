@@ -43,27 +43,12 @@ export default function Home() {
             Please login into your OpenID Connect Account to access the Commons.
           </Typography>
 
-          <Button
-            variant="contained"
-            type="button"
-            disabled={isLoading}
-            sx={{
-              width: "200px",
-              height: "10px",
-              p: "30px",
-              fontSize: "20px",
-              fontWeight: "bold",
-            }}
-            onClick={async () => {
-              window.open(
-                `https://${window.location.host}/oidc/login?host=${window.location.host}`,
-                "_blank",
-                "toolbar=yes,scrollbars=yes,resizable=yes,top=500,left=500,width=400,height=400"
-              );
-            }}
-          >
-            Login
-          </Button>
+          <iframe
+            src={`https://${window.location.host}/oidc/login?host=${window.location.host}`}
+            width="400"
+            height="400"
+            title="Login Frame"
+          ></iframe>
 
           <Button
             variant="contained"
