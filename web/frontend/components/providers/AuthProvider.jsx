@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
   const { data, isLoading } = useAppQuery({
     url: "/api/user/check",
     reactQueryOptions: {
-      refetchInterval: 5000,
+      refetchOnWindowFocus: true,
       onError: () => {
         redirect.dispatch(Redirect.Action.APP, "/");
       },
