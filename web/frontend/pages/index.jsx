@@ -17,10 +17,15 @@ export default function Home() {
   const { data: userAuthData } = useAuth();
 
   useEffect(() => {
-    if (userAuthData?.isAuthenticated) {
-      redirect.dispatch(Redirect.Action.APP, "/productslist");
-    }
-  }, [userAuthData?.isAuthenticated]);
+    const interval = setInterval(() => {
+      qc.refetchQueries(["userCheck"]);
+      if (userAuthData?.isAuthenticated) {
+        redirect.dispatch(Redirect.Action.APP, "/productslist");
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [qc]);
 
   return (
     <Stack
@@ -43,7 +48,7 @@ export default function Home() {
             Please login into your OpenID Connect Account to access the Commons.
           </Typography>
           <iframe
-            src={`https://${window.location.host}/oidc/login?host=${window.location.host}?toolbar=yes,scrollbars=yes,resizable=yes,top=500,left=500,width=400,height=400`}
+            src={`https://${window.location.host}/oidc/login?host=${window.location.host}`}
             width="400"
             height="440"
             frameBorder="0"
