@@ -12,7 +12,6 @@ export function AuthProvider({ children }) {
 
   const { data, isLoading } = useAppQuery({
     url: "/api/user/check",
-    key: "userCheck",
     reactQueryOptions: {
       refetchOnWindowFocus: true,
       onError: () => {

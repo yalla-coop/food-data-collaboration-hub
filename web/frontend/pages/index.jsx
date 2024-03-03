@@ -1,9 +1,8 @@
 import Stack from "@mui/material/Stack";
 import { CircularProgress, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { Redirect } from "@shopify/app-bridge/actions";
-import { useQueryClient } from "react-query";
 import { useAuthenticatedFetch } from "../hooks/useAuthenticatedFetch";
 import { useAuth } from "../components/providers/AuthProvider";
 
@@ -12,20 +11,12 @@ export default function Home() {
   const app = useAppBridge();
   const [loading, setLoading] = useState(false);
   const redirect = Redirect.create(app);
-  const qc = useQueryClient();
-
   const { data: userAuthData } = useAuth();
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      qc.refetchQueries(["userCheck"]);
-      if (userAuthData?.isAuthenticated) {
-        redirect.dispatch(Redirect.Action.APP, "/productslist");
-      }
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [qc]);
+  if (userAuthData?.isAuthenticated) {
+    redirect.dispatch(Redirect.Action.APP, "/productslist");
+    return null;
+  }
 
   return (
     <Stack
