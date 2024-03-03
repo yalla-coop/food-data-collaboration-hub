@@ -1,4 +1,3 @@
-import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import { CircularProgress, Typography } from "@mui/material";
 import { useState } from "react";
@@ -43,10 +42,17 @@ export default function Home() {
             Please login into your OpenID Connect Account to access the Commons.
           </Typography>
 
+          <iframe
+            src={`https://${window.location.host}/oidc/login?host=${window.location.host}?toolbar=yes,scrollbars=yes,resizable=yes,top=500,left=500,width=400,height=400`}
+            width="400"
+            height="440"
+            frameBorder="0"
+            title="Login Frame"
+          ></iframe>
+
           {/*<Button*/}
           {/*  variant="contained"*/}
           {/*  type="button"*/}
-          {/*  disabled={isLoading}*/}
           {/*  sx={{*/}
           {/*    width: "200px",*/}
           {/*    height: "10px",*/}
@@ -55,47 +61,20 @@ export default function Home() {
           {/*    fontWeight: "bold",*/}
           {/*  }}*/}
           {/*  onClick={async () => {*/}
-          {/*    window.open(*/}
-          {/*      `https://${window.location.host}/oidc/login?host=${window.location.host}`,*/}
-          {/*      "_blank",*/}
-          {/*      "toolbar=yes,scrollbars=yes,resizable=yes,top=500,left=500,width=400,height=400"*/}
-          {/*    );*/}
+          {/*    setLoading(true);*/}
+          {/*    await authenticatedFetch("/api/user/logout", {*/}
+          {/*      method: "POST",*/}
+          {/*      headers: {*/}
+          {/*        "Content-Type": "application/json",*/}
+          {/*      },*/}
+          {/*    });*/}
+          {/*    await qc.invalidateQueries("/api/user/check");*/}
+          {/*    redirect.dispatch(Redirect.Action.APP, "/");*/}
+          {/*    setLoading(false);*/}
           {/*  }}*/}
           {/*>*/}
-          {/*  Login*/}
+          {/*  Logout*/}
           {/*</Button>*/}
-          <iframe
-            src={`https://${window.location.host}/oidc/login?host=${window.location.host}`}
-            width="400"
-            height="400"
-            title="Login Frame"
-          ></iframe>
-
-          <Button
-            variant="contained"
-            type="button"
-            sx={{
-              width: "200px",
-              height: "10px",
-              p: "30px",
-              fontSize: "20px",
-              fontWeight: "bold",
-            }}
-            onClick={async () => {
-              setLoading(true);
-              await authenticatedFetch("/api/user/logout", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-              });
-              await qc.invalidateQueries("/api/user/check");
-              redirect.dispatch(Redirect.Action.APP, "/");
-              setLoading(false);
-            }}
-          >
-            Logout
-          </Button>
         </>
       )}
     </Stack>
