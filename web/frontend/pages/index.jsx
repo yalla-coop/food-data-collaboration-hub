@@ -1,6 +1,6 @@
 import Stack from "@mui/material/Stack";
 import { CircularProgress, Typography } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { Redirect } from "@shopify/app-bridge/actions";
 import { useQueryClient } from "react-query";
@@ -14,12 +14,13 @@ export default function Home() {
   const redirect = Redirect.create(app);
   const qc = useQueryClient();
 
-  const { data: userAuthData, isLoading } = useAuth();
+  const { data: userAuthData } = useAuth();
 
-  if (userAuthData?.isAuthenticated) {
-    redirect.dispatch(Redirect.Action.APP, "/productslist");
-    return null;
-  }
+  useEffect(() => {
+    if (userAuthData?.isAuthenticated) {
+      redirect.dispatch(Redirect.Action.APP, "/productslist");
+    }
+  }, [userAuthData?.isAuthenticated]);
 
   return (
     <Stack
