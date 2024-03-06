@@ -1,6 +1,5 @@
 /* eslint-disable no-nested-ternary */
 import { useLayoutEffect, useState } from "react";
-import { Redirect } from "@shopify/app-bridge/actions";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
@@ -30,20 +29,8 @@ export default function ProductsList() {
   const app = useAppBridge();
   const [exitingProductsList, setExitingProductsList] = useState([]);
 
-  const redirect = Redirect.create(app);
-  const { data, isLoading: authIsLoading } = useAppQuery({
+  const { data, isLoading: isAuthLoading } = useAppQuery({
     url: "/api/user/check",
-    reactQueryOptions: {
-      refetchOnWindowFocus: true,
-      onError: () => {
-        redirect.dispatch(Redirect.Action.APP, "/");
-      },
-      onSuccess: (data) => {
-        if (!data || !data?.isAuthenticated) {
-          return redirect.dispatch(Redirect.Action.APP, "/");
-        }
-      },
-    },
   });
 
   const { data: currentSalesSessionData } = useAppQuery({
@@ -87,6 +74,9 @@ export default function ProductsList() {
   const isCurrentSalesSessionActive =
     currentSalesSessionData?.currentSalesSession?.isActive;
 
+  if (isAuthLoading) {
+    return <div>Loading products...</div>;
+  }
   if ((productsList.length === 0 && isLoading) || exitingProductsIsLoading) {
     return (
       <Stack
@@ -103,36 +93,21 @@ export default function ProductsList() {
   }
 
   if (getProductDataError) {
-    if (authIsLoading) {
-      return (
-        <Stack
-          sx={{
-            width: "100vw",
-            height: "100vh",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <CircularProgress size={30} />
-        </Stack>
-      );
-    } else {
-      return (
-        <Alert
-          severity="warning"
-          sx={{
-            typography: "body1",
-            fontSize: "20px",
-          }}
-        >
-          We're having some issues with connecting your Open ID Account to the
-          Producer App - the error is :
-          {getProductDataError?.message ||
-            getProductDataError?.error ||
-            "Unknown error"}
-        </Alert>
-      );
-    }
+    return (
+      <Alert
+        severity="warning"
+        sx={{
+          typography: "body1",
+          fontSize: "20px",
+        }}
+      >
+        We're having some issues with connecting your Open ID Account to the
+        Producer App - the error is :
+        {getProductDataError?.message ||
+          getProductDataError?.error ||
+          "Unknown error"}
+      </Alert>
+    );
   }
 
   const handleShowMore = () => {
