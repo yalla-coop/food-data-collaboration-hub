@@ -49,6 +49,7 @@ export default function SalesSession() {
   const {
     data: currentSalesSessionData,
     isLoading: currentSalesSessionIsLoading,
+    error: loadSalesSessionsError,
   } = useAppQuery({
     url: "/api/sales-session",
     fetchInit: {
@@ -164,7 +165,7 @@ export default function SalesSession() {
     });
   };
 
-  if (!userAuthData?.isAuthenticated) {
+  if (!userAuthData?.isAuthenticated || loadSalesSessionsError) {
     redirect.dispatch(Redirect.Action.APP, "/");
     return null;
   }

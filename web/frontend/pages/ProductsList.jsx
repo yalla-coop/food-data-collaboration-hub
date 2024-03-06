@@ -83,24 +83,7 @@ export default function ProductsList() {
       </Stack>
     );
   } else if (getProductDataError) {
-    return (
-      <>
-        <Alert
-          severity="warning"
-          sx={{
-            typography: "body1",
-            fontSize: "20px",
-          }}
-        >
-          We're having some issues with connecting your Open ID Account to the
-          Producer App - the error is :
-          {getProductDataError?.message ||
-            getProductDataError?.error ||
-            "Unknown error"}
-        </Alert>
-        <Navigate to="/" replace />{" "}
-      </>
-    );
+    return <Navigate to="/" replace />;
   }
 
   const handleShowMore = () => {
