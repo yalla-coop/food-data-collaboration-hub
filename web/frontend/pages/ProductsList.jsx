@@ -1,30 +1,30 @@
 /* eslint-disable no-nested-ternary */
-import { useLayoutEffect, useState } from 'react';
-import { Redirect } from '@shopify/app-bridge/actions';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
-import { useAppBridge } from '@shopify/app-bridge-react';
-import ListItemIcon from '@mui/material/ListItemIcon';
+import { useLayoutEffect, useState } from "react";
+import { Redirect } from "@shopify/app-bridge/actions";
+import Typography from "@mui/material/Typography";
+import Stack from "@mui/material/Stack";
+import Button from "@mui/material/Button";
+import { useAppBridge } from "@shopify/app-bridge-react";
+import ListItemIcon from "@mui/material/ListItemIcon";
 import {
   Alert,
   Box,
+  CircularProgress,
   List,
   ListItem,
   ListItemText,
-  CircularProgress
-} from '@mui/material';
+} from "@mui/material";
 
-import { useAppQuery } from '../hooks';
-import { useAuth } from '../components/providers/AuthProvider';
-import { ProductsCard } from '../components/ProductsCard';
-import { convertShopifyGraphQLIdToNumber } from '../utils/index.js';
+import { useAppQuery } from "../hooks";
+import { useAuth } from "../components/providers/AuthProvider";
+import { ProductsCard } from "../components/ProductsCard";
+import { convertShopifyGraphQLIdToNumber } from "../utils/index.js";
 
 export default function ProductsList() {
   const [productSinceId, setProductSinceId] = useState(0);
   const [
     remainingProductsCountBeforeNextFetch,
-    setRemainingProductsCountBeforeNextFetch
+    setRemainingProductsCountBeforeNextFetch,
   ] = useState(0);
   const [productsList, setProductsList] = useState([]);
   const [helpTextVisible, setHelpTextVisible] = useState(false);
@@ -32,10 +32,10 @@ export default function ProductsList() {
   const app = useAppBridge();
 
   const { data: currentSalesSessionData } = useAppQuery({
-    url: '/api/sales-session',
+    url: "/api/sales-session",
     fetchInit: {
-      method: 'GET'
-    }
+      method: "GET",
+    },
   });
 
   const redirect = Redirect.create(app);
@@ -45,25 +45,25 @@ export default function ProductsList() {
   const [exitingProductsList, setExitingProductsList] = useState([]);
 
   const { isLoading: exitingProductsIsLoading } = useAppQuery({
-    url: '/api/products',
+    url: "/api/products",
     reactQueryOptions: {
       onSuccess: (data) => {
         if (Array.isArray(data)) {
           setExitingProductsList(data);
         }
-      }
-    }
+      },
+    },
   });
 
   const {
     data: producerProductsData,
     isLoading,
-    error: getProductDataError
+    error: getProductDataError,
   } = useAppQuery({
     reactQueryOptions: {},
     url: `/api/products/fdc?sinceId=${productSinceId}&remainingProductsCountBeforeNextFetch=${
       remainingProductsCountBeforeNextFetch || 0
-    }`
+    }`,
   });
 
   useLayoutEffect(() => {
@@ -78,19 +78,29 @@ export default function ProductsList() {
   const isCurrentSalesSessionActive =
     currentSalesSessionData?.currentSalesSession?.isActive;
 
-  if (!userAuthData?.isAuthenticated) {
-    redirect.dispatch(Redirect.Action.APP, '/');
-    return null;
-  }
+  const { data } = useAppQuery({
+    url: "/api/user/check",
+    reactQueryOptions: {
+      refetchOnWindowFocus: true,
+      onError: () => {
+        redirect.dispatch(Redirect.Action.APP, "/");
+      },
+      onSuccess: (data) => {
+        if (!data || !data?.isAuthenticated) {
+          return redirect.dispatch(Redirect.Action.APP, "/");
+        }
+      },
+    },
+  });
 
   if ((productsList.length === 0 && isLoading) || exitingProductsIsLoading) {
     return (
       <Stack
         sx={{
-          width: '100vw',
-          height: '100vh',
-          justifyContent: 'center',
-          alignItems: 'center'
+          width: "100vw",
+          height: "100vh",
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
         <CircularProgress size={30} />
@@ -103,15 +113,15 @@ export default function ProductsList() {
       <Alert
         severity="warning"
         sx={{
-          typography: 'body1',
-          fontSize: '20px'
+          typography: "body1",
+          fontSize: "20px",
         }}
       >
         We're having some issues with connecting your Open ID Account to the
         Producer App - the error is :
         {getProductDataError?.message ||
           getProductDataError?.error ||
-          'Unknown error'}
+          "Unknown error"}
       </Alert>
     );
   }
@@ -132,13 +142,13 @@ export default function ProductsList() {
         type="button"
         color="success"
         sx={{
-          p: '6px',
-          position: 'fixed',
-          right: '12px',
-          bottom: '16px',
-          borderRadius: '16px',
+          p: "6px",
+          position: "fixed",
+          right: "12px",
+          bottom: "16px",
+          borderRadius: "16px",
           zIndex: 1000,
-          textTransform: 'none'
+          textTransform: "none",
         }}
         variant="contained"
         onClick={() => setHelpTextVisible((prev) => !prev)}
@@ -154,18 +164,18 @@ export default function ProductsList() {
         spacing="6px"
         p="12px"
         sx={{
-          p: '16px',
-          position: 'fixed',
-          borderRadius: '12px',
-          boxShadow: '0px 0px 12px 0px rgba(0,0,0,0.75)',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '80%',
-          maxWidth: '800px',
-          backgroundColor: 'white',
+          p: "16px",
+          position: "fixed",
+          borderRadius: "12px",
+          boxShadow: "0px 0px 12px 0px rgba(0,0,0,0.75)",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "80%",
+          maxWidth: "800px",
+          backgroundColor: "white",
           zIndex: 100,
-          visibility: helpTextVisible ? 'visible' : 'hidden'
+          visibility: helpTextVisible ? "visible" : "hidden",
         }}
       >
         <Typography variant="h3" textAlign="center">
@@ -178,7 +188,7 @@ export default function ProductsList() {
         </Typography>
         <Typography variant="body1">
           <Typography variantMapping="span" fontWeight="600">
-            For example:{' '}
+            For example:{" "}
           </Typography>
           this would allow you to order a box/case of 6 bottles of vinegar from
           your supplier, whilst listing a single bottle in your shop
@@ -232,9 +242,9 @@ export default function ProductsList() {
 
         <Button
           sx={{
-            p: '12px',
-            margin: '0 auto',
-            width: '200px'
+            p: "12px",
+            margin: "0 auto",
+            width: "200px",
           }}
           variant="contained"
           onClick={() => setHelpTextVisible((prev) => !prev)}
@@ -247,8 +257,8 @@ export default function ProductsList() {
         <Alert
           severity="warning"
           sx={{
-            typography: 'body1',
-            fontSize: '20px'
+            typography: "body1",
+            fontSize: "20px",
           }}
         >
           There is no active sales session , please create one to be able to add
@@ -260,8 +270,8 @@ export default function ProductsList() {
         <Alert
           severity="warning"
           sx={{
-            typography: 'body1',
-            fontSize: '20px'
+            typography: "body1",
+            fontSize: "20px",
           }}
         >
           There is no active sales session , please create one
@@ -284,10 +294,10 @@ export default function ProductsList() {
         ))}
         <Button
           sx={{
-            p: '12px',
-            margin: '0 auto',
-            width: '200px',
-            display: 'block'
+            p: "12px",
+            margin: "0 auto",
+            width: "200px",
+            display: "block",
           }}
           variant="contained"
           type="button"
@@ -299,10 +309,10 @@ export default function ProductsList() {
           }
         >
           {isLoading
-            ? 'Loading...'
+            ? "Loading..."
             : !producerProductsData?.lastId
-            ? 'No more products'
-            : 'Load more products'}
+            ? "No more products"
+            : "Load more products"}
         </Button>
       </Stack>
     </Box>
