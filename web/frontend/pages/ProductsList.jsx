@@ -17,8 +17,11 @@ import {
 import { useAppQuery } from "../hooks";
 import { ProductsCard } from "../components/ProductsCard";
 import { convertShopifyGraphQLIdToNumber } from "../utils/index.js";
+import { Redirect } from "@shopify/app-bridge/actions";
 
 export default function ProductsList() {
+  const app = useAppBridge();
+  const redirect = Redirect.create(app);
   const [productSinceId, setProductSinceId] = useState(0);
   const [
     remainingProductsCountBeforeNextFetch,
@@ -26,11 +29,19 @@ export default function ProductsList() {
   ] = useState(0);
   const [productsList, setProductsList] = useState([]);
   const [helpTextVisible, setHelpTextVisible] = useState(false);
-  const app = useAppBridge();
   const [exitingProductsList, setExitingProductsList] = useState([]);
+  const [isAuthenticatedUser, setIsAuthenticatedUser] = useState(false);
 
   const { data, isLoading: isAuthLoading } = useAppQuery({
     url: "/api/user/check",
+    onError: () => {
+      redirect.dispatch(Redirect.Action.APP, "/");
+    },
+    onSuccess: (data) => {
+      if (data || data?.isAuthenticated) {
+        setIsAuthenticatedUser(true);
+      }
+    },
   });
 
   const { data: currentSalesSessionData } = useAppQuery({
@@ -60,6 +71,7 @@ export default function ProductsList() {
     url: `/api/products/fdc?sinceId=${productSinceId}&remainingProductsCountBeforeNextFetch=${
       remainingProductsCountBeforeNextFetch || 0
     }`,
+    enabled: isAuthenticatedUser,
   });
 
   useLayoutEffect(() => {
@@ -74,10 +86,12 @@ export default function ProductsList() {
   const isCurrentSalesSessionActive =
     currentSalesSessionData?.currentSalesSession?.isActive;
 
-  if (isAuthLoading) {
-    return <div>Loading products...</div>;
-  }
-  if ((productsList.length === 0 && isLoading) || exitingProductsIsLoading) {
+  if (
+    (productsList.length === 0 && isLoading) ||
+    exitingProductsIsLoading ||
+    isAuthLoading ||
+    !isAuthenticatedUser
+  ) {
     return (
       <Stack
         sx={{
