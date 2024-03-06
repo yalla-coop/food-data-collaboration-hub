@@ -16,7 +16,6 @@ import {
 } from "@mui/material";
 
 import { useAppQuery } from "../hooks";
-import { useAuth } from "../components/providers/AuthProvider";
 import { ProductsCard } from "../components/ProductsCard";
 import { convertShopifyGraphQLIdToNumber } from "../utils/index.js";
 
@@ -28,8 +27,39 @@ export default function ProductsList() {
   ] = useState(0);
   const [productsList, setProductsList] = useState([]);
   const [helpTextVisible, setHelpTextVisible] = useState(false);
-
   const app = useAppBridge();
+  const [exitingProductsList, setExitingProductsList] = useState([]);
+
+  const redirect = Redirect.create(app);
+  const { data, isLoading: authIsLoading } = useAppQuery({
+    url: "/api/user/check",
+    reactQueryOptions: {
+      refetchOnWindowFocus: true,
+      onError: () => {
+        redirect.dispatch(Redirect.Action.APP, "/");
+      },
+      onSuccess: (data) => {
+        if (!data || !data?.isAuthenticated) {
+          return redirect.dispatch(Redirect.Action.APP, "/");
+        }
+      },
+    },
+  });
+
+  if (authIsLoading) {
+    return (
+      <Stack
+        sx={{
+          width: "100vw",
+          height: "100vh",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <CircularProgress size={30} />
+      </Stack>
+    );
+  }
 
   const { data: currentSalesSessionData } = useAppQuery({
     url: "/api/sales-session",
@@ -37,12 +67,6 @@ export default function ProductsList() {
       method: "GET",
     },
   });
-
-  const redirect = Redirect.create(app);
-
-  const { data: userAuthData } = useAuth();
-
-  const [exitingProductsList, setExitingProductsList] = useState([]);
 
   const { isLoading: exitingProductsIsLoading } = useAppQuery({
     url: "/api/products",
@@ -77,21 +101,6 @@ export default function ProductsList() {
 
   const isCurrentSalesSessionActive =
     currentSalesSessionData?.currentSalesSession?.isActive;
-
-  const { data } = useAppQuery({
-    url: "/api/user/check",
-    reactQueryOptions: {
-      refetchOnWindowFocus: true,
-      onError: () => {
-        redirect.dispatch(Redirect.Action.APP, "/");
-      },
-      onSuccess: (data) => {
-        if (!data || !data?.isAuthenticated) {
-          return redirect.dispatch(Redirect.Action.APP, "/");
-        }
-      },
-    },
-  });
 
   if ((productsList.length === 0 && isLoading) || exitingProductsIsLoading) {
     return (
