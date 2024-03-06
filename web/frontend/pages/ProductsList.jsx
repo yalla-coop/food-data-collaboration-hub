@@ -46,21 +46,6 @@ export default function ProductsList() {
     },
   });
 
-  if (authIsLoading) {
-    return (
-      <Stack
-        sx={{
-          width: "100vw",
-          height: "100vh",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <CircularProgress size={30} />
-      </Stack>
-    );
-  }
-
   const { data: currentSalesSessionData } = useAppQuery({
     url: "/api/sales-session",
     fetchInit: {
@@ -118,21 +103,36 @@ export default function ProductsList() {
   }
 
   if (getProductDataError) {
-    return (
-      <Alert
-        severity="warning"
-        sx={{
-          typography: "body1",
-          fontSize: "20px",
-        }}
-      >
-        We're having some issues with connecting your Open ID Account to the
-        Producer App - the error is :
-        {getProductDataError?.message ||
-          getProductDataError?.error ||
-          "Unknown error"}
-      </Alert>
-    );
+    if (authIsLoading) {
+      return (
+        <Stack
+          sx={{
+            width: "100vw",
+            height: "100vh",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <CircularProgress size={30} />
+        </Stack>
+      );
+    } else {
+      return (
+        <Alert
+          severity="warning"
+          sx={{
+            typography: "body1",
+            fontSize: "20px",
+          }}
+        >
+          We're having some issues with connecting your Open ID Account to the
+          Producer App - the error is :
+          {getProductDataError?.message ||
+            getProductDataError?.error ||
+            "Unknown error"}
+        </Alert>
+      );
+    }
   }
 
   const handleShowMore = () => {
