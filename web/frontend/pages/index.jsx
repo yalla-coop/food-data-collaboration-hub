@@ -3,18 +3,24 @@ import { CircularProgress, Typography } from "@mui/material";
 import { useState } from "react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { Redirect } from "@shopify/app-bridge/actions";
-import { useAuth } from "../components/providers/AuthProvider";
+import { useAppQuery } from "../hooks/index.js";
 
 export default function Home() {
   const app = useAppBridge();
   const [loading, setLoading] = useState(false);
   const redirect = Redirect.create(app);
-  const { data: userAuthData } = useAuth();
 
-  if (userAuthData?.isAuthenticated) {
-    redirect.dispatch(Redirect.Action.APP, "/productslist");
-    return null;
-  }
+  const { data } = useAppQuery({
+    url: "/api/user/check",
+    reactQueryOptions: {
+      refetchOnWindowFocus: true,
+      onSuccess: (data) => {
+        if (data && data?.isAuthenticated) {
+          return redirect.dispatch(Redirect.Action.APP, "/productslist");
+        }
+      },
+    },
+  });
 
   return (
     <Stack
