@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
+import { Redirect } from "@shopify/app-bridge/actions";
 import {
   Alert,
   Box,
@@ -11,18 +12,16 @@ import {
 import { useQueryClient } from "react-query";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { useAppMutation, useAppQuery } from "../hooks";
+import { useAuth } from "../components/providers/AuthProvider";
 import { DatePickerComponent } from "../components/DatePicker";
 
 export default function SalesSession() {
   const app = useAppBridge();
   const queryClient = useQueryClient();
+
   const [showSuccessAlert, setShowSuccessAlert] = useState({
     show: false,
     type: "",
-  });
-
-  const { data, isLoading: isAuthLoading } = useAppQuery({
-    url: "/api/user/check",
   });
 
   useEffect(() => {
@@ -42,6 +41,10 @@ export default function SalesSession() {
 
   const [startDate, setStartDate] = useState(dayjs(new Date()));
   const [sessionDurationInDays, setSessionDurationInDays] = useState(7);
+
+  const redirect = Redirect.create(app);
+
+  const { data: userAuthData } = useAuth();
 
   const {
     data: currentSalesSessionData,
@@ -161,7 +164,12 @@ export default function SalesSession() {
     });
   };
 
-  if (currentSalesSessionIsLoading || isAuthLoading) {
+  if (!userAuthData?.isAuthenticated) {
+    redirect.dispatch(Redirect.Action.APP, "/");
+    return null;
+  }
+
+  if (currentSalesSessionIsLoading) {
     return <div>Loading...</div>;
   }
 

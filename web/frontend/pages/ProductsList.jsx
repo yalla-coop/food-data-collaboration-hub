@@ -1,5 +1,6 @@
 /* eslint-disable no-nested-ternary */
 import { useLayoutEffect, useState } from "react";
+import { Redirect } from "@shopify/app-bridge/actions";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
@@ -15,13 +16,11 @@ import {
 } from "@mui/material";
 
 import { useAppQuery } from "../hooks";
+import { useAuth } from "../components/providers/AuthProvider";
 import { ProductsCard } from "../components/ProductsCard";
 import { convertShopifyGraphQLIdToNumber } from "../utils/index.js";
-import { Redirect } from "@shopify/app-bridge/actions";
 
 export default function ProductsList() {
-  const app = useAppBridge();
-  const redirect = Redirect.create(app);
   const [productSinceId, setProductSinceId] = useState(0);
   const [
     remainingProductsCountBeforeNextFetch,
@@ -29,20 +28,8 @@ export default function ProductsList() {
   ] = useState(0);
   const [productsList, setProductsList] = useState([]);
   const [helpTextVisible, setHelpTextVisible] = useState(false);
-  const [exitingProductsList, setExitingProductsList] = useState([]);
-  const [isAuthenticatedUser, setIsAuthenticatedUser] = useState(false);
 
-  const { data, isLoading: isAuthLoading } = useAppQuery({
-    url: "/api/user/check",
-    onError: () => {
-      redirect.dispatch(Redirect.Action.APP, "/");
-    },
-    onSuccess: (data) => {
-      if (data || data?.isAuthenticated) {
-        setIsAuthenticatedUser(true);
-      }
-    },
-  });
+  const app = useAppBridge();
 
   const { data: currentSalesSessionData } = useAppQuery({
     url: "/api/sales-session",
@@ -50,6 +37,12 @@ export default function ProductsList() {
       method: "GET",
     },
   });
+
+  const redirect = Redirect.create(app);
+
+  const { data: userAuthData } = useAuth();
+
+  const [exitingProductsList, setExitingProductsList] = useState([]);
 
   const { isLoading: exitingProductsIsLoading } = useAppQuery({
     url: "/api/products",
@@ -71,7 +64,6 @@ export default function ProductsList() {
     url: `/api/products/fdc?sinceId=${productSinceId}&remainingProductsCountBeforeNextFetch=${
       remainingProductsCountBeforeNextFetch || 0
     }`,
-    enabled: isAuthenticatedUser,
   });
 
   useLayoutEffect(() => {
@@ -86,12 +78,13 @@ export default function ProductsList() {
   const isCurrentSalesSessionActive =
     currentSalesSessionData?.currentSalesSession?.isActive;
 
-  if (
-    (productsList.length === 0 && isLoading) ||
-    exitingProductsIsLoading ||
-    isAuthLoading ||
-    !isAuthenticatedUser
-  ) {
+  useLayoutEffect(() => {
+    if (!userAuthData?.isAuthenticated) {
+      redirect.dispatch(Redirect.Action.APP, "/");
+    }
+  }, [userAuthData]);
+
+  if ((productsList.length === 0 && isLoading) || exitingProductsIsLoading) {
     return (
       <Stack
         sx={{
