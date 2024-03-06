@@ -3,11 +3,9 @@ import { CircularProgress, Typography } from "@mui/material";
 import { useState } from "react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { Redirect } from "@shopify/app-bridge/actions";
-import { useAuthenticatedFetch } from "../hooks/useAuthenticatedFetch";
 import { useAuth } from "../components/providers/AuthProvider";
 
 export default function Home() {
-  const authenticatedFetch = useAuthenticatedFetch();
   const app = useAppBridge();
   const [loading, setLoading] = useState(false);
   const redirect = Redirect.create(app);
