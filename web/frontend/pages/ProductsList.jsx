@@ -19,6 +19,7 @@ import { useAppQuery } from "../hooks";
 import { useAuth } from "../components/providers/AuthProvider";
 import { ProductsCard } from "../components/ProductsCard";
 import { convertShopifyGraphQLIdToNumber } from "../utils/index.js";
+import { Navigate } from "react-router-dom";
 
 export default function ProductsList() {
   const [productSinceId, setProductSinceId] = useState(0);
@@ -28,8 +29,10 @@ export default function ProductsList() {
   ] = useState(0);
   const [productsList, setProductsList] = useState([]);
   const [helpTextVisible, setHelpTextVisible] = useState(false);
-
   const app = useAppBridge();
+  const redirect = Redirect.create(app);
+  const { data: userAuthData } = useAuth();
+  const [exitingProductsList, setExitingProductsList] = useState([]);
 
   const { data: currentSalesSessionData } = useAppQuery({
     url: "/api/sales-session",
@@ -37,12 +40,6 @@ export default function ProductsList() {
       method: "GET",
     },
   });
-
-  const redirect = Redirect.create(app);
-
-  const { data: userAuthData } = useAuth();
-
-  const [exitingProductsList, setExitingProductsList] = useState([]);
 
   const { isLoading: exitingProductsIsLoading } = useAppQuery({
     url: "/api/products",
@@ -72,18 +69,6 @@ export default function ProductsList() {
     }
   }, [producerProductsData]);
 
-  const isCurrentSalesSessionCreated =
-    currentSalesSessionData?.currentSalesSession;
-
-  const isCurrentSalesSessionActive =
-    currentSalesSessionData?.currentSalesSession?.isActive;
-
-  useLayoutEffect(() => {
-    if (!userAuthData?.isAuthenticated) {
-      redirect.dispatch(Redirect.Action.APP, "/");
-    }
-  }, [userAuthData]);
-
   if ((productsList.length === 0 && isLoading) || exitingProductsIsLoading) {
     return (
       <Stack
@@ -97,23 +82,24 @@ export default function ProductsList() {
         <CircularProgress size={30} />
       </Stack>
     );
-  }
-
-  if (getProductDataError) {
+  } else if (getProductDataError) {
     return (
-      <Alert
-        severity="warning"
-        sx={{
-          typography: "body1",
-          fontSize: "20px",
-        }}
-      >
-        We're having some issues with connecting your Open ID Account to the
-        Producer App - the error is :
-        {getProductDataError?.message ||
-          getProductDataError?.error ||
-          "Unknown error"}
-      </Alert>
+      <>
+        <Alert
+          severity="warning"
+          sx={{
+            typography: "body1",
+            fontSize: "20px",
+          }}
+        >
+          We're having some issues with connecting your Open ID Account to the
+          Producer App - the error is :
+          {getProductDataError?.message ||
+            getProductDataError?.error ||
+            "Unknown error"}
+        </Alert>
+        <Navigate to="/" replace />{" "}
+      </>
     );
   }
 
@@ -126,6 +112,12 @@ export default function ProductsList() {
       producerProductsData?.remainingProductsCountAfter
     );
   };
+
+  const isCurrentSalesSessionCreated =
+    currentSalesSessionData?.currentSalesSession;
+
+  const isCurrentSalesSessionActive =
+    currentSalesSessionData?.currentSalesSession?.isActive;
 
   return (
     <Box>
