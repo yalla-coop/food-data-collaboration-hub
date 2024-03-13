@@ -7,7 +7,10 @@ import { getClient, query } from '../database/connect.js';
 import { updateCurrentVariantInventory } from './updateCurrentVariantInventory.js';
 import { calculateTheExcessOrders } from './calculateTheExcessOrders.js';
 import { calculateTheRemainingOrders } from './calculateTheRemainingOrders.js';
-import exportDFCConnectorOrder, { exportDFCConnectorCustomer } from '../connector/orderUtils.js';
+import exportDFCConnectorOrder, {
+  exportDFCConnectorCustomer
+} from '../connector/orderUtils.js';
+import { throwError } from '../utils/index.js';
 
 dotenv.config();
 
@@ -24,7 +27,9 @@ const sendOrderToProducer = async ({
   }));
 
   const shopifyOrder = {
-    id: activeSalesSessionOrderId, lineItems, customer
+    id: activeSalesSessionOrderId,
+    lineItems,
+    customer
   };
 
   const exportedOrder = await exportDFCConnectorOrder(shopifyOrder);
@@ -49,8 +54,10 @@ const sendOrderToProducer = async ({
     );
     return data.order.id;
   } catch (err) {
-    console.log('err from axios', err.message);
-    throw new Error(err);
+    throwError(
+      'sendOrderToProducer: Error occurred while sending the order to producer',
+      err
+    );
   }
 };
 
@@ -179,7 +186,11 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
     `;
       await query(insertWebhookQuery, [webhookId, topic, payload], sqlClient);
       await sqlClient.query('COMMIT');
-
+      if (!payload?.line_items?.length) {
+        throwError(
+          'handleOrderPaidWebhookHandler: No line items found in the payload'
+        );
+      }
       const variants = payload.line_items.map((lineItem) => ({
         variantId: lineItem.variant_id,
         quantity: Number(lineItem.quantity)
@@ -198,7 +209,9 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
       );
 
       if (activeSalesSessionResult.rows.length === 0) {
-        throw new Error('No active sales session found');
+        throwError(
+          'handleOrderPaidWebhookHandler: No active sales session found'
+        );
       }
 
       const isPartiallySoldCasesEnabled =
@@ -224,11 +237,16 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
         variants.map((v) => v.variantId)
       ]);
 
+      if (exitingVariants?.rows?.length === 0) {
+        throwError('handleOrderPaidWebhookHandler: No variants found');
+      }
+
       const handleVariantItemsCountPromises = await Promise.allSettled(
         variants.map(async (v) => {
           const exitingVariant = exitingVariants.rows.find(
             (ev) => Number(ev.hubVariantId) === Number(v.variantId)
           );
+
           return handleVariantItemsCount({
             v,
             activeSalesSessionResult,
@@ -299,14 +317,19 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
         statusCode: 200
       };
     } catch (err) {
-      console.log(err);
       await sqlClient.query('ROLLBACK');
-      throw new Error(err);
+      throwError(
+        'handleOrderPaidWebhookHandler: Error occurred while processing the query',
+        err
+      );
     } finally {
       sqlClient.release();
     }
   } catch (err) {
-    console.log(err);
+    throwError(
+      'handleOrderPaidWebhookHandler: Error occurred while processing the request',
+      err
+    );
     Sentry.captureException(err);
     return {
       statusCode: 500
@@ -316,7 +339,6 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
 
 const handleOrderPaidWebhookCallback = async (topic, shop, body, webhookId) => {
   // without awaiting
-  console.log('handleOrderPaidWebhookCallback');
   handleOrderPaidWebhook(topic, shop, body, webhookId);
   return {
     statusCode: 200

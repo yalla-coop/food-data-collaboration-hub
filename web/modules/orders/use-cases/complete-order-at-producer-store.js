@@ -2,6 +2,7 @@ import axios from 'axios';
 import * as Sentry from '@sentry/node';
 import dotenv from 'dotenv';
 import { join } from 'path';
+import { throwError } from '../../../utils/index.js';
 
 dotenv.config({
   path: join(process.cwd(), '.env')
@@ -31,9 +32,11 @@ const completeOrderAtProducerStoreUseCase = async ({
 
     return data;
   } catch (err) {
-    console.log('err from axios', err);
     Sentry.captureException(err);
-    throw new Error(err);
+    throwError(
+      'completeOrderAtProducerStoreUseCase: Error occurred while completing the order at producer store',
+      err
+    );
   }
 };
 

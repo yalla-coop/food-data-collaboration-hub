@@ -1,3 +1,4 @@
+import { throwError } from '../utils/index.js';
 import { loadConnectorWithResources, OrderLine, Person } from './index.js';
 
 const semanticIdPrefix = process.env.PRODUCER_SHOP_URL;
@@ -35,7 +36,7 @@ async function exportDFCConnectorOrder(shopifyOrder) {
 
     return await connector.export(DFCLines);
   } catch (error) {
-    throw new Error('Error exporting DFCOrder:', error);
+    throwError('Error exporting DFCOrder:', error);
   }
 }
 
@@ -52,7 +53,7 @@ export async function exportDFCConnectorCustomer(shopifyOrder) {
 
     return await connector.export([DFCCustomer]);
   } catch (error) {
-    throw new Error('Error exporting DFCOrder:', error);
+    throwError('Error exporting DFCOrder:', error);
   }
 }
 
