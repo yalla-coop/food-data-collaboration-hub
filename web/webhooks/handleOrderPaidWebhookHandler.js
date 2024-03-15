@@ -162,8 +162,15 @@ export const handleVariantItemsCount = async ({
   };
 };
 
-export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
+export const handleOrderPaidWebhook = async (
+  type,
+  topic,
+  shop,
+  body,
+  webhookId
+) => {
   try {
+    console.log('type 222:>> ', type);
     const sqlClient = await getClient();
     try {
       const selectWebhookQuery = `
@@ -326,6 +333,7 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
       sqlClient.release();
     }
   } catch (err) {
+    console.error('handleOrderPaidWebhookHandler err', err);
     throwError(
       'handleOrderPaidWebhookHandler: Error occurred while processing the request',
       err
@@ -337,9 +345,17 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
   }
 };
 
-const handleOrderPaidWebhookCallback = async (topic, shop, body, webhookId) => {
+const handleOrderPaidWebhookCallback = async (
+  type,
+  topic,
+  shop,
+  body,
+  webhookId
+) => {
+  console.log('webhookId :>> ', webhookId);
+  console.log('handleOrderPaidWebhookCallback', type);
   // without awaiting
-  handleOrderPaidWebhook(topic, shop, body, webhookId);
+  handleOrderPaidWebhook(type, topic, shop, body, webhookId);
   return {
     statusCode: 200
   };
@@ -349,7 +365,12 @@ const handleOrderPaidWebhookHandler = {
   ORDERS_PAID: {
     deliveryMethod: DeliveryMethod.Http,
     callbackUrl: '/api/webhooks',
-    callback: handleOrderPaidWebhookCallback
+    callback: (...args) => handleOrderPaidWebhookCallback('paid', ...args)
+  },
+  ORDERS_CANCELLED: {
+    deliveryMethod: DeliveryMethod.Http,
+    callbackUrl: '/api/webhooks',
+    callback: (...args) => handleOrderPaidWebhookCallback('cancelled', ...args)
   }
 };
 
