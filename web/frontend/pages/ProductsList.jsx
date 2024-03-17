@@ -1,6 +1,5 @@
 /* eslint-disable no-nested-ternary */
 import { useLayoutEffect, useState } from "react";
-import { Redirect } from "@shopify/app-bridge/actions";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
@@ -15,7 +14,7 @@ import {
   ListItemText,
 } from "@mui/material";
 
-import { useAppQuery } from "../hooks";
+import { useAppMutation, useAppQuery } from "../hooks";
 import { useAuth } from "../components/providers/AuthProvider";
 import { ProductsCard } from "../components/ProductsCard";
 import { convertShopifyGraphQLIdToNumber } from "../utils/index.js";
@@ -30,7 +29,6 @@ export default function ProductsList() {
   const [productsList, setProductsList] = useState([]);
   const [helpTextVisible, setHelpTextVisible] = useState(false);
   const app = useAppBridge();
-  const redirect = Redirect.create(app);
   const { data: userAuthData } = useAuth();
   const [exitingProductsList, setExitingProductsList] = useState([]);
 
@@ -61,6 +59,18 @@ export default function ProductsList() {
     url: `/api/products/fdc?sinceId=${productSinceId}&remainingProductsCountBeforeNextFetch=${
       remainingProductsCountBeforeNextFetch || 0
     }`,
+  });
+
+  const {
+    mutateAsync: logout,
+    isLoading: logoutIsLoading,
+    error: logoutError,
+  } = useAppMutation({
+    reactQueryOptions: {
+      onSuccess: async () => {
+        console.log("Loging out ...");
+      },
+    },
   });
 
   useLayoutEffect(() => {
@@ -104,6 +114,42 @@ export default function ProductsList() {
 
   return (
     <Box>
+      <Button
+        type="button"
+        color="success"
+        sx={{
+          p: "6px",
+          position: "fixed",
+          right: "80px",
+          bottom: "16px",
+          borderRadius: "16px",
+          zIndex: 1000,
+          textTransform: "none",
+        }}
+        variant="contained"
+        onClick={async () => {
+          logout({
+            url: "/api/user/logout",
+            fetchInit: {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            },
+          });
+
+          redirect.dispatch(Redirect.Action.APP, "/");
+        }}
+      >
+        Logout
+        {logoutIsLoading && (
+          <CircularProgress
+            color="white"
+            size={20}
+            sx={{ marginLeft: "10px" }}
+          />
+        )}
+      </Button>
       <Button
         type="button"
         color="success"
