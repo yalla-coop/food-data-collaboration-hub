@@ -1,6 +1,8 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
 import { join } from 'path';
+import * as Sentry from '@sentry/node';
+import { throwError } from '../../../utils/index.js';
 
 dotenv.config({
   path: join(process.cwd(), '.env')
@@ -27,8 +29,8 @@ const createOrderAtProducerStore = async ({ user }) => {
 
     return data;
   } catch (err) {
-    console.log('err from axios', err);
-    throw new Error(err);
+    Sentry.captureException(err);
+    throwError('Error creating order at producer store', err);
   }
 };
 
