@@ -1,24 +1,18 @@
 /* eslint-disable no-nested-ternary */
-import { useLayoutEffect, useState } from "react";
-import Typography from "@mui/material/Typography";
-import Stack from "@mui/material/Stack";
-import Button from "@mui/material/Button";
-import { useAppBridge } from "@shopify/app-bridge-react";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import {
-  Alert,
-  Box,
-  CircularProgress,
-  List,
-  ListItem,
-  ListItemText,
-} from "@mui/material";
+import {useLayoutEffect, useState} from 'react';
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
+import {Redirect} from '@shopify/app-bridge/actions';
+import Button from '@mui/material/Button';
+import {useAppBridge} from '@shopify/app-bridge-react';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import {Alert, Box, CircularProgress, List, ListItem, ListItemText,} from '@mui/material';
 
-import { useAppMutation, useAppQuery } from "../hooks";
-import { useAuth } from "../components/providers/AuthProvider";
-import { ProductsCard } from "../components/ProductsCard";
-import { convertShopifyGraphQLIdToNumber } from "../utils/index.js";
-import { Navigate } from "react-router-dom";
+import {useAppMutation, useAppQuery} from '../hooks';
+import {useAuth} from '../components/providers/AuthProvider';
+import {ProductsCard} from '../components/ProductsCard';
+import {convertShopifyGraphQLIdToNumber} from '../utils/index.js';
+import {Navigate} from 'react-router-dom';
 
 export default function ProductsList() {
   const [productSinceId, setProductSinceId] = useState(0);
@@ -29,6 +23,7 @@ export default function ProductsList() {
   const [productsList, setProductsList] = useState([]);
   const [helpTextVisible, setHelpTextVisible] = useState(false);
   const app = useAppBridge();
+  const redirect = Redirect.create(app);
   const { data: userAuthData } = useAuth();
   const [exitingProductsList, setExitingProductsList] = useState([]);
 
