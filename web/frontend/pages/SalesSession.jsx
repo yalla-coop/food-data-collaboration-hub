@@ -5,6 +5,7 @@ import {
   Alert,
   Box,
   Button,
+  CircularProgress,
   Stack,
   TextField,
   Typography,
@@ -121,6 +122,18 @@ export default function SalesSession() {
     },
   });
 
+  const {
+    mutateAsync: logout,
+    isLoading: logoutIsLoading,
+    error: logoutError,
+  } = useAppMutation({
+    reactQueryOptions: {
+      onSuccess: async () => {
+        console.log("Loging out ...");
+      },
+    },
+  });
+
   const handleOnEditCurrentSalesSessionClick = async () => {
     await editCurrentSalesSession({
       url: "/api/sales-session/current",
@@ -176,6 +189,42 @@ export default function SalesSession() {
 
   return (
     <Box>
+      <Button
+        type="button"
+        color="success"
+        sx={{
+          p: "6px",
+          position: "fixed",
+          right: "80px",
+          bottom: "16px",
+          borderRadius: "16px",
+          zIndex: 1000,
+          textTransform: "none",
+        }}
+        variant="contained"
+        onClick={async () => {
+          logout({
+            url: "/api/user/logout",
+            fetchInit: {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            },
+          });
+
+          redirect.dispatch(Redirect.Action.APP, "/");
+        }}
+      >
+        Logout
+        {logoutIsLoading && (
+          <CircularProgress
+            color="white"
+            size={20}
+            sx={{ marginLeft: "10px" }}
+          />
+        )}
+      </Button>
       <Stack
         spacing={2}
         sx={{
