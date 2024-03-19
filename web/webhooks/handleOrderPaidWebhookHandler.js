@@ -6,7 +6,6 @@ import dotenv from 'dotenv';
 import { getClient, query } from '../database/connect.js';
 import { updateCurrentVariantInventory } from './updateCurrentVariantInventory.js';
 import { calculateTheExcessOrders } from './calculateTheExcessOrders.js';
-import { calculateTheRemainingOrders } from './calculateTheRemainingOrders.js';
 import exportDFCConnectorOrder, {
   exportDFCConnectorCustomer
 } from '../connector/orderUtils.js';
@@ -105,48 +104,26 @@ export const handleVariantItemsCount = async ({
   const numberOfExitingExcessOrders = Number(
     exitingVariant.numberOfExcessOrders
   );
-  const numberOfExitingRemainingOrders = Number(
-    exitingVariant.numberOfRemainingOrders
-  );
 
-  const isPartiallySoldCasesEnabled =
-    activeSalesSessionResult.rows[0].partiallySoldEnabled;
+  const excessOrdersData = calculateTheExcessOrders({
+    noOfItemsPerPackage,
+    quantity,
+    numberOfExitingExcessOrders
+  });
 
-  let remainingOrdersData = {};
-  let excessOrdersData = {};
 
-  if (isPartiallySoldCasesEnabled) {
-    excessOrdersData = calculateTheExcessOrders({
-      noOfItemsPerPackage,
-      quantity,
-      numberOfExitingExcessOrders
-    });
-  } else {
-    remainingOrdersData = calculateTheRemainingOrders({
-      numberOfExitingRemainingOrders,
-      noOfItemsPerPackage,
-      quantity
-    });
-  }
-
-  const numberOfPackages = isPartiallySoldCasesEnabled
-    ? excessOrdersData.numberOfPackages
-    : remainingOrdersData.numberOfPackages;
+  const numberOfPackages = excessOrdersData.numberOfPackages;
 
   const numberOfExcessOrders = excessOrdersData?.numberOfExcessOrders || 0;
-  const numberOfRemainingOrders =
-    remainingOrdersData?.numberOfRemainingOrders || 0;
 
   const updateVariantQuery = `
       UPDATE variants
       SET number_of_excess_orders = $1,
-      number_of_remaining_orders = $2
-      WHERE hub_variant_id = $3
+      WHERE hub_variant_id = $2
   `;
 
   await query(updateVariantQuery, [
     numberOfExcessOrders,
-    numberOfRemainingOrders,
     hubVariantId
   ]);
 
@@ -154,7 +131,6 @@ export const handleVariantItemsCount = async ({
     noOfItemsPerPackage,
     numberOfPackages,
     numberOfExcessOrders,
-    numberOfRemainingOrders,
     mappedProducerVariantId,
     hubVariantId,
     hubProductId,
@@ -213,9 +189,6 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
           'handleOrderPaidWebhookHandler: No active sales session found'
         );
       }
-
-      const isPartiallySoldCasesEnabled =
-        activeSalesSessionResult.rows[0].partiallySoldEnabled;
 
       const activeSalesSessionOrderId =
         activeSalesSessionResult.rows[0].orderId;
@@ -293,7 +266,6 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
             noOfItemsPerPackage,
             mappedProducerVariantId,
             numberOfExcessOrders,
-            numberOfRemainingOrders,
             hubProductId,
             producerProductId
           }) =>
@@ -303,11 +275,9 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
                 noOfItemsPerPackage,
                 mappedVariantId: mappedProducerVariantId,
                 numberOfExcessOrders,
-                numberOfRemainingOrders
               },
               hubProductId,
-              producerProductId,
-              isPartiallySoldCasesEnabled
+              producerProductId
             })
         );
 

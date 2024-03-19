@@ -14,12 +14,7 @@ const updateExistingProductsCronJob = async () => {
       return;
     }
 
-    const isPartiallySoldCasesEnabled =
-      activeSalesSessions?.[0]?.partiallySoldEnabled;
-
-    await updateExistingProductsUseCase({
-      isPartiallySoldCasesEnabled
-    });
+    await updateExistingProductsUseCase({});
   } catch (err) {
     console.log('Error in updateExistingProductsCronJob', err);
     Sentry.captureException(err);

@@ -25,8 +25,6 @@ describe('updateCurrentVariantInventory', () => {
         noOfItemsPerPackage: 6,
         mappedProducerVariantId: 44519466271027,
         numberOfExcessOrders: 5,
-        numberOfRemainingOrders: 0,
-        isPartiallySoldCasesEnabled: true,
         shouldUpdateThePrice: true,
         hubVariant: {
           price: '10.00',
