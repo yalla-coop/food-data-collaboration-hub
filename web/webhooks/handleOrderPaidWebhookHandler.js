@@ -118,7 +118,7 @@ export const handleVariantItemsCount = async ({
 
   const updateVariantQuery = `
       UPDATE variants
-      SET number_of_excess_orders = $1,
+      SET number_of_excess_orders = $1
       WHERE hub_variant_id = $2
   `;
 
