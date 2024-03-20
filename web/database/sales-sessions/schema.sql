@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS sales_sessions (
     end_date TIMESTAMP NOT NULL,
     session_duration INTEGER NOT NULL,
     order_id TEXT,
-    partially_sold_enabled BOOLEAN NOT NULL DEFAULT FALSE, 
     is_active BOOLEAN NOT NULL DEFAULT FALSE,
     "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
     "updated_at" TIMESTAMP NOT NULL DEFAULT NOW()

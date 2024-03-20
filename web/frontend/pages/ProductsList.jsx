@@ -1,25 +1,18 @@
 /* eslint-disable no-nested-ternary */
-import { useLayoutEffect, useState } from "react";
-import { Redirect } from "@shopify/app-bridge/actions";
-import Typography from "@mui/material/Typography";
-import Stack from "@mui/material/Stack";
-import Button from "@mui/material/Button";
-import { useAppBridge } from "@shopify/app-bridge-react";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import {
-  Alert,
-  Box,
-  CircularProgress,
-  List,
-  ListItem,
-  ListItemText,
-} from "@mui/material";
+import {useLayoutEffect, useState} from 'react';
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
+import {Redirect} from '@shopify/app-bridge/actions';
+import Button from '@mui/material/Button';
+import {useAppBridge} from '@shopify/app-bridge-react';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import {Alert, Box, CircularProgress, List, ListItem, ListItemText,} from '@mui/material';
 
-import { useAppQuery } from "../hooks";
-import { useAuth } from "../components/providers/AuthProvider";
-import { ProductsCard } from "../components/ProductsCard";
-import { convertShopifyGraphQLIdToNumber } from "../utils/index.js";
-import { Navigate } from "react-router-dom";
+import {useAppMutation, useAppQuery} from '../hooks';
+import {useAuth} from '../components/providers/AuthProvider';
+import {ProductsCard} from '../components/ProductsCard';
+import {convertShopifyGraphQLIdToNumber} from '../utils/index.js';
+import {Navigate} from 'react-router-dom';
 
 export default function ProductsList() {
   const [productSinceId, setProductSinceId] = useState(0);
@@ -63,6 +56,18 @@ export default function ProductsList() {
     }`,
   });
 
+  const {
+    mutateAsync: logout,
+    isLoading: logoutIsLoading,
+    error: logoutError,
+  } = useAppMutation({
+    reactQueryOptions: {
+      onSuccess: async () => {
+        console.log("Loging out ...");
+      },
+    },
+  });
+
   useLayoutEffect(() => {
     if (producerProductsData?.products) {
       setProductsList((prev) => [...prev, ...producerProductsData?.products]);
@@ -104,6 +109,42 @@ export default function ProductsList() {
 
   return (
     <Box>
+      <Button
+        type="button"
+        color="success"
+        sx={{
+          p: "6px",
+          position: "fixed",
+          right: "80px",
+          bottom: "16px",
+          borderRadius: "16px",
+          zIndex: 1000,
+          textTransform: "none",
+        }}
+        variant="contained"
+        onClick={async () => {
+          logout({
+            url: "/api/user/logout",
+            fetchInit: {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            },
+          });
+
+          redirect.dispatch(Redirect.Action.APP, "/");
+        }}
+      >
+        Logout
+        {logoutIsLoading && (
+          <CircularProgress
+            color="white"
+            size={20}
+            sx={{ marginLeft: "10px" }}
+          />
+        )}
+      </Button>
       <Button
         type="button"
         color="success"

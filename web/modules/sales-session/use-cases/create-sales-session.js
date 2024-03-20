@@ -23,15 +23,13 @@ const createSalesSessionUseCase = async (
     );
 
     const sql =
-      'INSERT INTO sales_sessions (start_date, end_date,session_duration,is_active,partially_sold_enabled ) VALUES ($1,$2,$3,$4,$5) RETURNING id';
+      'INSERT INTO sales_sessions (start_date, end_date,session_duration,is_active) VALUES ($1,$2,$3,$4) RETURNING id';
     const result = await query(
       sql,
       [
         startDateValue.toISOString(),
         endDate.toISOString(),
         sessionDurationInDays,
-        true,
-        // setting partially sold enabled to true by default: https://github.com/yalla-coop/food-data-collaboration/issues/92
         true
       ],
       client
@@ -50,7 +48,6 @@ const createSalesSessionUseCase = async (
     );
     // TODO : this function should update the price also
     await updateExistingProductsUseCase({
-      isPartiallySoldCasesEnabled: true,
       shouldUpdateThePrice: true
     });
   } catch (error) {

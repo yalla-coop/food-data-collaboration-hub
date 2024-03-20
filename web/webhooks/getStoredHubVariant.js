@@ -24,9 +24,6 @@ export const getStoredHubVariant = async ({ variantId }) => {
   const numberOfExitingExcessOrders = Number(
     result.rows[0].numberOfExcessOrders
   );
-  const numberOfExitingRemainingOrders = Number(
-    result.rows[0].numberOfRemainingOrders
-  );
 
   return {
     hubProductId,
@@ -35,6 +32,5 @@ export const getStoredHubVariant = async ({ variantId }) => {
     noOfItemsPerPackage,
     mappedProducerVariantId,
     numberOfExitingExcessOrders,
-    numberOfExitingRemainingOrders
   };
 };

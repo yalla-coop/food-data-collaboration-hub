@@ -8,8 +8,6 @@ CREATE TABLE IF NOT EXISTS "variants" (
     "hub_variant_id" TEXT NOT NULL,
     "number_of_excess_orders" INTEGER NOT NULL DEFAULT 0,
     -- number of orders that the producer is already providing but my customers do not ask for them yet
-    "number_of_remaining_orders" INTEGER NOT NULL DEFAULT 0,
-    -- number of orders that my customers ask but the producer does not provide them yet
     "product_id" INTEGER NOT NULL REFERENCES "products" ("id") ON DELETE CASCADE,
     "price" DECIMAL(10, 2) NOT NULL,
     "original_price" DECIMAL(10, 2) NOT NULL,
