@@ -1,7 +1,7 @@
 // If this function fails, it will throw an error
 
 const subscribeToWebhook = async ({ session, HOST, topic, shopify }) => {
-  const address = `https://airports-wright-jazz-telephone.trycloudflare.com/api/webhooks`;
+  const address = HOST.endsWith('/') ? `${HOST}api/webhooks` : `${HOST}/api/webhooks`;
 
   try {
     const { webhooks: topicRegisteredWebhooks } =
