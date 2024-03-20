@@ -16,7 +16,6 @@ const updateSingleProduct = async ({
   session,
   storedVariants,
   producerLatestProductData,
-  isPartiallySoldCasesEnabled,
   shouldUpdateThePrice = false
 }) => {
   const hubProduct = new shopify.api.rest.Product({
@@ -30,7 +29,6 @@ const updateSingleProduct = async ({
       producerProductData: producerLatestProductData,
       hubProductId,
       storedHubVariant: hubVariant,
-      isPartiallySoldCasesEnabled,
       shouldUpdateThePrice
     });
   };

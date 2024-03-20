@@ -45,9 +45,6 @@ export function ProductsCard({ product, exitingProduct }) {
   const isCurrentSalesSessionActive =
     currentSalesSessionData?.currentSalesSession?.isActive;
 
-  const isPartiallySoldCasesEnabled =
-    currentSalesSessionData?.currentSalesSession?.partiallySoldEnabled;
-
   const isProductInStore = !!exitingProduct?.producerProductId;
 
   const {
@@ -86,9 +83,7 @@ export function ProductsCard({ product, exitingProduct }) {
 
   const numberOfExcessOutstandingItems =
     exitingProduct?.variants?.reduce((acc, v) => {
-      const addedValue = isPartiallySoldCasesEnabled
-        ? v?.numberOfExcessOrders || 0
-        : v?.numberOfRemainingOrders || 0;
+      const addedValue = v?.numberOfExcessOrders || 0;
 
       acc = acc + addedValue;
 
@@ -125,19 +120,14 @@ export function ProductsCard({ product, exitingProduct }) {
               )}
               {exitingProduct?.variants?.length > 0 && (
                 <Tooltip
-                  title={`Number of ${
-                    isPartiallySoldCasesEnabled ? 'excess' : 'outstanding'
-                  } items`}
+                  title={`Number of excess items`}
                 >
                   <Badge
                     showZero
                     badgeContent={
                       numberOfExcessOutstandingItems === 0
                         ? 0
-                        : `
-                    ${
-                      isPartiallySoldCasesEnabled ? '+' : '-'
-                    }${numberOfExcessOutstandingItems}`
+                        : `+${numberOfExcessOutstandingItems}`
                     }
                     color="primary"
                   >
@@ -184,7 +174,6 @@ export function ProductsCard({ product, exitingProduct }) {
                 isCurrentSalesSessionActive={isCurrentSalesSessionActive}
                 product={product}
                 exitingProductVariant={exitingProduct?.variants?.[index] || {}}
-                isPartiallySoldCasesEnabled={isPartiallySoldCasesEnabled}
               />
             ))}
           </Stack>

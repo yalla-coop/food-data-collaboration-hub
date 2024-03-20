@@ -4,7 +4,7 @@ import editCurrentSalesSessionUseCase from '../use-cases/edit-current-sales-sess
 const editCurrentSalesSession = async (req, res, next) => {
   try {
     const {
-      body: { startDate, sessionDurationInDays, partiallySoldEnabled }
+      body: { startDate, sessionDurationInDays }
     } = req;
 
     // validate the startDate should be in the future

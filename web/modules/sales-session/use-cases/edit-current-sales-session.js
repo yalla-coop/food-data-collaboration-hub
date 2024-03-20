@@ -1,9 +1,6 @@
 import moment from 'moment';
 import { query } from '../../../database/connect.js';
 
-// TODO : change the variants
-// (number of excess orders and number
-// of remaining orders) when change the is partially sold enabled
 const editCurrentSalesSessionUseCase = async ({
   startDate,
   sessionDurationInDays

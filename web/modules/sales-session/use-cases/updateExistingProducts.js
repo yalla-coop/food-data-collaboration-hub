@@ -20,7 +20,6 @@ const updateSingleProduct = async ({
   session,
   storedVariants,
   producerLatestProductData,
-  isPartiallySoldCasesEnabled,
   shouldUpdateThePrice = false
 }) => {
   const hubProduct = new shopify.api.rest.Product({
@@ -36,7 +35,6 @@ const updateSingleProduct = async ({
       producerProductData: producerLatestProductData,
       hubProductId,
       storedHubVariant: hubVariant,
-      isPartiallySoldCasesEnabled,
       shouldUpdateThePrice
     });
     await delayFun(500);
@@ -44,7 +42,6 @@ const updateSingleProduct = async ({
 };
 
 const updateExistingProductsUseCase = async ({
-  isPartiallySoldCasesEnabled,
   shouldUpdateThePrice = false
 }) => {
   try {
@@ -73,7 +70,6 @@ const updateExistingProductsUseCase = async ({
         storedVariants,
         producerVariants: product.updatedProductJsonData.variants,
         producerLatestProductData: product.updatedProductJsonData,
-        isPartiallySoldCasesEnabled,
         shouldUpdateThePrice
       });
     }
