@@ -25,15 +25,11 @@ import { VariantMappingComponent } from '../components/VariantMapping';
 import { ItemsIcon } from './ItemsIcon';
 import { ProductsIcon } from './ProductsIcon';
 
-export function ProductsCard({ product, exitingProduct }) {
+export function ProductsCard({ product, exitingProduct: existingProduct }) {
   const queryClient = useQueryClient();
 
   const [isProductPriceChanged, setIsProductPriceChanged] = useState(false);
-
-  const exitingCount = exitingProduct?.variants?.length || 1;
-
-  const [variantMappingCount, setVariantMappingCount] = useState(exitingCount);
-  const [variantsMappingData, setVariantsMappingData] = useState([]);
+  const [variantsMappingData, setVariantsMappingData] = useState([]); //todo: populate
 
   const { data: currentSalesSessionData } = useAppQuery({
     url: '/api/sales-session',
@@ -45,7 +41,7 @@ export function ProductsCard({ product, exitingProduct }) {
   const isCurrentSalesSessionActive =
     currentSalesSessionData?.currentSalesSession?.isActive;
 
-  const isProductInStore = !!exitingProduct?.producerProductId;
+  const isProductInStore = !!existingProduct?.producerProductId;
 
   const {
     mutateAsync: createShopifyProduct,
@@ -79,10 +75,10 @@ export function ProductsCard({ product, exitingProduct }) {
     });
   };
 
-  const numberOfExitingProductVariants = exitingProduct?.variants?.length || 0;
+  const numberOfExistingProductVariants = existingProduct?.variants?.length || 0;
 
   const numberOfExcessOutstandingItems =
-    exitingProduct?.variants?.reduce((acc, v) => {
+    existingProduct?.variants?.reduce((acc, v) => {
       const addedValue = v?.numberOfExcessOrders || 0;
 
       acc = acc + addedValue;
@@ -108,17 +104,17 @@ export function ProductsCard({ product, exitingProduct }) {
                 </Tooltip>
               )}
 
-              {exitingProduct?.variants?.length > 0 && (
+              {existingProduct?.variants?.length > 0 && (
                 <Tooltip title="Number of variants">
                   <Badge
-                    badgeContent={numberOfExitingProductVariants}
+                    badgeContent={numberOfExistingProductVariants}
                     color="secondary"
                   >
                     <ProductsIcon />
                   </Badge>
                 </Tooltip>
               )}
-              {exitingProduct?.variants?.length > 0 && (
+              {existingProduct?.variants?.length > 0 && (
                 <Tooltip
                   title={`Number of excess items`}
                 >
@@ -165,7 +161,7 @@ export function ProductsCard({ product, exitingProduct }) {
       <AccordionDetails>
         <Stack spacing="12px">
           <Stack spacing="12px">
-            {[...Array(variantMappingCount)].map((_, index) => (
+            {existingProduct?.variants.map((variant, index) => (
               <VariantMappingComponent
                 isProductPriceChanged={isProductPriceChanged}
                 setIsProductPriceChanged={setIsProductPriceChanged}
@@ -173,7 +169,7 @@ export function ProductsCard({ product, exitingProduct }) {
                 setVariantsMappingData={setVariantsMappingData}
                 isCurrentSalesSessionActive={isCurrentSalesSessionActive}
                 product={product}
-                exitingProductVariant={exitingProduct?.variants?.[index] || {}}
+                existingProductVariant={variant}
               />
             ))}
           </Stack>
@@ -186,35 +182,13 @@ export function ProductsCard({ product, exitingProduct }) {
               opacity: isProductInStore ? 0.6 : 1
             }}
           >
-            <Stack direction="row" spacing="12px">
-              {variantMappingCount > 0 && (
-                <Button
-                  variant="contained"
-                  type="button"
-                  onClick={() =>
-                    setVariantMappingCount(variantMappingCount - 1)
-                  }
-                >
-                  Remove variant
-                </Button>
-              )}
-
-              <Button
-                variant="contained"
-                type="button"
-                onClick={() => setVariantMappingCount(variantMappingCount + 1)}
-              >
-                Add more variants
-              </Button>
-            </Stack>
             <Button
               variant="contained"
               type="button"
               disabled={
                 createShopifyProductLoading ||
                 isProductInStore ||
-                !isCurrentSalesSessionActive ||
-                variantMappingCount !== variantsMappingData.length
+                !isCurrentSalesSessionActive
               }
               onClick={() => handleAddToStore(product)}
             >

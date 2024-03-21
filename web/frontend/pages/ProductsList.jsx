@@ -32,7 +32,7 @@ export default function ProductsList() {
   const app = useAppBridge();
   const redirect = Redirect.create(app);
   const { data: userAuthData } = useAuth();
-  const [exitingProductsList, setExitingProductsList] = useState([]);
+  const [existingProductsList, setExitingProductsList] = useState([]);
 
   const { data: currentSalesSessionData } = useAppQuery({
     url: '/api/sales-session',
@@ -308,8 +308,8 @@ export default function ProductsList() {
           <ProductsCard
             key={product.id}
             product={product}
-            exitingProduct={
-              exitingProductsList?.find(
+            existingProduct={
+              existingProductsList?.find(
                 (exitingProduct) =>
                   Number(exitingProduct.producerProductId) ===
                   convertShopifyGraphQLIdToNumber(product.id)
