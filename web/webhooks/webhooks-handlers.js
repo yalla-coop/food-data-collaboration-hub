@@ -1,6 +1,7 @@
 import { DeliveryMethod } from '@shopify/shopify-api';
 import handleProductDeleteWebhookHandler from './handleProductDeleteWebhookHandler.js';
 import handleOrderPaidWebhookHandler from './handleOrderPaidWebhookHandler.js';
+import handleOrderCancelledWebhook from './handleOrderCancelledWebhook.js';
 import handleCartsCreateUpdateCheckoutCreateUpdateWebhookHandler from './handleCartsCreateUpdateCheckoutCreateUpdateWebhookHandler.js';
 
 const GDPRWebhookHandlers = {
@@ -32,6 +33,7 @@ export default {
   ...GDPRWebhookHandlers,
   ...handleProductDeleteWebhookHandler,
   ...handleOrderPaidWebhookHandler,
+  ...handleOrderCancelledWebhook,
   ...handleCartsCreateUpdateCheckoutCreateUpdateWebhookHandler,
   PRODUCTS_UPDATE: {
     deliveryMethod: DeliveryMethod.Http,

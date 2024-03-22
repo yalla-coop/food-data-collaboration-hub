@@ -5,7 +5,7 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import { getClient, query } from '../database/connect.js';
 import { updateCurrentVariantInventory } from './updateCurrentVariantInventory.js';
-import { calculateTheExcessOrders } from './calculateTheExcessOrders.js';
+import { handleOrderCancellation } from './handleOrderCancellation.js';
 import exportDFCConnectorOrder, {
   exportDFCConnectorCustomer
 } from '../connector/orderUtils.js';
@@ -37,7 +37,7 @@ const sendOrderToProducer = async ({
 
   try {
     const { data } = await axios.patch(
-      `${PRODUCER_SHOP_URL}fdc/orders/${activeSalesSessionOrderId}?shop=${PRODUCER_SHOP}`,
+      `${PRODUCER_SHOP_URL}fdc/orders/cancellation/${activeSalesSessionOrderId}?shop=${PRODUCER_SHOP}`,
       {
         userId: '123',
         accessToken: 'access-token',
@@ -121,14 +121,21 @@ export const handleVariantItemsCount = async ({
     exitingVariant.numberOfExcessOrders
   );
 
-  const excessOrdersData = calculateTheExcessOrders({
+  // returns amount of packages to be removed from producer order
+  // returns new amount of excess orders after the cancellation
+
+  console.log('inputs :>> ', {
     noOfItemsPerPackage,
     quantity,
     numberOfExitingExcessOrders
   });
-
-  const numberOfPackages = excessOrdersData.numberOfPackages;
-
+  const excessOrdersData = handleOrderCancellation({
+    noOfItemsPerPackage,
+    quantity,
+    numberOfExitingExcessOrders
+  });
+  console.log('exces :>> ', excessOrdersData);
+  const numberOfPackages = excessOrdersData?.numberOfPackages;
   const numberOfExcessOrders = excessOrdersData?.numberOfExcessOrders || 0;
 
   const updateVariantQuery = `
@@ -150,7 +157,12 @@ export const handleVariantItemsCount = async ({
   };
 };
 
-export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
+export const handleOrderCancelledWebhook = async (
+  topic,
+  shop,
+  body,
+  webhookId
+) => {
   try {
     const sqlClient = await getClient();
     try {
@@ -176,7 +188,7 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
       await sqlClient.query('COMMIT');
       if (!payload?.line_items?.length) {
         throwError(
-          'handleOrderPaidWebhookHandler: No line items found in the payload'
+          'handleOrderCancelledWebhookHandler: No line items found in the payload'
         );
       }
       const variants = payload.line_items.map((lineItem) => ({
@@ -198,7 +210,7 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
 
       if (activeSalesSessionResult.rows.length === 0) {
         throwError(
-          'handleOrderPaidWebhookHandler: No active sales session found'
+          'handleOrderCancelledWebhookHandler: No active sales session found'
         );
       }
 
@@ -223,7 +235,7 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
       ]);
 
       if (exitingVariants?.rows?.length === 0) {
-        throwError('handleOrderPaidWebhookHandler: No variants found');
+        throwError('handleOrderCancelledWebhookHandler: No variants found');
       }
 
       const handleVariantItemsCountPromises = await Promise.allSettled(
@@ -301,7 +313,7 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
     } catch (err) {
       await sqlClient.query('ROLLBACK');
       throwError(
-        'handleOrderPaidWebhookHandler: Error occurred while processing the query',
+        'handleOrderCancelledWebhookHandler: Error occurred while processing the query',
         err
       );
     } finally {
@@ -309,7 +321,7 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
     }
   } catch (err) {
     throwError(
-      'handleOrderPaidWebhookHandler: Error occurred while processing the request',
+      'handleOrderCancelledWebhookHandler: Error occurred while processing the request',
       err
     );
     Sentry.captureException(err);
@@ -319,20 +331,25 @@ export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
   }
 };
 
-const handleOrderPaidWebhookCallback = async (topic, shop, body, webhookId) => {
+const handleOrderCancelledWebhookCallback = async (
+  topic,
+  shop,
+  body,
+  webhookId
+) => {
   // without awaiting
-  handleOrderPaidWebhook(topic, shop, body, webhookId);
+  handleOrderCancelledWebhook(topic, shop, body, webhookId);
   return {
     statusCode: 200
   };
 };
 
-const handleOrderPaidWebhookHandler = {
-  ORDERS_PAID: {
+const handleOrderCancelledWebhookHandler = {
+  ORDERS_CANCELLED: {
     deliveryMethod: DeliveryMethod.Http,
     callbackUrl: '/api/webhooks',
-    callback: handleOrderPaidWebhookCallback
+    callback: handleOrderCancelledWebhookCallback
   }
 };
 
-export default handleOrderPaidWebhookHandler;
+export default handleOrderCancelledWebhookHandler;
