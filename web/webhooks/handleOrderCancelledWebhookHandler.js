@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import { getClient, query } from '../database/connect.js';
 import { updateCurrentVariantInventory } from './updateCurrentVariantInventory.js';
 import { calculateTheExcessOrders } from './calculateTheExcessOrders.js';
-import { calculateTheRemainingOrders } from './calculateTheRemainingOrders.js';
+
 import exportDFCConnectorOrder, {
   exportDFCConnectorCustomer
 } from '../connector/orderUtils.js';
@@ -36,29 +36,37 @@ const sendOrderToProducer = async ({
 
   const exportedCustomer = await exportDFCConnectorCustomer(shopifyOrder);
 
-  try {
-    const { data } = await axios.patch(
-      `${PRODUCER_SHOP_URL}fdc/orders/cancel/${activeSalesSessionOrderId}?shop=${PRODUCER_SHOP}`,
-      {
-        userId: '123',
-        accessToken: 'access-token',
-        orderId: activeSalesSessionOrderId,
-        exportedOrder,
-        exportedCustomer
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    return data.order.id;
-  } catch (err) {
-    throwError(
-      'sendOrderToProducer: Error occurred while sending the order to producer',
-      err
-    );
-  }
+  console.log('object :>> ', {
+    userId: '123',
+    accessToken: 'access-token',
+    orderId: activeSalesSessionOrderId,
+    exportedOrder,
+    exportedCustomer
+  });
+
+  // try {
+  //   const { data } = await axios.patch(
+  //     `${PRODUCER_SHOP_URL}fdc/orders/cancel/${activeSalesSessionOrderId}?shop=${PRODUCER_SHOP}`,
+  //     {
+  //       userId: '123',
+  //       accessToken: 'access-token',
+  //       orderId: activeSalesSessionOrderId,
+  //       exportedOrder,
+  //       exportedCustomer
+  //     },
+  //     {
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       }
+  //     }
+  //   );
+  //   return data.order.id;
+  // } catch (err) {
+  //   throwError(
+  //     'sendOrderToProducer: Error occurred while sending the order to producer',
+  //     err
+  //   );
+  // }
 };
 
 const handleSendOrderToProducerAndUpdateSalesSessionOrderId = async ({
@@ -84,77 +92,63 @@ const handleSendOrderToProducerAndUpdateSalesSessionOrderId = async ({
   ]);
 };
 
-export const handleVariantItemsCount = async ({
-  v,
-  activeSalesSessionResult,
-  exitingVariant
+export const exportFinalVariantDataAndUpdateDB = async ({
+  singleLineItemFromOrder,
+  // activeSalesSessionResult,
+  verifiedVariantFromOrder
 }) => {
-  if (!v) {
-    throw new Error('Variant not found');
+  if (!singleLineItemFromOrder) {
+    throwError('SingleLineItemFromOrder not found');
   }
 
-  if (!v.variantId || !v.quantity) {
-    throw new Error('Variant not found');
+  if (!singleLineItemFromOrder.variantId || !singleLineItemFromOrder.quantity) {
+    throwError(
+      'singleLineItemFromOrder attributes missing (variantId, quantity)'
+    );
   }
 
-  const { variantId: hubVariantId, quantity } = v;
+  const { variantId: hubVariantId, quantity } = singleLineItemFromOrder;
 
-  const { hubProductId, producerProductId } = exitingVariant;
-  const mappedProducerVariantId = exitingVariant.mappedVariantId;
-  const noOfItemsPerPackage = Number(exitingVariant.noOfItemsPerPackage);
-  const numberOfExitingExcessOrders = Number(
-    exitingVariant.numberOfExcessOrders
+  const { hubProductId, producerProductId } = verifiedVariantFromOrder;
+  const mappedProducerVariantId = verifiedVariantFromOrder?.mappedVariantId;
+
+  if (!hubProductId || !producerProductId || !mappedProducerVariantId) {
+    throwError(
+      'exportFinalVariantDataAndUpdateDB: hubProductId, producerProductId or mappedProducerVariantId not found'
+    );
+  }
+
+  const noOfItemsPerPackage = Number(
+    verifiedVariantFromOrder.noOfItemsPerPackage
   );
-  const numberOfExitingRemainingOrders = Number(
-    exitingVariant.numberOfRemainingOrders
+
+  const numberOfExcessItemsFromDB = Number(
+    verifiedVariantFromOrder.numberOfExcessOrders
   );
 
-  const isPartiallySoldCasesEnabled =
-    activeSalesSessionResult.rows[0].partiallySoldEnabled;
+  // TODO make this subtract the number of items from the order
+  const excessItemsData = calculateTheExcessOrders({
+    noOfItemsPerPackage,
+    quantity,
+    numberOfExitingExcessOrders: numberOfExcessItemsFromDB
+  });
 
-  let remainingOrdersData = {};
-  let excessOrdersData = {};
+  const numberOfPackages = excessItemsData?.numberOfPackages;
 
-  if (isPartiallySoldCasesEnabled) {
-    excessOrdersData = calculateTheExcessOrders({
-      noOfItemsPerPackage,
-      quantity,
-      numberOfExitingExcessOrders
-    });
-  } else {
-    remainingOrdersData = calculateTheRemainingOrders({
-      numberOfExitingRemainingOrders,
-      noOfItemsPerPackage,
-      quantity
-    });
-  }
-
-  const numberOfPackages = isPartiallySoldCasesEnabled
-    ? excessOrdersData.numberOfPackages
-    : remainingOrdersData.numberOfPackages;
-
-  const numberOfExcessOrders = excessOrdersData?.numberOfExcessOrders || 0;
-  const numberOfRemainingOrders =
-    remainingOrdersData?.numberOfRemainingOrders || 0;
+  const numberOfExcessItems = excessItemsData?.numberOfExcessOrders || 0;
 
   const updateVariantQuery = `
       UPDATE variants
-      SET number_of_excess_orders = $1,
-      number_of_remaining_orders = $2
-      WHERE hub_variant_id = $3
+      SET number_of_excess_orders = $1
+      WHERE hub_variant_id = $2
   `;
 
-  await query(updateVariantQuery, [
-    numberOfExcessOrders,
-    numberOfRemainingOrders,
-    hubVariantId
-  ]);
+  await query(updateVariantQuery, [numberOfExcessItems, hubVariantId]);
 
   return {
     noOfItemsPerPackage,
     numberOfPackages,
-    numberOfExcessOrders,
-    numberOfRemainingOrders,
+    numberOfExcessOrders: numberOfExcessItems,
     mappedProducerVariantId,
     hubVariantId,
     hubProductId,
@@ -184,6 +178,7 @@ export const handleOrderCancelledWebhook = async (
         };
       }
       const payload = JSON.parse(body);
+
       await sqlClient.query('BEGIN');
       const insertWebhookQuery = `
             INSERT INTO webhooks (id,topic,data)
@@ -193,10 +188,10 @@ export const handleOrderCancelledWebhook = async (
       await sqlClient.query('COMMIT');
       if (!payload?.line_items?.length) {
         throwError(
-          'handleOrderPaidWebhookHandler: No line items found in the payload'
+          'handleOrderCancelledWebhookHandler: No line items found in the payload'
         );
       }
-      const variants = payload.line_items.map((lineItem) => ({
+      const lineItemsFromOrder = payload.line_items.map((lineItem) => ({
         variantId: lineItem.variant_id,
         quantity: Number(lineItem.quantity)
       }));
@@ -215,19 +210,16 @@ export const handleOrderCancelledWebhook = async (
 
       if (activeSalesSessionResult.rows.length === 0) {
         throwError(
-          'handleOrderPaidWebhookHandler: No active sales session found'
+          'handleOrderCancelledWebhookHandler: No active sales session found'
         );
       }
-
-      const isPartiallySoldCasesEnabled =
-        activeSalesSessionResult.rows[0].partiallySoldEnabled;
 
       const activeSalesSessionOrderId =
         activeSalesSessionResult.rows[0].orderId;
 
       const activeSalesSessionId = activeSalesSessionResult.rows[0].id;
 
-      const selectVariantsQuery = `
+      const selectVariantsFromDBQuery = `
         SELECT
           v.*,
           p.producer_product_id,
@@ -238,41 +230,51 @@ export const handleOrderCancelledWebhook = async (
         WHERE hub_variant_id = ANY($1)
   `;
 
-      const exitingVariants = await query(selectVariantsQuery, [
-        variants.map((v) => v.variantId)
+      const matchedVariantsFromDB = await query(selectVariantsFromDBQuery, [
+        lineItemsFromOrder.map(
+          (singleLineItemFromOrder) => singleLineItemFromOrder.variantId
+        )
       ]);
 
-      if (exitingVariants?.rows?.length === 0) {
-        throwError('handleOrderPaidWebhookHandler: No variants found');
+      if (matchedVariantsFromDB?.rows?.length === 0) {
+        throwError(
+          'handleOrderCancelledWebhookHandler: No variants found in DB that matched the order'
+        );
       }
 
-      const handleVariantItemsCountPromises = await Promise.allSettled(
-        variants.map(async (v) => {
-          const exitingVariant = exitingVariants.rows.find(
-            (ev) => Number(ev.hubVariantId) === Number(v.variantId)
-          );
+      const exportFinalVariantDataAndUpdateDBPromises =
+        await Promise.allSettled(
+          lineItemsFromOrder.map(async (singleLineItemFromOrder) => {
+            const verifiedVariantFromOrder = matchedVariantsFromDB.rows.find(
+              (singleMatchedVariantFromDB) =>
+                Number(singleMatchedVariantFromDB.hubVariantId) ===
+                Number(singleLineItemFromOrder.variantId)
+            );
 
-          return handleVariantItemsCount({
-            v,
-            activeSalesSessionResult,
-            exitingVariant
-          });
-        })
-      );
+            return exportFinalVariantDataAndUpdateDB({
+              singleLineItemFromOrder,
+              activeSalesSessionResult,
+              verifiedVariantFromOrder
+            });
+          })
+        );
 
-      const variantsData = handleVariantItemsCountPromises
+      const finalVariantsData = exportFinalVariantDataAndUpdateDBPromises
         .filter((p) => p.status === 'fulfilled')
         .map((p) => p.value);
 
-      if (variantsData.length === 0) {
+      if (finalVariantsData.length === 0) {
         return {
           statusCode: 200
         };
       }
 
-      const variantsLineItems = variantsData
-        .filter((v) => v.numberOfPackages > 0)
-        .map((v) => ({
+      const finalVariantsDataWithPackages = finalVariantsData.filter(
+        (v) => v.numberOfPackages > 0
+      );
+
+      const variantsLineItemsToSendToProducer =
+        finalVariantsDataWithPackages.map((v) => ({
           mappedProducerVariantId: v.mappedProducerVariantId,
           numberOfPackages: v.numberOfPackages
         }));
@@ -285,36 +287,32 @@ export const handleOrderCancelledWebhook = async (
 
       await handleSendOrderToProducerAndUpdateSalesSessionOrderId({
         activeSalesSessionOrderId,
-        variants: variantsLineItems,
+        variants: variantsLineItemsToSendToProducer,
         activeSalesSessionId,
         customer
       });
 
-      const updateVariantsInventoryPromises = variantsData
-        .filter((v) => v.numberOfPackages > 0)
-        .map(
-          async ({
-            hubVariantId,
-            noOfItemsPerPackage,
-            mappedProducerVariantId,
-            numberOfExcessOrders,
-            numberOfRemainingOrders,
+      const updateVariantsInventoryPromises = finalVariantsDataWithPackages.map(
+        async ({
+          hubVariantId,
+          noOfItemsPerPackage,
+          mappedProducerVariantId,
+          numberOfExcessOrders,
+          hubProductId,
+          producerProductId
+        }) =>
+          // TODO: set this to subtract the number of items from the order
+          updateCurrentVariantInventory({
+            storedHubVariant: {
+              hubVariantId,
+              noOfItemsPerPackage,
+              mappedVariantId: mappedProducerVariantId,
+              numberOfExcessOrders
+            },
             hubProductId,
             producerProductId
-          }) =>
-            updateCurrentVariantInventory({
-              storedHubVariant: {
-                hubVariantId,
-                noOfItemsPerPackage,
-                mappedVariantId: mappedProducerVariantId,
-                numberOfExcessOrders,
-                numberOfRemainingOrders
-              },
-              hubProductId,
-              producerProductId,
-              isPartiallySoldCasesEnabled
-            })
-        );
+          })
+      );
 
       await Promise.allSettled(updateVariantsInventoryPromises);
 
@@ -324,16 +322,15 @@ export const handleOrderCancelledWebhook = async (
     } catch (err) {
       await sqlClient.query('ROLLBACK');
       throwError(
-        'handleOrderPaidWebhookHandler: Error occurred while processing the query',
+        'handleOrderCancelledWebhookHandler: Error occurred while processing the query',
         err
       );
     } finally {
       sqlClient.release();
     }
   } catch (err) {
-    console.error('handleOrderPaidWebhookHandler err', err);
     throwError(
-      'handleOrderPaidWebhookHandler: Error occurred while processing the request',
+      'handleOrderCancelledWebhookHandler: Error occurred while processing the request',
       err
     );
     Sentry.captureException(err);
@@ -349,8 +346,6 @@ const handleOrderCancelledWebhookCallback = async (
   body,
   webhookId
 ) => {
-  console.log('webhookId :>> ', webhookId);
-
   // without awaiting
   handleOrderCancelledWebhook(topic, shop, body, webhookId);
   return {

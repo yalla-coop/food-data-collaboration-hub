@@ -32,19 +32,20 @@ const sendOrderToProducer = async ({
   };
 
   const exportedOrder = await exportDFCConnectorOrder(shopifyOrder);
-
   const exportedCustomer = await exportDFCConnectorCustomer(shopifyOrder);
+
+  const producerOrderData = {
+    userId: '123',
+    accessToken: 'access-token',
+    orderId: activeSalesSessionOrderId,
+    exportedOrder,
+    exportedCustomer
+  };
 
   try {
     const { data } = await axios.patch(
       `${PRODUCER_SHOP_URL}fdc/orders/${activeSalesSessionOrderId}?shop=${PRODUCER_SHOP}`,
-      {
-        userId: '123',
-        accessToken: 'access-token',
-        orderId: activeSalesSessionOrderId,
-        exportedOrder,
-        exportedCustomer
-      },
+      producerOrderData,
       {
         headers: {
           'Content-Type': 'application/json'
@@ -62,10 +63,20 @@ const sendOrderToProducer = async ({
 
 const handleSendOrderToProducerAndUpdateSalesSessionOrderId = async ({
   activeSalesSessionOrderId,
-  variants,
+  variants = [],
   activeSalesSessionId,
   customer
 }) => {
+  // variants are the number of packages (wholesale variants) that need to be sent to the producer
+  if (!variants.length) {
+    console.log(
+      `No line items to be sent to producer for sales session: ${activeSalesSessionId}`
+    );
+    return {
+      statusCode: 200,
+      message: 'No line items to be sent to producer'
+    };
+  }
   const newProducerOrderId = await sendOrderToProducer({
     activeSalesSessionOrderId,
     variants,
@@ -83,37 +94,32 @@ const handleSendOrderToProducerAndUpdateSalesSessionOrderId = async ({
   ]);
 };
 
-export const handleVariantItemsCount = async ({
-  v,
-  activeSalesSessionResult,
-  exitingVariant
-}) => {
+export const handleVariantItemsCount = async ({ v, existingVariant }) => {
   if (!v) {
     throw new Error('Variant not found');
   }
 
-  if (!v.variantId || !v.quantity) {
+  if (!v.variantId || !Number(v.quantity) || v.quantity < 1) {
     throw new Error('Variant not found');
   }
 
-  const { variantId: hubVariantId, quantity } = v;
+  const quantity = Number(v.quantity);
+  const hubVariantId = v?.variantId;
 
-  const { hubProductId, producerProductId } = exitingVariant;
-  const mappedProducerVariantId = exitingVariant.mappedVariantId;
-  const noOfItemsPerPackage = Number(exitingVariant.noOfItemsPerPackage);
-  const numberOfExitingExcessOrders = Number(
-    exitingVariant.numberOfExcessOrders
+  const { hubProductId, producerProductId } = existingVariant;
+  const mappedProducerVariantId = existingVariant.mappedVariantId;
+  const noOfItemsPerPackage = Number(existingVariant.noOfItemsPerPackage);
+  const numberOfExistingExcessOrders = Number(
+    existingVariant.numberOfExcessOrders
   );
 
   const excessOrdersData = calculateTheExcessOrders({
     noOfItemsPerPackage,
     quantity,
-    numberOfExitingExcessOrders
+    numberOfExistingExcessOrders
   });
 
-
-  const numberOfPackages = excessOrdersData.numberOfPackages;
-
+  const numberOfPackages = excessOrdersData?.numberOfPackages;
   const numberOfExcessOrders = excessOrdersData?.numberOfExcessOrders || 0;
 
   const updateVariantQuery = `
@@ -122,10 +128,7 @@ export const handleVariantItemsCount = async ({
       WHERE hub_variant_id = $2
   `;
 
-  await query(updateVariantQuery, [
-    numberOfExcessOrders,
-    hubVariantId
-  ]);
+  await query(updateVariantQuery, [numberOfExcessOrders, hubVariantId]);
 
   return {
     noOfItemsPerPackage,
@@ -138,15 +141,8 @@ export const handleVariantItemsCount = async ({
   };
 };
 
-export const handleOrderPaidWebhook = async (
-  type,
-  topic,
-  shop,
-  body,
-  webhookId
-) => {
+export const handleOrderPaidWebhook = async (topic, shop, body, webhookId) => {
   try {
-    console.log('type 222:>> ', type);
     const sqlClient = await getClient();
     try {
       const selectWebhookQuery = `
@@ -213,24 +209,24 @@ export const handleOrderPaidWebhook = async (
         WHERE hub_variant_id = ANY($1)
   `;
 
-      const exitingVariants = await query(selectVariantsQuery, [
+      const existingVariants = await query(selectVariantsQuery, [
         variants.map((v) => v.variantId)
       ]);
 
-      if (exitingVariants?.rows?.length === 0) {
+      if (existingVariants?.rows?.length === 0) {
         throwError('handleOrderPaidWebhookHandler: No variants found');
       }
 
       const handleVariantItemsCountPromises = await Promise.allSettled(
         variants.map(async (v) => {
-          const exitingVariant = exitingVariants.rows.find(
+          const existingVariant = existingVariants.rows.find(
             (ev) => Number(ev.hubVariantId) === Number(v.variantId)
           );
 
           return handleVariantItemsCount({
             v,
             activeSalesSessionResult,
-            exitingVariant
+            existingVariant
           });
         })
       );
@@ -244,9 +240,8 @@ export const handleOrderPaidWebhook = async (
           statusCode: 200
         };
       }
-
       const variantsLineItems = variantsData
-        .filter((v) => v.numberOfPackages > 0)
+        .filter((v) => v?.numberOfPackages > 0)
         .map((v) => ({
           mappedProducerVariantId: v.mappedProducerVariantId,
           numberOfPackages: v.numberOfPackages
@@ -281,7 +276,7 @@ export const handleOrderPaidWebhook = async (
                 hubVariantId,
                 noOfItemsPerPackage,
                 mappedVariantId: mappedProducerVariantId,
-                numberOfExcessOrders,
+                numberOfExcessOrders
               },
               hubProductId,
               producerProductId
@@ -303,7 +298,6 @@ export const handleOrderPaidWebhook = async (
       sqlClient.release();
     }
   } catch (err) {
-    console.error('handleOrderPaidWebhookHandler err', err);
     throwError(
       'handleOrderPaidWebhookHandler: Error occurred while processing the request',
       err
@@ -315,17 +309,9 @@ export const handleOrderPaidWebhook = async (
   }
 };
 
-const handleOrderPaidWebhookCallback = async (
-  type,
-  topic,
-  shop,
-  body,
-  webhookId
-) => {
-  console.log('webhookId :>> ', webhookId);
-  console.log('handleOrderPaidWebhookCallback', type);
+const handleOrderPaidWebhookCallback = async (topic, shop, body, webhookId) => {
   // without awaiting
-  handleOrderPaidWebhook(type, topic, shop, body, webhookId);
+  handleOrderPaidWebhook(topic, shop, body, webhookId);
   return {
     statusCode: 200
   };
@@ -335,12 +321,7 @@ const handleOrderPaidWebhookHandler = {
   ORDERS_PAID: {
     deliveryMethod: DeliveryMethod.Http,
     callbackUrl: '/api/webhooks',
-    callback: (...args) => handleOrderPaidWebhookCallback('paid', ...args)
-  },
-  ORDERS_CANCELLED: {
-    deliveryMethod: DeliveryMethod.Http,
-    callbackUrl: '/api/webhooks',
-    callback: (...args) => handleOrderPaidWebhookCallback('cancelled', ...args)
+    callback: handleOrderPaidWebhookCallback
   }
 };
 
