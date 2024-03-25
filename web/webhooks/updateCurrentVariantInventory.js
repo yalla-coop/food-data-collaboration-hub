@@ -85,7 +85,6 @@ const updateCurrentVariantPrice = async ({
 export const updateCurrentVariantInventory = async ({
   producerProductId,
   producerProductData,
-  isPartiallySoldCasesEnabled,
   shouldUpdateThePrice = false,
   storedHubVariant
 }) => {
@@ -95,7 +94,6 @@ export const updateCurrentVariantInventory = async ({
       noOfItemsPerPackage,
       mappedVariantId,
       numberOfExcessOrders,
-      numberOfRemainingOrders,
       producerVariantData
     } = storedHubVariant;
     const sessionId = shopify.api.session.getOfflineId(HUB_SHOP_NAME);
@@ -152,18 +150,9 @@ export const updateCurrentVariantInventory = async ({
       session
     });
 
-    let availableItemsInTheStore = 0;
-
-    if (isPartiallySoldCasesEnabled) {
-      availableItemsInTheStore =
+    const availableItemsInTheStore =
         noOfItemsPerPackage * Number(mappedProducerVariant.inventory_quantity) +
         Number(numberOfExcessOrders);
-    } else {
-      availableItemsInTheStore = Math.abs(
-        noOfItemsPerPackage * Number(mappedProducerVariant.inventory_quantity) -
-          Number(numberOfRemainingOrders)
-      );
-    }
 
     await inventoryLevel.set({
       inventory_item_id: inventoryItemId,

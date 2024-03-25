@@ -3,9 +3,9 @@
 // @ts-nocheck
 import axios from 'axios';
 import * as dotenv from 'dotenv';
-import {join} from 'path';
+import { join } from 'path';
 import * as Sentry from '@sentry/node';
-import {ProfilingIntegration} from '@sentry/profiling-node';
+import { ProfilingIntegration } from '@sentry/profiling-node';
 
 import cron from 'node-cron';
 
@@ -16,31 +16,34 @@ import passport from 'passport';
 import OpenIDConnectStrategy from 'passport-openidconnect';
 import connectSQLite from 'connect-sqlite3';
 
-import {readFileSync} from 'fs';
+import { readFileSync } from 'fs';
 import express from 'express';
 import serveStatic from 'serve-static';
 
 import apiRouters from './modules/api-routers.js';
-import {oidcRouter} from './oidc-router.js';
+import { oidcRouter } from './oidc-router.js';
 
 import shopify from './shopify.js';
 import webhookHandlers from './webhooks/webhooks-handlers.js';
 import isAuthenticated from './middleware/isAuthenticated.js';
-import {createSalesSessionCronJob, updateExistingProductsCronJob,} from './modules/cron-jobs/index.js';
+import {
+  createSalesSessionCronJob,
+  updateExistingProductsCronJob
+} from './modules/cron-jobs/index.js';
 import subscribeToWebhook from './utils/subscribe-to-webhook.js';
 
-if (process.env.NODE_ENV === "test") {
+if (process.env.NODE_ENV === 'development') {
   dotenv.config({
-    path: join(process.cwd(), ".env.test"),
+    path: join(process.cwd(), '.env.test')
   });
 } else {
   dotenv.config({
-    path: join(process.cwd(), ".env"),
+    path: join(process.cwd(), '.env')
   });
 }
 
 const STATIC_PATH =
-  process.env.NODE_ENV === "production"
+  process.env.NODE_ENV === 'production'
     ? `${process.cwd()}/frontend/dist`
     : `${process.cwd()}/frontend/`;
 
@@ -52,12 +55,12 @@ Sentry.init({
     // enable HTTP calls tracing
     new Sentry.Integrations.Http({ tracing: true }), // enable Express.js middleware tracing
     new Sentry.Integrations.Express({ app }),
-    new ProfilingIntegration(),
+    new ProfilingIntegration()
   ],
-  enabled: process.env.NODE_ENV === "production", // Performance Monitoring
+  enabled: process.env.NODE_ENV === 'production', // Performance Monitoring
   tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
   // Set sampling rate for profiling - this is relative to tracesSampleRate
-  profilesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
+  profilesSampleRate: 1.0 // Capture 100% of the transactions, reduce in production!
 });
 
 // The request handler must be the first middleware on the app
@@ -69,27 +72,27 @@ app.use(Sentry.Handlers.tracingHandler());
 app.post(
   shopify.config.webhooks.path,
   shopify.processWebhooks({
-    webhookHandlers,
-  }),
+    webhookHandlers
+  })
 );
 
 const SQLiteStore = connectSQLite(session);
 
 const sessionStore = new SQLiteStore({
-  db: "sessions.sqlite",
-  dir: ".", // @ts-ignore
-  concurrentDB: true,
+  db: 'sessions.sqlite',
+  dir: '.', // @ts-ignore
+  concurrentDB: true
 });
 
 const sessionObject = {
   secret: process.env.OIDC_SESSION_SECRET,
   resave: false, // don't save session if unmodified
   saveUninitialized: false,
-  store: sessionStore,
+  store: sessionStore
 };
 
 app.use(
-  "/", // @ts-ignore
+  '/', // @ts-ignore
   session({
     ...sessionObject,
     proxy: true,
@@ -97,25 +100,24 @@ app.use(
       secure: true, // Set to true if you're using HTTPS
       httpOnly: true, // Ensures the cookie is only accessible via HTTP/HTTPS
       maxAge: 1000 * 60 * 60 * 24 * 7, // Sets cookie to expire in 7 days,
-      sameSite: "none", // Can be 'strict', 'lax', 'none', or boolean (true)
-    },
-  }),
+      sameSite: 'none' // Can be 'strict', 'lax', 'none', or boolean (true)
+    }
+  })
 );
 
 app.use(cookieParser());
-
 passport.use(
   new OpenIDConnectStrategy(
     {
-      issuer: process.env.OIDC_ISSUER || "",
-      authorizationURL: process.env.OIDC_AUTHORIZATION_URL || "",
-      tokenURL: process.env.OIDC_TOKEN_URL || "",
-      userInfoURL: process.env.OIDC_USER_INFO_URL || "",
-      clientID: process.env.OIDC_CLIENT_ID || "",
-      clientSecret: process.env.OIDC_CLIENT_SECRET || "",
-      callbackURL: process.env.OIDC_CALLBACK_URL || "",
+      issuer: process.env.OIDC_ISSUER || '',
+      authorizationURL: process.env.OIDC_AUTHORIZATION_URL || '',
+      tokenURL: process.env.OIDC_TOKEN_URL || '',
+      userInfoURL: process.env.OIDC_USER_INFO_URL || '',
+      clientID: process.env.OIDC_CLIENT_ID || '',
+      clientSecret: process.env.OIDC_CLIENT_SECRET || '',
+      callbackURL: process.env.OIDC_CALLBACK_URL || '',
       passReqToCallback: true,
-      sessionKey: process.env.OIDC_SESSION_KEY || "",
+      sessionKey: process.env.OIDC_SESSION_KEY || ''
     },
     function authCallback(
       req,
@@ -125,15 +127,15 @@ passport.use(
       idToken,
       accessToken,
       refreshToken,
-      done,
+      done
     ) {
       profile.accessToken = accessToken;
       profile.refreshToken = refreshToken;
       profile.idToken = idToken;
-
+      console.log('profile :>> ', profile);
       return done(null, profile);
-    },
-  ),
+    }
+  )
 );
 
 passport.serializeUser(function serializeUserFunction(user, cb) {
@@ -144,15 +146,15 @@ passport.serializeUser(function serializeUserFunction(user, cb) {
     email: user.emails[0].value,
     accessToken: user.accessToken,
     refreshToken: user.refreshToken,
-    idToken: user.idToken,
+    idToken: user.idToken
   });
 });
 passport.deserializeUser(function deserializeUserFunction(user, cb) {
   return cb(null, user);
 });
 
-app.use("/*", passport.initialize());
-app.use("/*", passport.session());
+app.use('/*', passport.initialize());
+app.use('/*', passport.session());
 
 app.get(shopify.config.auth.path, shopify.auth.begin());
 
@@ -164,21 +166,21 @@ app.get(
     try {
       await Promise.allSettled([
         [
-          "products/delete",
-          "orders/paid",
-          "carts/create",
-          "carts/update",
-          "checkouts/create",
-          "checkouts/update",
-          "products/update",
+          'products/delete',
+          'orders/paid',
+          'carts/create',
+          'carts/update',
+          'checkouts/create',
+          'checkouts/update',
+          'products/update'
         ].map(async (topic) => {
           await subscribeToWebhook({
             session: res.locals.shopify.session,
             HOST: process.env.HOST,
             topic,
-            shopify,
+            shopify
           });
-        }),
+        })
       ]);
 
       return next();
@@ -186,18 +188,18 @@ app.get(
       return next(err);
     }
   },
-  shopify.redirectToShopifyOrAppRoot(),
+  shopify.redirectToShopifyOrAppRoot()
 );
 
-app.use("/api/*", shopify.validateAuthenticatedSession());
+app.use('/api/*', shopify.validateAuthenticatedSession());
 
-app.post("/api/user/logout", isAuthenticated, async (req, res) => {
+app.post('/api/user/logout', isAuthenticated, async (req, res) => {
   const url =
-    "https://login.lescommuns.org/auth/realms/data-food-consortium/protocol/openid-connect/logout";
+    'https://login.lescommuns.org/auth/realms/data-food-consortium/protocol/openid-connect/logout';
 
   const queryParams = new URLSearchParams({
     id_token_hint: req.user.idToken,
-    post_logout_redirect_uri: `https://food-data-collaboration-hub-82234d1e2fc5.herokuapp.com/oidc/logout`,
+    post_logout_redirect_uri: `https://food-data-collaboration-hub-82234d1e2fc5.herokuapp.com/oidc/logout`
   });
 
   try {
@@ -206,32 +208,32 @@ app.post("/api/user/logout", isAuthenticated, async (req, res) => {
     console.log(e.message);
   }
 
-  res.redirect("/");
+  res.redirect('/');
 });
 
-app.get("/api/user/check", isAuthenticated, (req, res) =>
+app.get('/api/user/check', isAuthenticated, (req, res) =>
   res.json({
     success: true,
     user: req.user,
-    isAuthenticated: true,
-  }),
+    isAuthenticated: true
+  })
 );
 
-app.use("/api", express.json(), isAuthenticated, apiRouters);
+app.use('/api', express.json(), isAuthenticated, apiRouters);
 
 app.use(express.json());
-app.use("/oidc", oidcRouter);
+app.use('/oidc', oidcRouter);
 
 app.use(serveStatic(STATIC_PATH, { index: false }));
 
-app.use("/*", shopify.ensureInstalledOnShop(), async (_req, res) =>
+app.use('/*', shopify.ensureInstalledOnShop(), async (_req, res) =>
   res
     .status(200)
-    .set("Content-Type", "text/html")
-    .send(readFileSync(join(STATIC_PATH, "index.html"))),
+    .set('Content-Type', 'text/html')
+    .send(readFileSync(join(STATIC_PATH, 'index.html')))
 );
 
-cron.schedule("* * * * *", async () => {
+cron.schedule('* * * * *', async () => {
   await updateExistingProductsCronJob();
   await createSalesSessionCronJob();
 });
@@ -241,10 +243,10 @@ app.use(Sentry.Handlers.errorHandler());
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {
-  if (err.name === "ValidationError") {
+  if (err.name === 'ValidationError') {
     return res.status(400).json({
       success: false,
-      message: err.message,
+      message: err.message
     });
   }
 
@@ -252,7 +254,7 @@ app.use((err, _req, res, _next) => {
 
   return res.status(errorStatus).json({
     message: err.response?.data?.message || err.message,
-    stack: err.stack,
+    stack: err.stack
   });
 });
 

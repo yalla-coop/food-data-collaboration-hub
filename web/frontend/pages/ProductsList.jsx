@@ -1,24 +1,31 @@
 /* eslint-disable no-nested-ternary */
-import {useLayoutEffect, useState} from 'react';
+import { useLayoutEffect, useState } from 'react';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
-import {Redirect} from '@shopify/app-bridge/actions';
+import { Redirect } from '@shopify/app-bridge/actions';
 import Button from '@mui/material/Button';
-import {useAppBridge} from '@shopify/app-bridge-react';
+import { useAppBridge } from '@shopify/app-bridge-react';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import {Alert, Box, CircularProgress, List, ListItem, ListItemText,} from '@mui/material';
+import {
+  Alert,
+  Box,
+  CircularProgress,
+  List,
+  ListItem,
+  ListItemText
+} from '@mui/material';
 
-import {useAppMutation, useAppQuery} from '../hooks';
-import {useAuth} from '../components/providers/AuthProvider';
-import {ProductsCard} from '../components/ProductsCard';
-import {convertShopifyGraphQLIdToNumber} from '../utils/index.js';
-import {Navigate} from 'react-router-dom';
+import { useAppMutation, useAppQuery } from '../hooks';
+import { useAuth } from '../components/providers/AuthProvider';
+import { ProductsCard } from '../components/ProductsCard';
+import { convertShopifyGraphQLIdToNumber } from '../utils/index.js';
+import { Link } from 'react-router-dom';
 
 export default function ProductsList() {
   const [productSinceId, setProductSinceId] = useState(0);
   const [
     remainingProductsCountBeforeNextFetch,
-    setRemainingProductsCountBeforeNextFetch,
+    setRemainingProductsCountBeforeNextFetch
   ] = useState(0);
   const [productsList, setProductsList] = useState([]);
   const [helpTextVisible, setHelpTextVisible] = useState(false);
@@ -28,44 +35,44 @@ export default function ProductsList() {
   const [exitingProductsList, setExitingProductsList] = useState([]);
 
   const { data: currentSalesSessionData } = useAppQuery({
-    url: "/api/sales-session",
+    url: '/api/sales-session',
     fetchInit: {
-      method: "GET",
-    },
+      method: 'GET'
+    }
   });
 
   const { isLoading: exitingProductsIsLoading } = useAppQuery({
-    url: "/api/products",
+    url: '/api/products',
     reactQueryOptions: {
       onSuccess: (data) => {
         if (Array.isArray(data)) {
           setExitingProductsList(data);
         }
-      },
-    },
+      }
+    }
   });
 
   const {
     data: producerProductsData,
     isLoading,
-    error: getProductDataError,
+    error: getProductDataError
   } = useAppQuery({
     reactQueryOptions: {},
     url: `/api/products/fdc?sinceId=${productSinceId}&remainingProductsCountBeforeNextFetch=${
       remainingProductsCountBeforeNextFetch || 0
-    }`,
+    }`
   });
 
   const {
     mutateAsync: logout,
     isLoading: logoutIsLoading,
-    error: logoutError,
+    error: logoutError
   } = useAppMutation({
     reactQueryOptions: {
       onSuccess: async () => {
-        console.log("Loging out ...");
-      },
-    },
+        console.log('Loging out ...');
+      }
+    }
   });
 
   useLayoutEffect(() => {
@@ -78,17 +85,28 @@ export default function ProductsList() {
     return (
       <Stack
         sx={{
-          width: "100vw",
-          height: "100vh",
-          justifyContent: "center",
-          alignItems: "center",
+          width: '100vw',
+          height: '100vh',
+          justifyContent: 'center',
+          alignItems: 'center'
         }}
       >
         <CircularProgress size={30} />
       </Stack>
     );
   } else if (getProductDataError) {
-    return <Navigate to="/" replace />;
+    console.error(getProductDataError);
+    return (
+      <>
+        <Typography variant="h6">
+          There was an error fetching fdc products:{' '}
+          {getProductDataError?.message || 'Unknown error'}
+        </Typography>
+        <Link to="/" replace>
+          Click to retry
+        </Link>
+      </>
+    );
   }
 
   const handleShowMore = () => {
@@ -113,27 +131,27 @@ export default function ProductsList() {
         type="button"
         color="success"
         sx={{
-          p: "6px",
-          position: "fixed",
-          right: "80px",
-          bottom: "16px",
-          borderRadius: "16px",
+          p: '6px',
+          position: 'fixed',
+          right: '80px',
+          bottom: '16px',
+          borderRadius: '16px',
           zIndex: 1000,
-          textTransform: "none",
+          textTransform: 'none'
         }}
         variant="contained"
         onClick={async () => {
           logout({
-            url: "/api/user/logout",
+            url: '/api/user/logout',
             fetchInit: {
-              method: "POST",
+              method: 'POST',
               headers: {
-                "Content-Type": "application/json",
-              },
-            },
+                'Content-Type': 'application/json'
+              }
+            }
           });
 
-          redirect.dispatch(Redirect.Action.APP, "/");
+          redirect.dispatch(Redirect.Action.APP, '/');
         }}
       >
         Logout
@@ -141,7 +159,7 @@ export default function ProductsList() {
           <CircularProgress
             color="white"
             size={20}
-            sx={{ marginLeft: "10px" }}
+            sx={{ marginLeft: '10px' }}
           />
         )}
       </Button>
@@ -149,13 +167,13 @@ export default function ProductsList() {
         type="button"
         color="success"
         sx={{
-          p: "6px",
-          position: "fixed",
-          right: "12px",
-          bottom: "16px",
-          borderRadius: "16px",
+          p: '6px',
+          position: 'fixed',
+          right: '12px',
+          bottom: '16px',
+          borderRadius: '16px',
           zIndex: 1000,
-          textTransform: "none",
+          textTransform: 'none'
         }}
         variant="contained"
         onClick={() => setHelpTextVisible((prev) => !prev)}
@@ -171,18 +189,18 @@ export default function ProductsList() {
         spacing="6px"
         p="12px"
         sx={{
-          p: "16px",
-          position: "fixed",
-          borderRadius: "12px",
-          boxShadow: "0px 0px 12px 0px rgba(0,0,0,0.75)",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "80%",
-          maxWidth: "800px",
-          backgroundColor: "white",
+          p: '16px',
+          position: 'fixed',
+          borderRadius: '12px',
+          boxShadow: '0px 0px 12px 0px rgba(0,0,0,0.75)',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '80%',
+          maxWidth: '800px',
+          backgroundColor: 'white',
           zIndex: 100,
-          visibility: helpTextVisible ? "visible" : "hidden",
+          visibility: helpTextVisible ? 'visible' : 'hidden'
         }}
       >
         <Typography variant="h3" textAlign="center">
@@ -195,7 +213,7 @@ export default function ProductsList() {
         </Typography>
         <Typography variant="body1">
           <Typography variantMapping="span" fontWeight="600">
-            For example:{" "}
+            For example:{' '}
           </Typography>
           this would allow you to order a box/case of 6 bottles of vinegar from
           your supplier, whilst listing a single bottle in your shop
@@ -249,9 +267,9 @@ export default function ProductsList() {
 
         <Button
           sx={{
-            p: "12px",
-            margin: "0 auto",
-            width: "200px",
+            p: '12px',
+            margin: '0 auto',
+            width: '200px'
           }}
           variant="contained"
           onClick={() => setHelpTextVisible((prev) => !prev)}
@@ -264,8 +282,8 @@ export default function ProductsList() {
         <Alert
           severity="warning"
           sx={{
-            typography: "body1",
-            fontSize: "20px",
+            typography: 'body1',
+            fontSize: '20px'
           }}
         >
           There is no active sales session , please create one to be able to add
@@ -277,8 +295,8 @@ export default function ProductsList() {
         <Alert
           severity="warning"
           sx={{
-            typography: "body1",
-            fontSize: "20px",
+            typography: 'body1',
+            fontSize: '20px'
           }}
         >
           There is no active sales session , please create one
@@ -301,10 +319,10 @@ export default function ProductsList() {
         ))}
         <Button
           sx={{
-            p: "12px",
-            margin: "0 auto",
-            width: "200px",
-            display: "block",
+            p: '12px',
+            margin: '0 auto',
+            width: '200px',
+            display: 'block'
           }}
           variant="contained"
           type="button"
@@ -316,10 +334,10 @@ export default function ProductsList() {
           }
         >
           {isLoading
-            ? "Loading..."
+            ? 'Loading...'
             : !producerProductsData?.lastId
-            ? "No more products"
-            : "Load more products"}
+            ? 'No more products'
+            : 'Load more products'}
         </Button>
       </Stack>
     </Box>

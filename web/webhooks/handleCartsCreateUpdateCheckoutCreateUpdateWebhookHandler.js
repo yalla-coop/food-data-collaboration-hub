@@ -12,8 +12,6 @@ export const handleHubVariantUpdate = async (v, activeSalesSession) => {
     return;
   }
 
-  const isPartiallySoldCasesEnabled = activeSalesSession.partiallySoldEnabled;
-
   try {
     const {
       hubProductId,
@@ -22,21 +20,18 @@ export const handleHubVariantUpdate = async (v, activeSalesSession) => {
       noOfItemsPerPackage,
       mappedProducerVariantId,
       numberOfExitingExcessOrders,
-      numberOfExitingRemainingOrders
     } = await getStoredHubVariant({
       variantId,
       quantity
     });
 
     await updateCurrentVariantInventory({
-      isPartiallySoldCasesEnabled,
       hubProductId,
       storedHubVariant: {
         hubVariantId,
         noOfItemsPerPackage,
         mappedVariantId: mappedProducerVariantId,
         numberOfExcessOrders: numberOfExitingExcessOrders,
-        numberOfRemainingOrders: numberOfExitingRemainingOrders
       },
       producerProductId
     });
