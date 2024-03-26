@@ -168,6 +168,7 @@ app.get(
         [
           'products/delete',
           'orders/paid',
+          'orders/cancelled',
           'carts/create',
           'carts/update',
           'checkouts/create',
