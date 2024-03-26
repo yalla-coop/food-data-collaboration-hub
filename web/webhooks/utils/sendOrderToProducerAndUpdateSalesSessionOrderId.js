@@ -8,7 +8,7 @@ SET order_id = $1
 WHERE id = $2
 `;
 
-export const handleSendOrderToProducerAndUpdateSalesSessionOrderId = async ({
+export const sendOrderToProducerAndUpdateSalesSessionOrderId = async ({
   activeSalesSessionOrderId,
   variants,
   activeSalesSessionId,
@@ -20,7 +20,7 @@ export const handleSendOrderToProducerAndUpdateSalesSessionOrderId = async ({
   try {
     if (!activeSalesSessionOrderId || !variants.length) {
       throwError(
-        'handleSendOrderToProducerAndUpdateSalesSessionOrderId: Missing activeSalesSessionOrderId or variants'
+        'sendOrderToProducerAndUpdateSalesSessionOrderId: Missing activeSalesSessionOrderId or variants'
       );
     }
 
@@ -32,7 +32,7 @@ export const handleSendOrderToProducerAndUpdateSalesSessionOrderId = async ({
     });
     if (!newProducerOrderId) {
       throwError(
-        'handleSendOrderToProducerAndUpdateSalesSessionOrderId: No new order id sent by producer'
+        'sendOrderToProducerAndUpdateSalesSessionOrderId: No new order id sent by producer'
       );
     }
     await sqlClient.query('BEGIN');
@@ -44,7 +44,7 @@ export const handleSendOrderToProducerAndUpdateSalesSessionOrderId = async ({
 
     if (result.rowCount === 0) {
       throwError(
-        'handleSendOrderToProducerAndUpdateSalesSessionOrderId: No rows updated in sales_sessions table'
+        'sendOrderToProducerAndUpdateSalesSessionOrderId: No rows updated in sales_sessions table'
       );
     }
 
@@ -54,7 +54,7 @@ export const handleSendOrderToProducerAndUpdateSalesSessionOrderId = async ({
   } catch (error) {
     await sqlClient.query('ROLLBACK');
     throwError(
-      'handleSendOrderToProducerAndUpdateSalesSessionOrderId: Error occurred while sending the order to producer',
+      'sendOrderToProducerAndUpdateSalesSessionOrderId: Error occurred while sending the order to producer',
       error
     );
   }

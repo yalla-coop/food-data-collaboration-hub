@@ -6,7 +6,7 @@ import { throwError } from '../../utils/index.js';
 import { handleStockAfterOrderUpdate } from './handleStockAfterOrderUpdate.js';
 // TODO move this to utils
 import { updateCurrentVariantInventory } from '../updateCurrentVariantInventory.js';
-import { handleSendOrderToProducerAndUpdateSalesSessionOrderId } from './ handleSendOrderToProducerAndUpdateSalesSessionOrderId.js';
+import { sendOrderToProducerAndUpdateSalesSessionOrderId } from './sendOrderToProducerAndUpdateSalesSessionOrderId.js';
 
 const selectVariantsQuery = `
 SELECT
@@ -104,7 +104,7 @@ export const handleOrderWebhook = async (
 
     // trigger the order to producer
     const { producerRespondSuccess, newProducerOrderId } =
-      await handleSendOrderToProducerAndUpdateSalesSessionOrderId({
+      await sendOrderToProducerAndUpdateSalesSessionOrderId({
         activeSalesSessionOrderId,
         variants: wholeSaleVariantsToOrderFromProducer,
         activeSalesSessionId,
