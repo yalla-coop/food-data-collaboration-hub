@@ -1,11 +1,11 @@
 // @params {number} noOfItemsPerPackage - number of items per package to order from producer
-// @params {number} quantityToBeCancelled - items of new order
+// @params {number} quantityToBeCancelled - items of cancellation order
 // @params {number} numberOfExistingExcessItems - excess items from previous orders
-// @returns {number} - number of packages to be ordered from producer and excess items after this order
-// @returns {number} numberOfPackages - number of packages to be ordered from producer
-export function handleOrderCancellation({
+// @returns {number} - numberOfExcessItems - number of excess items after cancellation
+// @returns {number} - numberOfPackages - number of packages to cancel from producer
+export function calculatePackageAndExcessItemsAfterCancelledOrder({
   noOfItemsPerPackage,
-  quantityToBeCancelled,
+  quantity: quantityToBeCancelled,
   numberOfExistingExcessItems
 }) {
   if (
@@ -19,14 +19,12 @@ export function handleOrderCancellation({
     throw new Error('Invalid input. Inputs must be positive numbers.');
   }
 
-  // Calculate the total excess items after cancellation
   const totalExcessItems = quantityToBeCancelled + numberOfExistingExcessItems;
-  // Calculate how many packages can be cancelled
-  const packagesToCancel = Math.floor(totalExcessItems / noOfItemsPerPackage);
-  // Calculate the new excess items after cancellation
-  const newExcessItems = totalExcessItems % noOfItemsPerPackage;
+  const numberOfPackages = Math.floor(totalExcessItems / noOfItemsPerPackage);
+  const numberOfExcessItems = totalExcessItems % noOfItemsPerPackage;
+
   return {
-    newExcessItems,
-    packagesToCancel
+    numberOfExcessItems,
+    numberOfPackages
   };
 }
