@@ -113,7 +113,7 @@ export const updateCurrentVariantInventory = async ({
       wholesaleProducerProduct = producerProductData.wholesaleProduct;
     }
 
-    if (!wholesaleProduct) {
+    if (!wholesaleProducerProduct) {
       console.error(`Unable to load latest producer data for ${producerProductId}`);
       return;
     }
