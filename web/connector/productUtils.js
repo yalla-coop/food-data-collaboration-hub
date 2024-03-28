@@ -1,5 +1,4 @@
 import {
-  getQueryParamsObjFromUrl,
   getTargetStringFromSemanticId,
   throwError
 } from '../utils/index.js';
@@ -14,8 +13,6 @@ async function getSingleSuppliedProduct(suppliedProduct) {
     const semanticId = suppliedProduct.getSemanticId();
     const images = suppliedProduct.getImages();
 
-    const queryParamsObject = getQueryParamsObjFromUrl(semanticId); // imageId
-
     const suppliedProductDetails = {
       id: getTargetStringFromSemanticId(semanticId, 'product'),
       title: suppliedProduct.getName(),
@@ -23,9 +20,8 @@ async function getSingleSuppliedProduct(suppliedProduct) {
       product_type: productTypesObj[productType],
     };
 
-    if (images.length && queryParamsObject.imageId) {
+    if (images.length) {
       suppliedProductDetails.image = {
-        id: queryParamsObject.imageId,
         src: images[0],
         alt: suppliedProduct.getName()
       };
@@ -67,7 +63,6 @@ async function getSingleVariantSuppliedProduct(suppliedProduct) {
     const hasVat = priceVatRate && Number(priceVatRate) > 0;
     const images = suppliedProduct.getImages();
 
-    const queryParamsObject = getQueryParamsObjFromUrl(semanticId);
     const quantityUnitsObj = await loadQuantityUnits();
 
     const variantSuppliedProduct = {
@@ -89,9 +84,8 @@ async function getSingleVariantSuppliedProduct(suppliedProduct) {
       // requires_shipping: true
     };
 
-    if (images.length && queryParamsObject.imageId) {
+    if (images.length) {
       variantSuppliedProduct.image = {
-        id: queryParamsObject.imageId,
         src: images[0],
         alt: productName
       };
