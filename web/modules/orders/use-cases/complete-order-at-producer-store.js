@@ -18,7 +18,7 @@ const completeOrderAtProducerStoreUseCase = async ({
 
   try {
     const { data } = await axios.patch(
-      `${PRODUCER_SHOP_URL}fdc/orders/${producerOrderId}/complete?shop=${PRODUCER_SHOP}`,
+      `${PRODUCER_SHOP_URL}fdc/orders/${producerOrderId}/complete?shop=${PRODUCER_SHOP}&orderType=completed`,
       {
         userId: user.id,
         accessToken

@@ -62,13 +62,13 @@ const updateCurrentVariantPrice = async ({
       noOfItemsPerPackage: storedHubVariant.noOfItemsPerPackage
     });
 
-    const exitingVariant = new shopify.api.rest.Variant({
+    const existingVariant = new shopify.api.rest.Variant({
       session
     });
-    exitingVariant.id = hubVariantId;
-    exitingVariant.price = hubVariantNewPrice.toFixed(2);
+    existingVariant.id = hubVariantId;
+    existingVariant.price = hubVariantNewPrice.toFixed(2);
     // we should update also the existing price of this variant
-    await exitingVariant.saveAndUpdate();
+    await existingVariant.saveAndUpdate();
     const updateVariantQuery =
       'UPDATE variants SET price = $1 WHERE hub_variant_id = $2';
 
