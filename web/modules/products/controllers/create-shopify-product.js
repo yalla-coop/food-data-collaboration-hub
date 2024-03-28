@@ -96,7 +96,7 @@ const createShopifyProduct = async (req, res) => {
       session
     });
     inventoryItem.id = hubProduct.variants[0].inventory_item_id;
-    inventoryItem.tracked = wholesaleProduct?.tracked || false;
+    inventoryItem.tracked = true;
     await inventoryItem.saveAndUpdate();
 
     const client = await getClient();

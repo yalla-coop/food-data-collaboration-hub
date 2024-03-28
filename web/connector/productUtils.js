@@ -80,7 +80,7 @@ async function getSingleVariantSuppliedProduct(suppliedProduct) {
       inventory_quantity: stockLimitation,
       sku,
       taxable: hasVat,
-      tracked: queryParamsObject.tracked,
+      tracked: true,
       inventory_policy: stockLimitation === -1 ? 'continue' : 'deny',
       // TODO check if these are needed and make these dynamic
       fulfillment_service: 'manual',
