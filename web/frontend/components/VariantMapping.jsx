@@ -46,7 +46,7 @@ function VariantMappingComponent({
 
   const existingProductVariantPrice = existingProductVariant?.price;
 
-  const [addedValue, setAddedValue] = useState(existingProductVariant?.addedValue || '');
+  const [addedValue, setAddedValue] = useState(existingProductVariant ? existingProductVariant.addedValue : '');
   const [addedValueMethod, setAddedValueMethod] = useState(getAddingPriceMethodOption(
       existingProductVariant?.addedValueMethod
     )
