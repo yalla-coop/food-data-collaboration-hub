@@ -28,16 +28,3 @@ export function getTargetStringFromSemanticId(url, key) {
 
   return targetId;
 }
-
-export function getQueryParamsObjFromUrl(url) {
-  const queryString = url.split('?')[1];
-
-  if (!queryString) {
-    return {};
-  }
-  const decodedQueryString = decodeURIComponent(queryString);
-
-  const parsedData = qs.parse(decodedQueryString);
-
-  return parsedData;
-}
