@@ -14,14 +14,13 @@ async function getSingleSuppliedProduct(suppliedProduct) {
     const semanticId = suppliedProduct.getSemanticId();
     const images = suppliedProduct.getImages();
 
-    const queryParamsObject = getQueryParamsObjFromUrl(semanticId); // handle, imageId
+    const queryParamsObject = getQueryParamsObjFromUrl(semanticId); // imageId
 
     const suppliedProductDetails = {
       id: getTargetStringFromSemanticId(semanticId, 'product'),
       title: suppliedProduct.getName(),
       body_html: suppliedProduct.getDescription(),
       product_type: productTypesObj[productType],
-      handle: queryParamsObject.handle
     };
 
     if (images.length && queryParamsObject.imageId) {

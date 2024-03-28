@@ -13,7 +13,7 @@ const createShopifyProduct = async (req, res) => {
   try {
     const { session } = res.locals.shopify;
 
-    const { title, handle, producerProductId, variantsMappingData } =
+    const { title, producerProductId, variantsMappingData } =
       req.body;
 
     const productExists = await query(
@@ -39,7 +39,6 @@ const createShopifyProduct = async (req, res) => {
     tempHubProduct.body_html = parentProduct.body_html;
     tempHubProduct.images = parentProduct.images;
 
-    tempHubProduct.handle = handle;
     tempHubProduct.metafields = [
       {
         key: 'producer_product_id',

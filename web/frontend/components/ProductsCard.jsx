@@ -56,7 +56,7 @@ export function ProductsCard({ producerProduct, existingProduct }) {
   });
 
   const handleAddToStore = async () => {
-    const { title, handle, id: producerProductId } = producerProduct.retailProduct;
+    const { title, id: producerProductId } = producerProduct.retailProduct;
 
     await createShopifyProduct({
       url: '/api/products/shopify',
@@ -67,7 +67,6 @@ export function ProductsCard({ producerProduct, existingProduct }) {
         },
         body: JSON.stringify({
           title,
-          handle,
           variantsMappingData,
           producerProductId,
         })
