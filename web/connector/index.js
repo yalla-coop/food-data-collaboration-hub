@@ -6,6 +6,9 @@ import {
   SaleSession,
   SuppliedProduct,
 } from "@datafoodconsortium/connector";
+
+import PlannedTransformation from "@datafoodconsortium/connector/lib/PlannedTransformation.js";
+
 import facets from "./thesaurus/facets.json" assert { type: "json" };
 import measures from "./thesaurus/measures.json" assert { type: "json" };
 import productTypes from "./thesaurus/productTypes.json" assert { type: "json" };
@@ -36,4 +39,4 @@ const loadConnectorWithResources = async () => {
   }
 };
 
-export { loadConnectorWithResources, SuppliedProduct, Order, Person, OrderLine, SaleSession };
+export { loadConnectorWithResources, SuppliedProduct, Order, Person, OrderLine, SaleSession, PlannedTransformation };

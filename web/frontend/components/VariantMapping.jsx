@@ -15,7 +15,7 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import { InfoIcon } from '../components/InfoIcon';
 import { CustomTooltip } from '../components/CustomTooltip';
-import { convertShopifyGraphQLIdToNumber } from '../utils/index.js';
+import { VariantCard } from '../components/VariantCard';
 
 const getAddingPriceMethodOption = (value) => {
   if (value === 'percentage') {
@@ -31,7 +31,7 @@ const getAddingPriceMethodOption = (value) => {
 };
 
 function VariantMappingComponent({
-  product,
+  producerProductMapping,
   setVariantsMappingData,
   existingProductVariant,
   isCurrentSalesSessionActive,
@@ -40,24 +40,13 @@ function VariantMappingComponent({
 }) {
   const isProductInStore = !!existingProductVariant?.producerVariantId;
 
-  const exitingVariantA =
-    product?.variants?.find(
-      (v) =>
-        convertShopifyGraphQLIdToNumber(v.id) ===
-        Number(existingProductVariant?.producerVariantId)
-    ) || null;
+  const retailProducerProduct = producerProductMapping?.retailProduct;
+  const wholesaleProducerProduct = producerProductMapping?.wholesaleProduct;
+  const noOfItemPerCase = producerProductMapping.itemsPerWholesaleVariant;
 
-  const exitingVariantB =
-    product?.variants?.find(
-      (v) =>
-        convertShopifyGraphQLIdToNumber(v.id) ===
-        Number(existingProductVariant?.mappedVariantId)
-    ) || null;
-
-  const noOfItemPerCase = existingProductVariant.noOfItemsPerPackage;
   const existingProductVariantPrice = existingProductVariant?.price;
 
-  const [addedValue, setAddedValue] = useState(existingProductVariant.addedValue || '');
+  const [addedValue, setAddedValue] = useState(existingProductVariant?.addedValue || '');
   const [addedValueMethod, setAddedValueMethod] = useState(getAddingPriceMethodOption(
       existingProductVariant?.addedValueMethod
     )
@@ -69,8 +58,8 @@ function VariantMappingComponent({
     ) {
       setAddedValue(
         (
-          Number(exitingVariantA?.price) -
-          Number(exitingVariantB?.price) / Number(noOfItemPerCase)
+          Number(retailProducerProduct?.price) -
+          Number(wholesaleProducerProduct?.price) / Number(noOfItemPerCase)
         ).toFixed(2)
       );
     }
@@ -112,7 +101,7 @@ function VariantMappingComponent({
 
   const isThisVariantPriceChanged = isProductInStore
     ? calculateThePrice({
-      originalPrice: Number(exitingVariantB?.price) || 0,
+      originalPrice: Number(wholesaleProducerProduct?.price) || 0,
       _addingPriceType: addedValueMethod,
       markUpValue: Number(addedValue),
       noOfItemsPerPackage: Number(noOfItemPerCase)
@@ -128,7 +117,7 @@ function VariantMappingComponent({
   const itemNewPrice = isProductInStore
     ? Number(existingProductVariantPrice)
     : calculateThePrice({
-      originalPrice: Number(exitingVariantB?.price) || 0,
+      originalPrice: Number(wholesaleProducerProduct?.price) || 0,
       _addingPriceType: addedValueMethod,
       markUpValue: Number(addedValue),
       noOfItemsPerPackage: Number(noOfItemPerCase)
@@ -136,7 +125,7 @@ function VariantMappingComponent({
 
   const profitValue = (
     itemNewPrice * noOfItemPerCase -
-    Number(exitingVariantB?.price)
+    Number(wholesaleProducerProduct?.price)
   ).toFixed(2);
 
   return (
@@ -164,12 +153,12 @@ function VariantMappingComponent({
       >
         <Stack flexGrow={1} spacing="10px">
           <Typography>Variant to display on my store</Typography>
-          <Typography>{exitingVariantA}</Typography>
+          <VariantCard variant={retailProducerProduct} />
         </Stack>
 
         <Stack flexGrow={1} spacing="10px">
           <Typography>Variant to Order from producer</Typography>
-          <Typography>{exitingVariantB}</Typography>
+          <VariantCard variant={wholesaleProducerProduct} />
         </Stack>
       </Stack>
 
@@ -225,10 +214,10 @@ function VariantMappingComponent({
             }}
             error={
               addedValue &&
-              itemNewPrice.toFixed(2) < Number(exitingVariantA?.price)
+              itemNewPrice.toFixed(2) < Number(retailProducerProduct?.price)
             }
             helperText={
-              itemNewPrice.toFixed(2) < Number(exitingVariantA?.price) &&
+              itemNewPrice.toFixed(2) < Number(retailProducerProduct?.price) &&
               'The price of the mapped variant is less than the price of the variant to display on my store'
             }
             type="number"
@@ -311,24 +300,21 @@ function VariantMappingComponent({
               }
               onChange={(_e) => {
                 if (_e.target.checked) {
-                  setVariantsMappingData((prev) => [
-                    ...prev,
-                    {
-                      variantA: exitingVariantA,
-                      variantB: exitingVariantB,
-                      price: itemNewPrice,
-                      originalPrice:
-                        Number(exitingVariantB.price / noOfItemPerCase) || 0,
-                        exitingNoOfItemPerCase: noOfItemPerCase,
-                      addedValue,
-                      addedValueMethod: addedValueMethod.value,
-                      profitValue
-                    }
-                  ]);
+                  setVariantsMappingData({
+                    parentProduct: producerProductMapping.parentProduct,
+                    retailProduct: retailProducerProduct,
+                    wholesaleProduct: wholesaleProducerProduct,
+                    noOfItemPerCase,
+                    price: itemNewPrice,
+                    originalPrice:
+                      Number(wholesaleProducerProduct.price / noOfItemPerCase) || 0,
+                      exitingNoOfItemPerCase: noOfItemPerCase,
+                    addedValue,
+                    addedValueMethod: addedValueMethod.value,
+                    profitValue
+                  });
                 } else {
-                  setVariantsMappingData((prev) =>
-                    prev.filter((v) => v.variantA.id !== exitingVariantA.id)
-                  );
+                  setVariantsMappingData(null);
                 }
               }}
             />

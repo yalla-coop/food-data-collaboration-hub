@@ -4,7 +4,7 @@ import {
   throwError
 } from '../utils/index.js';
 
-import { loadConnectorWithResources, SuppliedProduct } from './index.js';
+import { loadConnectorWithResources, PlannedTransformation } from './index.js';
 import { loadProductTypes, loadQuantityUnits } from './mappings.js';
 
 async function getSingleSuppliedProduct(suppliedProduct) {
@@ -36,13 +36,13 @@ async function getSingleSuppliedProduct(suppliedProduct) {
   } catch (error) {
     throwError('Error fetching single supplied product', error);
   }
-
-  return null;
 }
 
 async function getSingleVariantSuppliedProduct(suppliedProduct) {
   try {
     const semanticId = suppliedProduct.getSemanticId();
+
+
     const productName = suppliedProduct.getName();
     const [quantity, catalogItems] = await Promise.all([
       suppliedProduct.getQuantity(),
@@ -62,7 +62,8 @@ async function getSingleVariantSuppliedProduct(suppliedProduct) {
 
     const offer = await catalogItem.getOfferers();
     const price = await offer[0].getPrice();
-    const priceValue = price.getValue();
+
+    const priceValue = price.getQuantityValue();
     const priceVatRate = price.getVatRate();
     const hasVat = priceVatRate && Number(priceVatRate) > 0;
     const images = suppliedProduct.getImages();
@@ -71,9 +72,7 @@ async function getSingleVariantSuppliedProduct(suppliedProduct) {
     const quantityUnitsObj = await loadQuantityUnits();
 
     const variantSuppliedProduct = {
-      id: getTargetStringFromSemanticId(semanticId, 'variant'),
-      product_id: getTargetStringFromSemanticId(semanticId, 'product'),
-      inventory_item_id: getTargetStringFromSemanticId(semanticId, 'inventory'),
+      id: getTargetStringFromSemanticId(semanticId, 'product'),
       title: productName,
       price: priceValue,
       weight: quantityValue,
@@ -103,7 +102,6 @@ async function getSingleVariantSuppliedProduct(suppliedProduct) {
   } catch (error) {
     throwError('Error fetching single variant supplied product', error);
   }
-  return null;
 }
 
 async function importSuppliedProducts(dfcProducts) {
@@ -119,74 +117,50 @@ async function importSuppliedProducts(dfcProducts) {
   } catch (error) {
     throwError('Error importing supplied products', error);
   }
-
-  return null;
-}
-
-function sortDfcSuppliedProductsFirst(productsAndVariantsArray) {
-  return productsAndVariantsArray.sort((a, b) => {
-    const aHasVariant = a.getSemanticId().includes('/variant/');
-    const bHasVariant = b.getSemanticId().includes('/variant/');
-
-    if (aHasVariant && !bHasVariant) {
-      return 1;
-    }
-    if (!aHasVariant && bHasVariant) {
-      return -1;
-    }
-    return 0;
-  });
 }
 
 async function getSuppliedProductDetailsFromImports(dfcExportsArray) {
+
   const dfcImports = await importSuppliedProducts(dfcExportsArray);
   if (!Array.isArray(dfcImports) || !dfcImports.length) {
     throwError('Error importing supplied products: no imports');
   }
 
-  const dfcSuppliedProducts = dfcImports.filter(
-    (importedProduct) => importedProduct instanceof SuppliedProduct
+  const dfcRetailWholesalePairs = dfcImports.filter(
+    (item) => item instanceof PlannedTransformation
   );
 
-  return Promise.all(
-    sortDfcSuppliedProductsFirst(dfcSuppliedProducts).map((suppliedProduct) => {
-      try {
-        if (suppliedProduct.getSemanticId().includes('/variant/')) {
-          return getSingleVariantSuppliedProduct(suppliedProduct);
-        }
-        return getSingleSuppliedProduct(suppliedProduct);
-      } catch (error) {
-        throwError(
-          'Error getting supplied product details from imports',
-          error
-        );
-      }
-      return null;
-    })
-  );
+  return await Promise.all(dfcRetailWholesalePairs.map(toShopifyProduct));
 }
 
-const groupVariantsUnderProducts = (items) => {
-  const productsMap = new Map();
+async function toShopifyProduct(retailWholesalePair) {
+  const consumptionFlows = await retailWholesalePair.getPlannedConsumptionFlows();
+  const productionFlows = await retailWholesalePair.getPlannedProductionFlows();
 
-  items.forEach((item) => {
-    if (!item.product_id) {
-      // It's a product, add it to the map with an empty variants array
-      productsMap.set(item.id, { ...item, variants: [] });
-    } else {
-      // It's a variant, find the parent product and add this variant to its variants array
-      const product = productsMap.get(item.product_id);
+  if (consumptionFlows.length !== 1 || productionFlows.length !== 1) {
+    console.error(`Error handling the following PlannedTransformation. Dont know how to handle case where production/consumption is not 1-1`, retailWholesalePair)
+  }
 
-      if (product) {
-        product.variants.push(item);
-      } else {
-        throwError(`Could not find product with id ${item.product_id}`);
-      }
-    }
-  });
 
-  return Array.from(productsMap.values());
-};
+  const wholesaleProduct = await productionFlows[0].getProducedProduct();
+  const retailProduct = await consumptionFlows[0].getConsumedProduct();
+
+  
+  const retailShopifyProduct = await getSingleVariantSuppliedProduct(retailProduct);
+  const wholesaleShopifyProduct = await getSingleVariantSuppliedProduct(wholesaleProduct);
+  const itemsPerWholesaleVariant = await (await consumptionFlows[0].getQuantity().getQuantityValue());
+
+  const parentShopifyProduct = await getSingleSuppliedProduct(retailProduct);
+  parentShopifyProduct.variants = [retailShopifyProduct];
+  parentShopifyProduct.images = retailShopifyProduct.image ? [createImageObject(retailShopifyProduct.image, retailShopifyProduct.id, 1)] : [];
+  
+  return {
+    parentProduct: parentShopifyProduct,
+    retailProduct: retailShopifyProduct,
+    wholesaleProduct: wholesaleShopifyProduct,
+    itemsPerWholesaleVariant
+  };
+}
 
 function createImageObject(image, productId, position, variantIds = []) {
   return {
@@ -200,41 +174,12 @@ function createImageObject(image, productId, position, variantIds = []) {
   };
 }
 
-function addImagesToProducts(products) {
-  const productsWithImages = products.map((product) => {
-    const imagesArray = [];
-
-    // add main product image
-    if (product?.image) {
-      imagesArray.push(createImageObject(product.image, product.id, 1));
-    }
-
-    // Adding images from variants
-    product.variants.forEach((variant) => {
-      if (variant?.image) {
-        imagesArray.push(
-          createImageObject(variant.image, product.id, imagesArray.length + 1, [
-            variant.id
-          ])
-        );
-      }
-    });
-
-    return { ...product, images: imagesArray };
-  });
-
-  return productsWithImages;
-}
-
 async function generateShopifyFDCProducts(products) {
   try {
-    const dfcProducts = await getSuppliedProductDetailsFromImports(products);
-    return addImagesToProducts(groupVariantsUnderProducts(dfcProducts));
+    return await getSuppliedProductDetailsFromImports(products);
   } catch (error) {
     throwError('Error generating Shopify FDC products', error);
   }
-
-  return null;
 }
 
 export { generateShopifyFDCProducts };

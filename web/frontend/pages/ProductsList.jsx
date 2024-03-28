@@ -27,12 +27,12 @@ export default function ProductsList() {
     remainingProductsCountBeforeNextFetch,
     setRemainingProductsCountBeforeNextFetch
   ] = useState(0);
-  const [productsList, setProductsList] = useState([]);
+  const [producerProducts, setProducerProducts] = useState([]);
+  const [hubProducts, setHubProducts] = useState([]);
   const [helpTextVisible, setHelpTextVisible] = useState(false);
   const app = useAppBridge();
   const redirect = Redirect.create(app);
   const { data: userAuthData } = useAuth();
-  const [existingProductsList, setExitingProductsList] = useState([]);
 
   const { data: currentSalesSessionData } = useAppQuery({
     url: '/api/sales-session',
@@ -46,7 +46,7 @@ export default function ProductsList() {
     reactQueryOptions: {
       onSuccess: (data) => {
         if (Array.isArray(data)) {
-          setExitingProductsList(data);
+          setHubProducts(data);
         }
       }
     }
@@ -77,11 +77,11 @@ export default function ProductsList() {
 
   useLayoutEffect(() => {
     if (producerProductsData?.products) {
-      setProductsList((prev) => [...prev, ...producerProductsData?.products]);
+      setProducerProducts((prev) => [...prev, ...producerProductsData?.products]);
     }
   }, [producerProductsData]);
 
-  if ((productsList.length === 0 && isLoading) || exitingProductsIsLoading) {
+  if ((producerProducts.length === 0 && isLoading) || exitingProductsIsLoading) {
     return (
       <Stack
         sx={{
@@ -304,15 +304,15 @@ export default function ProductsList() {
       )}
 
       <Stack spacing="12px" px="60px" py="12px">
-        {productsList.map((product) => (
+        {producerProducts.map((product) => (
           <ProductsCard
-            key={product.id}
-            product={product}
+            key={'product-' + product.retailProduct.id}
+            producerProduct={product}
             existingProduct={
-              existingProductsList?.find(
+              hubProducts?.find(
                 (exitingProduct) =>
                   Number(exitingProduct.producerProductId) ===
-                  convertShopifyGraphQLIdToNumber(product.id)
+                  convertShopifyGraphQLIdToNumber(product.retailProduct.id)
               ) || {}
             }
           />

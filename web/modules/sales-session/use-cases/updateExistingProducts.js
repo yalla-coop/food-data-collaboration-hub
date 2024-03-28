@@ -64,12 +64,12 @@ const updateExistingProductsUseCase = async ({
     for (const product of productsWithVariants) {
       const { hubProductId } = product;
       const storedVariants = product.variants;
+
       await updateSingleProduct({
         hubProductId,
         session,
         storedVariants,
-        producerVariants: product.updatedProductJsonData.variants,
-        producerLatestProductData: product.updatedProductJsonData,
+        producerLatestProductData: product.producerProductData,
         shouldUpdateThePrice
       });
     }
