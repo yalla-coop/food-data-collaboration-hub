@@ -2,7 +2,7 @@ import { LATEST_API_VERSION } from '@shopify/shopify-api';
 import * as dotenv from 'dotenv';
 import { join } from 'path';
 
-if (process.env.NODE_ENV === 'development') {
+if (['development', 'test'].includes(process.env.NODE_ENV)) {
   dotenv.config({
     path: join(process.cwd(), '.env.test')
   });
