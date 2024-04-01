@@ -1,19 +1,20 @@
-import { useState, useEffect } from 'react';
-import dayjs from 'dayjs';
-import { Redirect } from '@shopify/app-bridge/actions';
+import { useEffect, useState } from "react";
+import dayjs from "dayjs";
+import { Redirect } from "@shopify/app-bridge/actions";
 import {
-  Button,
-  Stack,
-  TextField,
   Alert,
   Box,
-  Typography
-} from '@mui/material';
-import { useQueryClient } from 'react-query';
-import { useAppBridge } from '@shopify/app-bridge-react';
-import { useAppMutation, useAppQuery } from '../hooks';
-import { useAuth } from '../components/providers/AuthProvider';
-import { DatePickerComponent } from '../components/DatePicker';
+  Button,
+  CircularProgress,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useQueryClient } from "react-query";
+import { useAppBridge } from "@shopify/app-bridge-react";
+import { useAppMutation, useAppQuery } from "../hooks";
+import { useAuth } from "../components/providers/AuthProvider";
+import { DatePickerComponent } from "../components/DatePicker";
 
 export default function SalesSession() {
   const app = useAppBridge();
@@ -21,7 +22,7 @@ export default function SalesSession() {
 
   const [showSuccessAlert, setShowSuccessAlert] = useState({
     show: false,
-    type: ''
+    type: "",
   });
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export default function SalesSession() {
       setTimeout(() => {
         setShowSuccessAlert({
           show: false,
-          type: ''
+          type: "",
         });
       }, 3000);
     }
@@ -48,11 +49,12 @@ export default function SalesSession() {
 
   const {
     data: currentSalesSessionData,
-    isLoading: currentSalesSessionIsLoading
+    isLoading: currentSalesSessionIsLoading,
+    error: loadSalesSessionsError,
   } = useAppQuery({
-    url: '/api/sales-session',
+    url: "/api/sales-session",
     fetchInit: {
-      method: 'GET'
+      method: "GET",
     },
     reactQueryOptions: {
       onSuccess: (data) => {
@@ -68,104 +70,116 @@ export default function SalesSession() {
 
         setStartDate(currentSalesStartDate);
         setSessionDurationInDays(currentSalesSessionSessionDurationInDays);
-      }
-    }
+      },
+    },
   });
 
   const {
     mutateAsync: createSalesSession,
     isLoading: createSalesSessionIsLoading,
-    error: createSalesSessionError
+    error: createSalesSessionError,
   } = useAppMutation({
     reactQueryOptions: {
       onSuccess: async () => {
-        await queryClient.invalidateQueries('/api/sales-session');
+        await queryClient.invalidateQueries("/api/sales-session");
         setShowSuccessAlert({
           show: true,
-          type: 'created'
+          type: "created",
         });
-      }
-    }
+      },
+    },
   });
 
   const {
     mutateAsync: editCurrentSalesSession,
     isLoading: editCurrentSalesSessionIsLoading,
-    error: editCurrentSalesSessionError
+    error: editCurrentSalesSessionError,
   } = useAppMutation({
     reactQueryOptions: {
       onSuccess: async () => {
-        await queryClient.invalidateQueries('/api/sales-session');
+        await queryClient.invalidateQueries("/api/sales-session");
         setShowSuccessAlert({
           show: true,
-          type: 'updated'
+          type: "updated",
         });
-      }
-    }
+      },
+    },
   });
 
   const {
     mutateAsync: completeCurrentSalesSession,
     isLoading: completeCurrentSalesSessionIsLoading,
-    error: completeCurrentSalesSessionError
+    error: completeCurrentSalesSessionError,
   } = useAppMutation({
     reactQueryOptions: {
       onSuccess: async () => {
-        await queryClient.invalidateQueries('/api/sales-session');
+        await queryClient.invalidateQueries("/api/sales-session");
         setShowSuccessAlert({
           show: true,
-          type: 'Finished/Completed'
+          type: "Finished/Completed",
         });
-      }
-    }
+      },
+    },
+  });
+
+  const {
+    mutateAsync: logout,
+    isLoading: logoutIsLoading,
+    error: logoutError,
+  } = useAppMutation({
+    reactQueryOptions: {
+      onSuccess: async () => {
+        console.log("Loging out ...");
+      },
+    },
   });
 
   const handleOnEditCurrentSalesSessionClick = async () => {
     await editCurrentSalesSession({
-      url: '/api/sales-session/current',
+      url: "/api/sales-session/current",
       fetchInit: {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           startDate: startDate.toISOString(),
-          sessionDurationInDays: Number(sessionDurationInDays)
-        })
-      }
+          sessionDurationInDays: Number(sessionDurationInDays),
+        }),
+      },
     });
   };
 
   const handleOnFinishCurrentSalesSessionClick = async () => {
     await completeCurrentSalesSession({
-      url: '/api/sales-session/current/complete',
+      url: "/api/sales-session/current/complete",
       fetchInit: {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json'
-        }
-      }
+          "Content-Type": "application/json",
+        },
+      },
     });
   };
 
   const handleOnCreateSalesSessionClick = async () => {
     await createSalesSession({
-      url: '/api/sales-session',
+      url: "/api/sales-session",
       fetchInit: {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           startDate: startDate.toISOString(),
-          sessionDurationInDays: Number(sessionDurationInDays)
-        })
-      }
+          sessionDurationInDays: Number(sessionDurationInDays),
+        }),
+      },
     });
   };
 
-  if (!userAuthData?.isAuthenticated) {
-    redirect.dispatch(Redirect.Action.APP, '/');
+  if (!userAuthData?.isAuthenticated || loadSalesSessionsError) {
+    redirect.dispatch(Redirect.Action.APP, "/");
     return null;
   }
 
@@ -175,11 +189,47 @@ export default function SalesSession() {
 
   return (
     <Box>
+      <Button
+        type="button"
+        color="success"
+        sx={{
+          p: "6px",
+          position: "fixed",
+          right: "80px",
+          bottom: "16px",
+          borderRadius: "16px",
+          zIndex: 1000,
+          textTransform: "none",
+        }}
+        variant="contained"
+        onClick={async () => {
+          logout({
+            url: "/api/user/logout",
+            fetchInit: {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            },
+          });
+
+          redirect.dispatch(Redirect.Action.APP, "/");
+        }}
+      >
+        Logout
+        {logoutIsLoading && (
+          <CircularProgress
+            color="white"
+            size={20}
+            sx={{ marginLeft: "10px" }}
+          />
+        )}
+      </Button>
       <Stack
         spacing={2}
         sx={{
-          margin: '0 auto',
-          p: 2
+          margin: "0 auto",
+          p: 2,
         }}
       >
         <Typography variant="h5">Sales Session Management Console</Typography>
@@ -216,14 +266,14 @@ export default function SalesSession() {
       <Stack
         spacing={2}
         sx={{
-          width: '300px',
-          margin: '0 auto',
-          p: 2
+          width: "300px",
+          margin: "0 auto",
+          p: 2,
         }}
       >
         <DatePickerComponent
           sx={{
-            width: '100%'
+            width: "100%",
           }}
           label="Start Date"
           value={startDate}
@@ -241,13 +291,13 @@ export default function SalesSession() {
 
         <DatePickerComponent
           sx={{
-            width: '100%'
+            width: "100%",
           }}
           label="End Date"
-          value={dayjs(startDate).add(sessionDurationInDays, 'day')}
+          value={dayjs(startDate).add(sessionDurationInDays, "day")}
           onChange={(newValue) => {
             setSessionDurationInDays(
-              dayjs(newValue).diff(startDate, 'day', false)
+              dayjs(newValue).diff(startDate, "day", false)
             );
           }}
         />
@@ -261,7 +311,7 @@ export default function SalesSession() {
             currentSalesSessionData?.currentSalesSession?.isActive
           }
         >
-          {createSalesSessionIsLoading ? 'Loading...' : 'Create Sales Session'}
+          {createSalesSessionIsLoading ? "Loading..." : "Create Sales Session"}
         </Button>
 
         <Button
@@ -274,8 +324,8 @@ export default function SalesSession() {
           }
         >
           {editCurrentSalesSessionIsLoading
-            ? 'Loading...'
-            : 'Edit Current Sales Session'}
+            ? "Loading..."
+            : "Edit Current Sales Session"}
         </Button>
 
         <Button
@@ -288,8 +338,8 @@ export default function SalesSession() {
           }
         >
           {completeCurrentSalesSessionIsLoading
-            ? 'Loading...'
-            : 'Finish/Complete Current Sales Session'}
+            ? "Loading..."
+            : "Finish/Complete Current Sales Session"}
         </Button>
 
         {createSalesSessionError && (

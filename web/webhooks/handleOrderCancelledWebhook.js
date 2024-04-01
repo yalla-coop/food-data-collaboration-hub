@@ -5,21 +5,25 @@ import { handleOrderWebhook } from './utils/handleOrderWebhook.js';
 
 dotenv.config();
 
-const handleOrderPaidWebhookCallback = async (topic, shop, body, webhookId) => {
+const handleOrderCancelledWebhookCallback = async (
+  topic,
+  shop,
+  body,
+  webhookId
+) => {
   // without awaiting
-  handleOrderWebhook(topic, shop, body, webhookId, 'completed');
-
+  handleOrderWebhook(topic, shop, body, webhookId, 'cancelled');
   return {
     statusCode: 200
   };
 };
 
-const handleOrderPaidWebhookHandler = {
-  ORDERS_PAID: {
+const handleOrderCancelledWebhookHandler = {
+  ORDERS_CANCELLED: {
     deliveryMethod: DeliveryMethod.Http,
     callbackUrl: '/api/webhooks',
-    callback: handleOrderPaidWebhookCallback
+    callback: handleOrderCancelledWebhookCallback
   }
 };
 
-export default handleOrderPaidWebhookHandler;
+export default handleOrderCancelledWebhookHandler;

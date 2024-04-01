@@ -36,7 +36,6 @@ function VariantMappingComponent({
   product,
   setVariantsMappingData,
   exitingProductVariant,
-  isPartiallySoldCasesEnabled,
   isCurrentSalesSessionActive,
   setIsProductPriceChanged,
   isProductPriceChanged
@@ -370,33 +369,14 @@ function VariantMappingComponent({
         <Divider />
 
         {isCurrentSalesSessionActive && exitingVariantA && exitingVariantB ? (
-          isPartiallySoldCasesEnabled ? (
-            <Stack spacing="12px">
-              <Typography>
-                <strong>Partially Sold Cases</strong> are enabled for this
-                product.
-              </Typography>
-              <Typography>
-                Number of excess items:
-                <Typography variant="span" ml="4px">
-                  {exitingProductVariant?.numberOfExcessOrders || 0}
-                </Typography>
-              </Typography>
-            </Stack>
-          ) : (
-            <Stack spacing="12px">
-              <Typography>
-                <strong>Partially Sold Cases</strong> are disabled for this
-                product.
-              </Typography>
-              <Typography>
-                Number of outstanding items:
-                <Typography variant="span" ml="4px">
-                  {exitingProductVariant?.numberOfRemainingOrders || 0}
-                </Typography>
-              </Typography>
-            </Stack>
-          )
+          <Stack spacing="12px">
+          <Typography>
+            Number of excess items:
+            <Typography variant="span" ml="4px">
+              {exitingProductVariant?.numberOfExcessOrders || 0}
+            </Typography>
+          </Typography>
+        </Stack>
         ) : null}
 
         <FormControlLabel

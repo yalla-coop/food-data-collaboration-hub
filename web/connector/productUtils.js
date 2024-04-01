@@ -82,8 +82,8 @@ async function getSingleVariantSuppliedProduct(suppliedProduct) {
       sku,
       taxable: hasVat,
       tracked: queryParamsObject.tracked,
+      inventory_policy: stockLimitation === -1 ? 'continue' : 'deny',
       // TODO check if these are needed and make these dynamic
-      inventory_policy: 'deny',
       fulfillment_service: 'manual',
       inventory_management: 'shopify'
       // compare_at_price: '2.99',
@@ -112,7 +112,10 @@ async function importSuppliedProducts(dfcProducts) {
   }
   try {
     const connector = await loadConnectorWithResources();
-    return connector.import(dfcProducts);
+
+    const imports = await connector.import(dfcProducts);
+
+    return imports;
   } catch (error) {
     throwError('Error importing supplied products', error);
   }

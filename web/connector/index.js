@@ -1,8 +1,15 @@
-import { Connector, SuppliedProduct } from '@datafoodconsortium/connector';
-import facets from './thesaurus/facets.json' assert { type: 'json' };
-import measures from './thesaurus/measures.json' assert { type: 'json' };
-import productTypes from './thesaurus/productTypes.json' assert { type: 'json' };
-import { throwError } from '../utils/index.js';
+import {
+  Connector,
+  Order,
+  OrderLine,
+  Person,
+  SaleSession,
+  SuppliedProduct,
+} from "@datafoodconsortium/connector";
+import facets from "./thesaurus/facets.json" assert { type: "json" };
+import measures from "./thesaurus/measures.json" assert { type: "json" };
+import productTypes from "./thesaurus/productTypes.json" assert { type: "json" };
+import { throwError } from "../utils/index.js";
 
 let _connector;
 let connected = false;
@@ -29,4 +36,4 @@ const loadConnectorWithResources = async () => {
   }
 };
 
-export { loadConnectorWithResources, SuppliedProduct };
+export { loadConnectorWithResources, SuppliedProduct, Order, Person, OrderLine, SaleSession };

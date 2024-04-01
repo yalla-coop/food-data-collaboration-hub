@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable prefer-arrow-callback */
 // @ts-nocheck
+import axios from 'axios';
 import * as dotenv from 'dotenv';
 import { join } from 'path';
 import * as Sentry from '@sentry/node';
@@ -31,7 +32,7 @@ import {
 } from './modules/cron-jobs/index.js';
 import subscribeToWebhook from './utils/subscribe-to-webhook.js';
 
-if (process.env.NODE_ENV === 'test') {
+if (process.env.NODE_ENV === 'development') {
   dotenv.config({
     path: join(process.cwd(), '.env.test')
   });
@@ -52,13 +53,11 @@ Sentry.init({
   dsn: process.env.SENTRY_DNS,
   integrations: [
     // enable HTTP calls tracing
-    new Sentry.Integrations.Http({ tracing: true }),
-    // enable Express.js middleware tracing
+    new Sentry.Integrations.Http({ tracing: true }), // enable Express.js middleware tracing
     new Sentry.Integrations.Express({ app }),
     new ProfilingIntegration()
   ],
-  enabled: process.env.NODE_ENV === 'production',
-  // Performance Monitoring
+  enabled: process.env.NODE_ENV === 'production', // Performance Monitoring
   tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
   // Set sampling rate for profiling - this is relative to tracesSampleRate
   profilesSampleRate: 1.0 // Capture 100% of the transactions, reduce in production!
@@ -81,8 +80,7 @@ const SQLiteStore = connectSQLite(session);
 
 const sessionStore = new SQLiteStore({
   db: 'sessions.sqlite',
-  dir: '.',
-  // @ts-ignore
+  dir: '.', // @ts-ignore
   concurrentDB: true
 });
 
@@ -94,8 +92,7 @@ const sessionObject = {
 };
 
 app.use(
-  '/',
-  // @ts-ignore
+  '/', // @ts-ignore
   session({
     ...sessionObject,
     proxy: true,
@@ -109,7 +106,6 @@ app.use(
 );
 
 app.use(cookieParser());
-
 passport.use(
   new OpenIDConnectStrategy(
     {
@@ -136,7 +132,7 @@ passport.use(
       profile.accessToken = accessToken;
       profile.refreshToken = refreshToken;
       profile.idToken = idToken;
-
+      console.log('profile :>> ', profile);
       return done(null, profile);
     }
   )
@@ -165,14 +161,14 @@ app.get(shopify.config.auth.path, shopify.auth.begin());
 // This is the best place to subscribe for the webhooks.
 app.get(
   shopify.config.auth.callbackPath,
-  shopify.auth.callback(),
-  // @ts-ignore
+  shopify.auth.callback(), // @ts-ignore
   async (req, res, next) => {
     try {
       await Promise.allSettled([
         [
           'products/delete',
           'orders/paid',
+          'orders/cancelled',
           'carts/create',
           'carts/update',
           'checkouts/create',
@@ -198,19 +194,30 @@ app.get(
 
 app.use('/api/*', shopify.validateAuthenticatedSession());
 
-app.post('/api/user/logout', function logout(req, res, next) {
-  return req.logout(function logoutCallback(err) {
-    if (err) {
-      return next(err);
-    }
+app.post('/api/user/logout', isAuthenticated, async (req, res) => {
+  const url =
+    'https://login.lescommuns.org/auth/realms/data-food-consortium/protocol/openid-connect/logout';
 
-    res.clearCookie('connect.sid');
-    return res.redirect('/');
+  const queryParams = new URLSearchParams({
+    id_token_hint: req.user.idToken,
+    post_logout_redirect_uri: `https://food-data-collaboration-hub-82234d1e2fc5.herokuapp.com/oidc/logout`
   });
+
+  try {
+    await axios.get(`${url}?${queryParams}`);
+  } catch (e) {
+    console.log(e.message);
+  }
+
+  res.redirect('/');
 });
 
 app.get('/api/user/check', isAuthenticated, (req, res) =>
-  res.json({ success: true, user: req.user, isAuthenticated: true })
+  res.json({
+    success: true,
+    user: req.user,
+    isAuthenticated: true
+  })
 );
 
 app.use('/api', express.json(), isAuthenticated, apiRouters);

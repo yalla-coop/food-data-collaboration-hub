@@ -1,6 +1,9 @@
 import dotenv from 'dotenv';
-import { query } from '../../../database/connect.js';
 import axios from 'axios';
+import { query } from '../../../database/connect.js';
+import { generateShopifyFDCProducts } from '../../../connector/productUtils.js';
+import { throwError } from '../../../utils/index.js';
+
 dotenv.config();
 
 const PRODUCER_SHOP_URL = process.env.PRODUCER_SHOP_URL;
@@ -21,7 +24,6 @@ const getProducerProducts = async () => {
       'mapped_variant_id', v.mapped_variant_id,
       'no_of_items_per_package', v.no_of_items_per_package,
       'number_of_excess_orders', v.number_of_excess_orders,
-      'number_of_remaining_orders', v.number_of_remaining_orders,
       'added_value_method', v.added_value_method)
   ) as variants
     FROM products as p INNER JOIN variants as v ON p.id = v.product_id
@@ -36,6 +38,10 @@ const getProducerProducts = async () => {
       return [];
     }
 
+    if (hubStoreProducts.length > 250) {
+      throwError('getProducerProducts: Too many products in the hub store');
+    }
+
     const producerProductsIds = hubStoreProducts
       .map((p) => p.producerProductId)
       .join(',');
@@ -46,8 +52,13 @@ const getProducerProducts = async () => {
         ids: producerProductsIds
       }
     );
+    const producerProducts = await generateShopifyFDCProducts(data.products);
 
-    const { products: producerProducts } = data;
+    if (!Array.isArray(producerProducts) || producerProducts.length === 0) {
+      throwError(
+        'getProducerProducts: No products found in the producer store'
+      );
+    }
 
     const products = hubStoreProducts.map((product) => {
       const updatedProductJsonData = producerProducts.find(
@@ -69,12 +80,14 @@ const getProducerProducts = async () => {
               (v) => Number(v.id) === Number(variant.producerVariantId)
             );
 
-          return {
+          const updatedVariant = {
             ...variant,
             updatedPrice: producerVariantData.price,
-            updatedInventoryQuantity: producerVariantData.inventoryQuantity,
+            updatedInventoryQuantity: producerVariantData.inventory_quantity,
             producerVariantData
           };
+
+          return updatedVariant;
         });
 
         return {
@@ -86,8 +99,7 @@ const getProducerProducts = async () => {
 
     return productsWithVariants;
   } catch (err) {
-    console.log('errrr', err);
-    throw new Error('DATABASE ERROR :', err);
+    throwError('Error from getProducerProducts', err);
   }
 };
 

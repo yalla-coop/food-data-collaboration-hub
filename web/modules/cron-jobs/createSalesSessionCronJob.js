@@ -68,7 +68,6 @@ const createSalesSessionCronJob = async () => {
             {
               startDate: newStartDate.toISOString(),
               sessionDurationInDays: latestSession.sessionDuration,
-              partiallySoldEnabled: latestSession.partiallySoldEnabled,
               session,
               user: {
                 id: 212,

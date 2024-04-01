@@ -2,7 +2,8 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import shopify from '../shopify.js';
 import { query } from '../database/connect.js';
-import { convertShopifyGraphQLIdToNumber } from '../utils/index.js';
+import { convertShopifyGraphQLIdToNumber, throwError } from '../utils/index.js';
+import { generateShopifyFDCProducts } from '../connector/productUtils.js';
 
 dotenv.config();
 const { PRODUCER_SHOP_URL, PRODUCER_SHOP, HUB_SHOP_NAME } = process.env;
@@ -38,13 +39,12 @@ const getLatestProducerProductData = async (producerProductId) => {
       }
     );
 
-    const { products: producerProducts } = data;
+    const producerProducts = await generateShopifyFDCProducts(data.products);
 
     const producerProductData = producerProducts[0];
     return producerProductData;
   } catch (err) {
-    console.log(err);
-    throw new Error(err);
+    throwError('Error from getLatestProducerProductData', err);
   }
 };
 
@@ -62,32 +62,29 @@ const updateCurrentVariantPrice = async ({
       noOfItemsPerPackage: storedHubVariant.noOfItemsPerPackage
     });
 
-    const exitingVariant = new shopify.api.rest.Variant({
+    const existingVariant = new shopify.api.rest.Variant({
       session
     });
-    exitingVariant.id = hubVariantId;
-    exitingVariant.price = hubVariantNewPrice.toFixed(2);
+    existingVariant.id = hubVariantId;
+    existingVariant.price = hubVariantNewPrice.toFixed(2);
     // we should update also the existing price of this variant
-    await exitingVariant.saveAndUpdate();
+    await existingVariant.saveAndUpdate();
     const updateVariantQuery =
       'UPDATE variants SET price = $1 WHERE hub_variant_id = $2';
 
     try {
       await query(updateVariantQuery, [hubVariantNewPrice, hubVariantId]);
     } catch (err) {
-      console.log(err);
-      throw new Error(err);
+      throwError('Error from updateCurrentVariantPrice db query', err);
     }
   } catch (err) {
-    console.log(err);
-    throw new Error(err);
+    throwError('Error from updateCurrentVariantPrice', err);
   }
 };
 
 export const updateCurrentVariantInventory = async ({
   producerProductId,
   producerProductData,
-  isPartiallySoldCasesEnabled,
   shouldUpdateThePrice = false,
   storedHubVariant
 }) => {
@@ -97,15 +94,16 @@ export const updateCurrentVariantInventory = async ({
       noOfItemsPerPackage,
       mappedVariantId,
       numberOfExcessOrders,
-      numberOfRemainingOrders
+      producerVariantData
     } = storedHubVariant;
-
     const sessionId = shopify.api.session.getOfflineId(HUB_SHOP_NAME);
 
     const session = await shopify.config.sessionStorage.loadSession(sessionId);
 
     if (!session) {
-      throw new Error('Shopify Session not found');
+      throwError(
+        'Error from updateCurrentVariantInventory: Shopify Session not found'
+      );
     }
 
     let producerProduct;
@@ -130,7 +128,6 @@ export const updateCurrentVariantInventory = async ({
         mappedVariantPrice: mappedProducerVariant.price
       });
     }
-
     const currentHubVariant = new shopify.api.rest.Variant({
       session
     });
@@ -138,7 +135,8 @@ export const updateCurrentVariantInventory = async ({
     currentHubVariant.id = hubVariantId;
 
     currentHubVariant.inventory_policy = mappedProducerVariant.inventory_policy;
-
+    currentHubVariant.inventory_management =
+      producerVariantData?.inventory_management || 'shopify';
     await currentHubVariant.saveAndUpdate();
 
     const inventoryItemId = currentHubVariant.inventory_item_id;
@@ -152,18 +150,9 @@ export const updateCurrentVariantInventory = async ({
       session
     });
 
-    let availableItemsInTheStore = 0;
-
-    if (isPartiallySoldCasesEnabled) {
-      availableItemsInTheStore =
-        noOfItemsPerPackage * Number(mappedProducerVariant.inventory_quantity) +
-        Number(numberOfExcessOrders);
-    } else {
-      availableItemsInTheStore = Math.abs(
-        noOfItemsPerPackage * Number(mappedProducerVariant.inventory_quantity) -
-          Number(numberOfRemainingOrders)
-      );
-    }
+    const availableItemsInTheStore =
+      noOfItemsPerPackage * Number(mappedProducerVariant.inventory_quantity) +
+      Number(numberOfExcessOrders);
 
     await inventoryLevel.set({
       inventory_item_id: inventoryItemId,
@@ -173,7 +162,6 @@ export const updateCurrentVariantInventory = async ({
       ).location_id
     });
   } catch (err) {
-    console.log(err);
-    throw new Error(err);
+    throwError('Error updating current variant inventory', err);
   }
 };
