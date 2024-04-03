@@ -48,8 +48,8 @@ function VariantMappingComponent({
 
   const [addedValue, setAddedValue] = useState(existingProductVariant ? existingProductVariant.addedValue : '');
   const [addedValueMethod, setAddedValueMethod] = useState(getAddingPriceMethodOption(
-      existingProductVariant?.addedValueMethod
-    )
+    existingProductVariant?.addedValueMethod
+  )
   );
 
   useEffect(() => {
@@ -207,7 +207,12 @@ function VariantMappingComponent({
           </CustomTooltip>
         </Stack>
 
-        <Stack direction="row" spacing="20px" width="100%">
+        <Stack direction="row" spacing="20px" width="100%"
+          sx={{
+            pointerEvents: isCurrentSalesSessionActive ? 'auto' : 'none',
+            opacity: isCurrentSalesSessionActive ? 1 : 0.6
+          }}
+        >
           <TextField
             sx={{
               flexGrow: 1
@@ -308,7 +313,7 @@ function VariantMappingComponent({
                     price: itemNewPrice,
                     originalPrice:
                       Number(wholesaleProducerProduct.price / noOfItemPerCase) || 0,
-                      exitingNoOfItemPerCase: noOfItemPerCase,
+                    exitingNoOfItemPerCase: noOfItemPerCase,
                     addedValue,
                     addedValueMethod: addedValueMethod.value,
                     profitValue

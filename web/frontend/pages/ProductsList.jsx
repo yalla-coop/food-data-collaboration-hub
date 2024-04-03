@@ -1,18 +1,18 @@
 /* eslint-disable no-nested-ternary */
-import {useLayoutEffect, useState} from 'react';
+import { useLayoutEffect, useState } from 'react';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
-import {Redirect} from '@shopify/app-bridge/actions';
+import { Redirect } from '@shopify/app-bridge/actions';
 import Button from '@mui/material/Button';
-import {useAppBridge} from '@shopify/app-bridge-react';
+import { useAppBridge } from '@shopify/app-bridge-react';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import {Alert, Box, CircularProgress, List, ListItem, ListItemText,} from '@mui/material';
+import { Alert, Box, CircularProgress, List, ListItem, ListItemText, } from '@mui/material';
 
-import {useAppMutation, useAppQuery} from '../hooks';
-import {useAuth} from '../components/providers/AuthProvider';
-import {ProductsCard} from '../components/ProductsCard';
-import {convertShopifyGraphQLIdToNumber} from '../utils/index.js';
-import {Link} from 'react-router-dom';
+import { useAppMutation, useAppQuery } from '../hooks';
+import { useAuth } from '../components/providers/AuthProvider';
+import { ProductsCard } from '../components/ProductsCard';
+import { convertShopifyGraphQLIdToNumber } from '../utils/index.js';
+import { Link } from 'react-router-dom';
 
 export default function ProductsList() {
   const [productSinceId, setProductSinceId] = useState(0);
@@ -34,7 +34,7 @@ export default function ProductsList() {
     },
   });
 
-  const { isLoading: exitingProductsIsLoading } = useAppQuery({
+  const { isFetching: exitingProductsIsLoading } = useAppQuery({
     url: "/api/products",
     reactQueryOptions: {
       onSuccess: (data) => {
@@ -47,13 +47,12 @@ export default function ProductsList() {
 
   const {
     data: producerProductsData,
-    isLoading,
+    isFetching: isLoading,
     error: getProductDataError,
   } = useAppQuery({
     reactQueryOptions: {},
-    url: `/api/products/fdc?sinceId=${productSinceId}&remainingProductsCountBeforeNextFetch=${
-      remainingProductsCountBeforeNextFetch || 0
-    }`,
+    url: `/api/products/fdc?sinceId=${productSinceId}&remainingProductsCountBeforeNextFetch=${remainingProductsCountBeforeNextFetch || 0
+      }`,
   });
 
   const {
@@ -329,8 +328,8 @@ export default function ProductsList() {
           {isLoading
             ? "Loading..."
             : !producerProductsData?.lastId
-            ? "No more products"
-            : "Load more products"}
+              ? "No more products"
+              : "Load more products"}
         </Button>
       </Stack>
     </Box>

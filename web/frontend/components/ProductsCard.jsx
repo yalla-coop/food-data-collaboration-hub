@@ -184,6 +184,7 @@ export function ProductsCard({ producerProduct, existingProduct }) {
               disabled={
                 createShopifyProductLoading ||
                 isProductInStore ||
+                !variantsMappingData || 
                 !isCurrentSalesSessionActive
               }
               onClick={handleAddToStore}
