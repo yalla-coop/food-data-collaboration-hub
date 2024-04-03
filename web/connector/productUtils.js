@@ -115,9 +115,6 @@ async function importSuppliedProducts(dfcProducts) {
 async function getSuppliedProductDetailsFromImports(dfcExportsArray) {
 
   const dfcImports = await importSuppliedProducts(dfcExportsArray);
-  if (!Array.isArray(dfcImports) || !dfcImports.length) {
-    throwError('Error importing supplied products: no imports');
-  }
 
   const dfcRetailWholesalePairs = dfcImports.filter(
     (item) => item instanceof PlannedTransformation
