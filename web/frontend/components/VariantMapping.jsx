@@ -152,24 +152,22 @@ function VariantMappingComponent({
         }}
       >
         <Stack flexGrow={1} spacing="10px">
-          <Typography>Variant to display on my store</Typography>
+          <Typography>Variant to be displayed on this store</Typography>
           <VariantCard variant={retailProducerProduct} />
         </Stack>
 
         <Stack flexGrow={1} spacing="10px">
-          <Typography>Variant to Order from producer</Typography>
+          <Typography>Variant to be ordered from the producer</Typography>
           <VariantCard variant={wholesaleProducerProduct} />
         </Stack>
       </Stack>
 
       <Stack
         spacing="10px"
-        sx={{
-          pointerEvents: isProductInStore ? 'none' : 'auto',
-          opacity: isProductInStore ? 0.6 : 1
-        }}
       >
-        <Stack direction="row" spacing="6px" alignItems="center">
+        <Stack direction="row" spacing="6px" alignItems="center" sx={{
+          opacity: isProductInStore ? 0.6 : 1
+        }}>
           <Typography variant="h5">Mapped Variant Ratio</Typography>
           <CustomTooltip
             title={
@@ -185,13 +183,16 @@ function VariantMappingComponent({
               <InfoIcon />
             </IconButton>
           </CustomTooltip>
+          <Typography>No. of items per Case/Box/Package: {noOfItemPerCase}</Typography>
         </Stack>
-
-        <Typography>No. of items per Case/Box/Package: {noOfItemPerCase}</Typography>
 
         <Divider />
 
-        <Stack direction="row" spacing="6px" alignItems="center">
+        <Stack direction="row" spacing="6px" alignItems="center"
+          sx={{
+            opacity: isProductInStore || !isCurrentSalesSessionActive ? 0.6 : 1
+          }}
+        >
           <Typography variant="h5">Markup</Typography>
           <CustomTooltip
             title={
@@ -209,8 +210,8 @@ function VariantMappingComponent({
 
         <Stack direction="row" spacing="20px" width="100%"
           sx={{
-            pointerEvents: isCurrentSalesSessionActive ? 'auto' : 'none',
-            opacity: isCurrentSalesSessionActive ? 1 : 0.6
+            pointerEvents: isProductInStore || !isCurrentSalesSessionActive ? 'none' : 'auto',
+            opacity: isProductInStore || !isCurrentSalesSessionActive ? 0.6 : 1
           }}
         >
           <TextField
