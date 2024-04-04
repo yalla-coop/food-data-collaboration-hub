@@ -327,7 +327,7 @@ export default function ProductsList() {
         >
           {isLoading
             ? "Loading..."
-            : !producerProductsData?.lastId
+            : !producerProductsData.remainingProductsCountAfter
               ? "No more products"
               : "Load more products"}
         </Button>
