@@ -321,8 +321,7 @@ export default function ProductsList() {
           onClick={handleShowMore}
           disabled={
             isLoading ||
-            producerProductsData?.remainingProductsCountAfter === 0 ||
-            !producerProductsData?.lastId
+            producerProductsData?.remainingProductsCountAfter === 0
           }
         >
           {isLoading
