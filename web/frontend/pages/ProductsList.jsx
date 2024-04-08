@@ -1,18 +1,18 @@
 /* eslint-disable no-nested-ternary */
-import {useLayoutEffect, useState} from 'react';
+import { useLayoutEffect, useState } from 'react';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
-import {Redirect} from '@shopify/app-bridge/actions';
+import { Redirect } from '@shopify/app-bridge/actions';
 import Button from '@mui/material/Button';
-import {useAppBridge} from '@shopify/app-bridge-react';
+import { useAppBridge } from '@shopify/app-bridge-react';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import {Alert, Box, CircularProgress, List, ListItem, ListItemText,} from '@mui/material';
+import { Alert, Box, CircularProgress, List, ListItem, ListItemText, } from '@mui/material';
 
-import {useAppMutation, useAppQuery} from '../hooks';
-import {useAuth} from '../components/providers/AuthProvider';
-import {ProductsCard} from '../components/ProductsCard';
-import {convertShopifyGraphQLIdToNumber} from '../utils/index.js';
-import {Link} from 'react-router-dom';
+import { useAppMutation, useAppQuery } from '../hooks';
+import { useAuth } from '../components/providers/AuthProvider';
+import { ProductsCard } from '../components/ProductsCard';
+import { convertShopifyGraphQLIdToNumber } from '../utils/index.js';
+import { Link } from 'react-router-dom';
 
 export default function ProductsList() {
   const [productSinceId, setProductSinceId] = useState(0);
@@ -20,12 +20,12 @@ export default function ProductsList() {
     remainingProductsCountBeforeNextFetch,
     setRemainingProductsCountBeforeNextFetch,
   ] = useState(0);
-  const [productsList, setProductsList] = useState([]);
+  const [producerProducts, setProducerProducts] = useState([]);
+  const [hubProducts, setHubProducts] = useState([]);
   const [helpTextVisible, setHelpTextVisible] = useState(false);
   const app = useAppBridge();
   const redirect = Redirect.create(app);
   const { data: userAuthData } = useAuth();
-  const [exitingProductsList, setExitingProductsList] = useState([]);
 
   const { data: currentSalesSessionData } = useAppQuery({
     url: "/api/sales-session",
@@ -34,12 +34,12 @@ export default function ProductsList() {
     },
   });
 
-  const { isLoading: exitingProductsIsLoading } = useAppQuery({
+  const { isFetching: exitingProductsIsLoading } = useAppQuery({
     url: "/api/products",
     reactQueryOptions: {
       onSuccess: (data) => {
         if (Array.isArray(data)) {
-          setExitingProductsList(data);
+          setHubProducts(data);
         }
       },
     },
@@ -47,13 +47,12 @@ export default function ProductsList() {
 
   const {
     data: producerProductsData,
-    isLoading,
+    isFetching: isLoading,
     error: getProductDataError,
   } = useAppQuery({
     reactQueryOptions: {},
-    url: `/api/products/fdc?sinceId=${productSinceId}&remainingProductsCountBeforeNextFetch=${
-      remainingProductsCountBeforeNextFetch || 0
-    }`,
+    url: `/api/products/fdc?sinceId=${productSinceId}&remainingProductsCountBeforeNextFetch=${remainingProductsCountBeforeNextFetch || 0
+      }`,
   });
 
   const {
@@ -70,11 +69,11 @@ export default function ProductsList() {
 
   useLayoutEffect(() => {
     if (producerProductsData?.products) {
-      setProductsList((prev) => [...prev, ...producerProductsData?.products]);
+      setProducerProducts((prev) => [...prev, ...producerProductsData?.products]);
     }
   }, [producerProductsData]);
 
-  if ((productsList.length === 0 && isLoading) || exitingProductsIsLoading) {
+  if ((producerProducts.length === 0 && isLoading) || exitingProductsIsLoading) {
     return (
       <Stack
         sx={{
@@ -297,15 +296,15 @@ export default function ProductsList() {
       )}
 
       <Stack spacing="12px" px="60px" py="12px">
-        {productsList.map((product) => (
+        {producerProducts.map((product) => (
           <ProductsCard
-            key={product.id}
-            product={product}
-            exitingProduct={
-              exitingProductsList?.find(
+            key={'product-' + product.retailProduct.id}
+            producerProduct={product}
+            existingProduct={
+              hubProducts?.find(
                 (exitingProduct) =>
                   Number(exitingProduct.producerProductId) ===
-                  convertShopifyGraphQLIdToNumber(product.id)
+                  convertShopifyGraphQLIdToNumber(product.retailProduct.id)
               ) || {}
             }
           />
@@ -322,15 +321,14 @@ export default function ProductsList() {
           onClick={handleShowMore}
           disabled={
             isLoading ||
-            producerProductsData?.remainingProductsCountAfter === 0 ||
-            !producerProductsData?.lastId
+            producerProductsData?.remainingProductsCountAfter === 0
           }
         >
           {isLoading
             ? "Loading..."
-            : !producerProductsData?.lastId
-            ? "No more products"
-            : "Load more products"}
+            : !producerProductsData.remainingProductsCountAfter
+              ? "No more products"
+              : "Load more products"}
         </Button>
       </Stack>
     </Box>
