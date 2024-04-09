@@ -46,11 +46,12 @@ function VariantMappingComponent({
 
   const existingProductVariantPrice = existingProductVariant?.price;
 
-  const [addedValue, setAddedValue] = useState(existingProductVariant ? existingProductVariant.addedValue : '');
+  const [addedValue, setAddedValue] = useState(existingProductVariant ? existingProductVariant.addedValue : 0);
   const [addedValueMethod, setAddedValueMethod] = useState(getAddingPriceMethodOption(
     existingProductVariant?.addedValueMethod
-  )
-  );
+  ));
+
+  const [pricedConfirmedCorrect, setPricesConfirmedCorrect] = useState(!!existingProductVariant);
 
   useEffect(() => {
     if (
@@ -89,17 +90,30 @@ function VariantMappingComponent({
     return increasedPrice;
   };
 
-  const isFormValid = () => {
-    if (
-      addedValue &&
-      addedValueMethod
-    ) {
-      return true;
-    }
-    return false;
-  };
 
-  const isThisVariantPriceChanged = isProductInStore
+  const isFormValid = addedValue && addedValueMethod;
+  const hasFormChanged = existingProductVariant && (existingProductVariant.addedValue?.toString() !== addedValue?.toString() || existingProductVariant.addedValueMethod !== addedValueMethod.value);
+
+  useEffect(() => {
+    setVariantsMappingData({
+      valid: isFormValid && pricedConfirmedCorrect,
+      changed: hasFormChanged,
+      parentProduct: producerProductMapping.parentProduct,
+      retailProduct: retailProducerProduct,
+      wholesaleProduct: wholesaleProducerProduct,
+      noOfItemPerCase,
+      price: itemNewPrice,
+      originalPrice:
+        Number(wholesaleProducerProduct.price / noOfItemPerCase) || 0,
+      exitingNoOfItemPerCase: noOfItemPerCase,
+      addedValue,
+      addedValueMethod: addedValueMethod.value,
+      profitValue,
+      existingVariantId: existingProductVariant?.hubVariantId
+    });
+  }, [addedValue, addedValueMethod, pricedConfirmedCorrect]);
+
+  const isThisVariantPriceChanged = isProductInStore && !hasFormChanged
     ? calculateThePrice({
       originalPrice: Number(wholesaleProducerProduct?.price) || 0,
       _addingPriceType: addedValueMethod,
@@ -114,19 +128,19 @@ function VariantMappingComponent({
     }
   }, [isThisVariantPriceChanged, isProductInStore]);
 
-  const itemNewPrice = isProductInStore
-    ? Number(existingProductVariantPrice)
-    : calculateThePrice({
-      originalPrice: Number(wholesaleProducerProduct?.price) || 0,
-      _addingPriceType: addedValueMethod,
-      markUpValue: Number(addedValue),
-      noOfItemsPerPackage: Number(noOfItemPerCase)
-    });
+  const itemNewPrice = calculateThePrice({
+    originalPrice: Number(wholesaleProducerProduct?.price) || 0,
+    _addingPriceType: addedValueMethod,
+    markUpValue: Number(addedValue),
+    noOfItemsPerPackage: Number(noOfItemPerCase)
+  });
 
   const profitValue = (
     itemNewPrice * noOfItemPerCase -
     Number(wholesaleProducerProduct?.price)
   ).toFixed(2);
+
+  const markupNotEditable = (isProductInStore && isCurrentSalesSessionActive) || (!isProductInStore && !isCurrentSalesSessionActive);
 
   return (
     <Stack
@@ -141,6 +155,18 @@ function VariantMappingComponent({
           The price of this variant changed — <strong>check it out!</strong>
         </Alert>
       )}
+
+      {isProductInStore && isCurrentSalesSessionActive &&
+        <Alert severity="info">
+          Product cannot be amended during an active sales session
+        </Alert>
+      }
+
+      {!isProductInStore && !isCurrentSalesSessionActive &&
+        <Alert severity="info">
+          Product cannot be added to store during an active sales session
+        </Alert>
+      }
 
       <Stack
         direction="row"
@@ -190,7 +216,7 @@ function VariantMappingComponent({
 
         <Stack direction="row" spacing="6px" alignItems="center"
           sx={{
-            opacity: isProductInStore || !isCurrentSalesSessionActive ? 0.6 : 1
+            opacity: markupNotEditable ? 0.6 : 1
           }}
         >
           <Typography variant="h5">Markup</Typography>
@@ -210,8 +236,8 @@ function VariantMappingComponent({
 
         <Stack direction="row" spacing="20px" width="100%"
           sx={{
-            pointerEvents: isProductInStore || !isCurrentSalesSessionActive ? 'none' : 'auto',
-            opacity: isProductInStore || !isCurrentSalesSessionActive ? 0.6 : 1
+            pointerEvents: markupNotEditable ? 'none' : 'auto',
+            opacity: markupNotEditable ? 0.6 : 1
           }}
         >
           <TextField
@@ -297,36 +323,23 @@ function VariantMappingComponent({
           </Stack>
         ) : null}
 
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={existingProductVariant?.producerVariantId && true}
-              disabled={
-                !isFormValid()
-              }
-              onChange={(_e) => {
-                if (_e.target.checked) {
-                  setVariantsMappingData({
-                    parentProduct: producerProductMapping.parentProduct,
-                    retailProduct: retailProducerProduct,
-                    wholesaleProduct: wholesaleProducerProduct,
-                    noOfItemPerCase,
-                    price: itemNewPrice,
-                    originalPrice:
-                      Number(wholesaleProducerProduct.price / noOfItemPerCase) || 0,
-                    exitingNoOfItemPerCase: noOfItemPerCase,
-                    addedValue,
-                    addedValueMethod: addedValueMethod.value,
-                    profitValue
-                  });
-                } else {
-                  setVariantsMappingData(null);
-                }
-              }}
-            />
-          }
-          label="I confirm that the above prices are correct"
-        />
+        <Stack direction="row" spacing="20px" width="100%"
+          sx={{
+            pointerEvents: markupNotEditable ? 'none' : 'auto',
+            opacity: markupNotEditable ? 0.6 : 1
+          }}
+        >
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={pricedConfirmedCorrect}
+                disabled={!isFormValid}
+                onChange={(event) => setPricesConfirmedCorrect(event.target.checked)}
+              />
+            }
+            label="I confirm that the above prices are correct"
+          />
+        </Stack>
       </Stack>
     </Stack>
   );

@@ -55,11 +55,13 @@ export function ProductsCard({ producerProduct, existingProduct }) {
     }
   });
 
-  const handleAddToStore = async () => {
+  const addToStoreOrUpdate = async () => {
     const { title, id: producerProductId } = producerProduct.retailProduct;
 
+    const url = variantsMappingData.existingVariantId ? `/api/products/shopify/${variantsMappingData.existingVariantId}` : '/api/products/shopify';
+
     await createShopifyProduct({
-      url: '/api/products/shopify',
+      url: url,
       fetchInit: {
         method: 'POST',
         headers: {
@@ -84,6 +86,7 @@ export function ProductsCard({ producerProduct, existingProduct }) {
 
       return acc;
     }, 0) || 0;
+
 
   return (
     <Accordion key={producerProduct.retailProduct.title}>
@@ -160,38 +163,66 @@ export function ProductsCard({ producerProduct, existingProduct }) {
       <AccordionDetails>
         <Stack spacing="12px">
           <Stack spacing="12px">
-          <VariantMappingComponent
-                isProductPriceChanged={isProductPriceChanged}
-                setIsProductPriceChanged={setIsProductPriceChanged}
-                setVariantsMappingData={setVariantsMappingData}
-                isCurrentSalesSessionActive={isCurrentSalesSessionActive}
-                producerProductMapping={producerProduct}
-                existingProductVariant={existingProduct?.variants ? existingProduct?.variants[0] : null}
-              />
+            <VariantMappingComponent
+              isProductPriceChanged={isProductPriceChanged}
+              setIsProductPriceChanged={setIsProductPriceChanged}
+              setVariantsMappingData={setVariantsMappingData}
+              isCurrentSalesSessionActive={isCurrentSalesSessionActive}
+              producerProductMapping={producerProduct}
+              existingProductVariant={existingProduct?.variants ? existingProduct?.variants[0] : null}
+            />
           </Stack>
 
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            sx={{
-              pointerEvents: isProductInStore ? 'none' : 'auto',
-              opacity: isProductInStore ? 0.6 : 1
-            }}
-          >
-            <Button
-              variant="contained"
-              type="button"
-              disabled={
-                createShopifyProductLoading ||
-                isProductInStore ||
-                !variantsMappingData || 
-                !isCurrentSalesSessionActive
-              }
-              onClick={handleAddToStore}
+          {
+            isProductInStore && variantsMappingData?.changed && variantsMappingData?.valid &&
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              sx={{
+                pointerEvents: isCurrentSalesSessionActive ? 'none' : 'auto',
+                opacity: isCurrentSalesSessionActive ? 0.6 : 1
+              }}
             >
-              {createShopifyProductLoading ? 'Loading...' : 'Add to store'}
-            </Button>
-          </Stack>
+              <Button
+                variant="contained"
+                type="button"
+                disabled={
+                  createShopifyProductLoading ||
+                  isCurrentSalesSessionActive
+                }
+                onClick={addToStoreOrUpdate}
+              >
+                {createShopifyProductLoading ? 'Loading...' : 'Save changes'}
+              </Button>
+            </Stack>
+          }
+
+          {!isProductInStore &&
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              sx={{
+                pointerEvents: isCurrentSalesSessionActive ? 'auto' : 'none',
+                opacity: isCurrentSalesSessionActive ? 1 : 0.6
+              }}
+            >
+              <Button
+                variant="contained"
+                type="button"
+                disabled={
+                  createShopifyProductLoading ||
+                  isProductInStore ||
+                  !variantsMappingData ||
+                  !variantsMappingData.valid ||
+                  !isCurrentSalesSessionActive
+                }
+                onClick={addToStoreOrUpdate}
+              >
+                {createShopifyProductLoading ? 'Loading...' : 'Add to store'}
+              </Button>
+            </Stack>
+          }
+
         </Stack>
       </AccordionDetails>
     </Accordion>
