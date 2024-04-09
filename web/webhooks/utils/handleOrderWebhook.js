@@ -123,29 +123,27 @@ export const handleOrderWebhook = async (
     );
 
     // TODO add sqlClient to updateCurrentVariantInventory
-    const updateVariantsInventoryPromises = updatedVariantsData
-      .filter((v) => v.numberOfPackages > 0)
-      .map(
-        async ({
-          hubVariantId,
-          noOfItemsPerPackage,
-          mappedProducerVariantId,
-          numberOfExcessItems,
+    const updateVariantsInventoryPromises = updatedVariantsData.map(
+      async ({
+        hubVariantId,
+        noOfItemsPerPackage,
+        mappedProducerVariantId,
+        numberOfExcessItems,
+        hubProductId,
+        producerProductId
+      }) =>
+        updateCurrentVariantInventory({
+          storedHubVariant: {
+            hubVariantId,
+            noOfItemsPerPackage,
+            mappedVariantId: mappedProducerVariantId,
+            // TODO rename this to numberOfExcessItems
+            numberOfExcessOrders: numberOfExcessItems
+          },
           hubProductId,
           producerProductId
-        }) =>
-          updateCurrentVariantInventory({
-            storedHubVariant: {
-              hubVariantId,
-              noOfItemsPerPackage,
-              mappedVariantId: mappedProducerVariantId,
-              // TODO rename this to numberOfExcessItems
-              numberOfExcessOrders: numberOfExcessItems
-            },
-            hubProductId,
-            producerProductId
-          })
-      );
+        })
+    );
 
     await Promise.allSettled(updateVariantsInventoryPromises);
     console.log(
