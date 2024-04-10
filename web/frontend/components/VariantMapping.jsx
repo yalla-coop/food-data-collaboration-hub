@@ -46,27 +46,19 @@ function VariantMappingComponent({
 
   const existingProductVariantPrice = existingProductVariant?.price;
 
-  const [addedValue, setAddedValue] = useState(existingProductVariant ? existingProductVariant.addedValue : 0);
+  const [addedValue, setAddedValue] = useState(existingProductVariant ? existingProductVariant.addedValue : calculateAddedValueForRRP());
   const [addedValueMethod, setAddedValueMethod] = useState(getAddingPriceMethodOption(
     existingProductVariant?.addedValueMethod
   ));
 
   const [pricedConfirmedCorrect, setPricesConfirmedCorrect] = useState(!!existingProductVariant);
 
-  useEffect(() => {
-    if (
-      addedValue === ''
-    ) {
-      setAddedValue(
-        (
-          Number(retailProducerProduct?.price) -
-          Number(wholesaleProducerProduct?.price) / Number(noOfItemPerCase)
-        ).toFixed(2)
-      );
-    }
-  }, [
-    addedValue,
-  ]);
+  function calculateAddedValueForRRP() {
+    return (
+      Number(retailProducerProduct?.price) -
+      Number(wholesaleProducerProduct?.price) / Number(noOfItemPerCase)
+    ).toFixed(2);
+  }
 
   const calculateThePrice = ({
     originalPrice,
@@ -89,7 +81,6 @@ function VariantMappingComponent({
 
     return increasedPrice;
   };
-
 
   const isFormValid = addedValue && addedValueMethod;
   const hasFormChanged = existingProductVariant && (existingProductVariant.addedValue?.toString() !== addedValue?.toString() || existingProductVariant.addedValueMethod !== addedValueMethod.value);
@@ -164,7 +155,7 @@ function VariantMappingComponent({
 
       {!isProductInStore && !isCurrentSalesSessionActive &&
         <Alert severity="info">
-          Product cannot be added to store during an active sales session
+          Product cannot be added to store outside an active sales session
         </Alert>
       }
 
