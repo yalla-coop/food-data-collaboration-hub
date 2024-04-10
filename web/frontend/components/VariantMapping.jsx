@@ -60,27 +60,20 @@ function VariantMappingComponent({
     ).toFixed(2);
   }
 
-  const calculateThePrice = ({
-    originalPrice,
-    _addingPriceType,
-    markUpValue = 0,
-    noOfItemsPerPackage
-  }) => {
-    if (!originalPrice || !_addingPriceType || !noOfItemsPerPackage) return 0;
+  const wholesaleCasePrice = Number(wholesaleProducerProduct?.price) || 0;
+  const breakEvenItemPrice = Number(wholesaleCasePrice) / Number(noOfItemPerCase);
 
-    const itemPrice = Number(originalPrice) / Number(noOfItemsPerPackage);
+  const newMarkedUpPrice =
+    addedValueMethod.value === 'fixed'
+      ? Number(addedValue) + breakEvenItemPrice
+      : breakEvenItemPrice + (breakEvenItemPrice * Number(addedValue)) / 100;
 
-    if (noOfItemsPerPackage === 0) return 0;
+  const profitValue = (
+    newMarkedUpPrice * noOfItemPerCase -
+    Number(wholesaleProducerProduct?.price)
+  ).toFixed(2);
 
-    if (!markUpValue || markUpValue === 0) return itemPrice;
-
-    const increasedPrice =
-      _addingPriceType.value === 'fixed'
-        ? Number(markUpValue) + itemPrice
-        : itemPrice + (itemPrice * Number(markUpValue)) / 100;
-
-    return increasedPrice;
-  };
+  const boxSalesPrice = (noOfItemPerCase * newMarkedUpPrice).toFixed(2);
 
   const isFormValid = addedValue && addedValueMethod;
   const hasFormChanged = existingProductVariant && (existingProductVariant.addedValue?.toString() !== addedValue?.toString() || existingProductVariant.addedValueMethod !== addedValueMethod.value);
@@ -93,7 +86,7 @@ function VariantMappingComponent({
       retailProduct: retailProducerProduct,
       wholesaleProduct: wholesaleProducerProduct,
       noOfItemPerCase,
-      price: itemNewPrice,
+      price: newMarkedUpPrice,
       originalPrice:
         Number(wholesaleProducerProduct.price / noOfItemPerCase) || 0,
       exitingNoOfItemPerCase: noOfItemPerCase,
@@ -105,12 +98,7 @@ function VariantMappingComponent({
   }, [addedValue, addedValueMethod, pricedConfirmedCorrect]);
 
   const isThisVariantPriceChanged = isProductInStore && !hasFormChanged
-    ? calculateThePrice({
-      originalPrice: Number(wholesaleProducerProduct?.price) || 0,
-      _addingPriceType: addedValueMethod,
-      markUpValue: Number(addedValue),
-      noOfItemsPerPackage: Number(noOfItemPerCase)
-    }).toPrecision(2) !== Number(existingProductVariantPrice).toPrecision(2)
+    ? newMarkedUpPrice.toPrecision(2) !== Number(existingProductVariantPrice).toPrecision(2)
     : false;
 
   useEffect(() => {
@@ -118,18 +106,6 @@ function VariantMappingComponent({
       setIsProductPriceChanged(true);
     }
   }, [isThisVariantPriceChanged, isProductInStore]);
-
-  const itemNewPrice = calculateThePrice({
-    originalPrice: Number(wholesaleProducerProduct?.price) || 0,
-    _addingPriceType: addedValueMethod,
-    markUpValue: Number(addedValue),
-    noOfItemsPerPackage: Number(noOfItemPerCase)
-  });
-
-  const profitValue = (
-    itemNewPrice * noOfItemPerCase -
-    Number(wholesaleProducerProduct?.price)
-  ).toFixed(2);
 
   const markupNotEditable = (isProductInStore && isCurrentSalesSessionActive) || (!isProductInStore && !isCurrentSalesSessionActive);
 
@@ -237,11 +213,11 @@ function VariantMappingComponent({
             }}
             error={
               addedValue &&
-              itemNewPrice.toFixed(2) < Number(retailProducerProduct?.price)
+              newMarkedUpPrice.toFixed(2) < Number(retailProducerProduct?.price)
             }
             helperText={
-              itemNewPrice.toFixed(2) < Number(retailProducerProduct?.price) &&
-              'The price of the mapped variant is less than the price of the variant to display on my store'
+              newMarkedUpPrice.toFixed(2) < Number(retailProducerProduct?.price) &&
+              'The price of the mapped variant is less than the RRP of the variant to display on my store'
             }
             type="number"
             inputProps={{
@@ -278,7 +254,7 @@ function VariantMappingComponent({
             label="New Item Price"
             disabled
             variant="filled"
-            value={itemNewPrice.toFixed(2)}
+            value={newMarkedUpPrice.toFixed(2)}
           />
         </Stack>
         <Divider />
@@ -286,7 +262,7 @@ function VariantMappingComponent({
           type="number"
           variant="filled"
           label="Box Price"
-          value={(noOfItemPerCase * itemNewPrice).toFixed(2)}
+          value={boxSalesPrice}
           disabled
         />
         {/* {This calculated as fixed price} */}
