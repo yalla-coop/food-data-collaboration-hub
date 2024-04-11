@@ -24,7 +24,7 @@ export function calculatePackageAndExcessItemsAfterCancelledOrder({
   const numberOfExcessItems = totalExcessItems % noOfItemsPerPackage;
 
   return {
-    numberOfExcessItems,
-    numberOfPackages
+    numberOfExcessItems: Number(numberOfExcessItems),
+    numberOfPackages: Number(numberOfPackages)
   };
 }
