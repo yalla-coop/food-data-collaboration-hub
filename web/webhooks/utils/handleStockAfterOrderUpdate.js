@@ -1,13 +1,8 @@
 import { throwError } from '../../utils/index.js';
-import { query } from '../../database/connect.js';
+
 import { calculatePackageAndExcessItemsAfterCancelledOrder } from './calculatePackageAndExcessItemsAfterCancelledOrder.js';
 import { calculatePackageAndExcessItemsAfterCompletedOrder } from './calculatePackageAndExcessItemsAfterCompletedOrder.js';
-
-const updateVariantQuery = `
-UPDATE variants
-SET number_of_excess_orders = $1
-WHERE hub_variant_id = $2
-`;
+import { updateVariantExcessItems } from './updateVariantExcessItems.js';
 
 export const handleStockAfterOrderUpdate = async ({
   orderType,
@@ -53,15 +48,18 @@ export const handleStockAfterOrderUpdate = async ({
     }
 
     const { numberOfExcessItems, numberOfPackages } = updatedStockData;
-
-    await sqlClient.query('BEGIN');
-    await query(
-      updateVariantQuery,
-      [numberOfExcessItems, hubVariantId],
-      sqlClient
-    );
-    await sqlClient.query('COMMIT');
-
+    const noCallToProducer = numberOfPackages === 0;
+    // update the hub variant with the new excess items directly if no producer request is sent
+    if (
+      noCallToProducer &&
+      numberOfExistingExcessItems !== numberOfExcessItems
+    ) {
+      await updateVariantExcessItems({
+        numberOfExcessItems,
+        hubVariantId,
+        sqlClient
+      });
+    }
     const stockData = {
       noOfItemsPerPackage,
       numberOfPackages,
@@ -71,12 +69,9 @@ export const handleStockAfterOrderUpdate = async ({
       hubProductId,
       producerProductId
     };
-    console.log(
-      `handleOrderWebhook via handleStockAfterOrderUpdate: updated excess items value for hubVariantId: ${hubVariantId}`
-    );
+
     return stockData;
   } catch (error) {
-    await sqlClient.query('ROLLBACK');
     throwError('handleStockAfterOrderUpdate error from catch', error);
   }
 };

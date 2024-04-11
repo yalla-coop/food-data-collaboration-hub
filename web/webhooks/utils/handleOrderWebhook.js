@@ -7,6 +7,7 @@ import { handleStockAfterOrderUpdate } from './handleStockAfterOrderUpdate.js';
 // TODO move this to utils
 import { updateCurrentVariantInventory } from '../updateCurrentVariantInventory.js';
 import { sendOrderToProducerAndUpdateSalesSessionOrderId } from './sendOrderToProducerAndUpdateSalesSessionOrderId.js';
+import { updateVariantExcessItems } from './updateVariantExcessItems.js';
 
 const selectVariantsQuery = `
 SELECT
@@ -131,8 +132,13 @@ export const handleOrderWebhook = async (
         numberOfExcessItems,
         hubProductId,
         producerProductId
-      }) =>
-        updateCurrentVariantInventory({
+      }) => {
+        await updateVariantExcessItems({
+          numberOfExcessItems,
+          hubVariantId,
+          sqlClient
+        });
+        await updateCurrentVariantInventory({
           storedHubVariant: {
             hubVariantId,
             noOfItemsPerPackage,
@@ -142,7 +148,8 @@ export const handleOrderWebhook = async (
           },
           hubProductId,
           producerProductId
-        })
+        });
+      }
     );
 
     await Promise.allSettled(updateVariantsInventoryPromises);
