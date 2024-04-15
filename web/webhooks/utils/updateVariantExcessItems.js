@@ -13,21 +13,20 @@ export const updateVariantExcessItems = async ({
   sqlClient
 }) => {
   try {
-    if (!numberOfExcessItems || !hubVariantId) {
+    if (numberOfExcessItems === undefined || !hubVariantId) {
       throwError(
         'updateVariantExcessItems: Missing numberOfExcessItems or hubVariantId'
       );
     }
 
     await sqlClient.query('BEGIN');
-    const result = await query(
+    await query(
       updateVariantQuery,
       [numberOfExcessItems, hubVariantId],
       sqlClient
     );
-    await sqlClient.query('COMMIT');
 
-    return result;
+    await sqlClient.query('COMMIT');
   } catch (error) {
     await sqlClient.query('ROLLBACK');
     throwError('updateVariantExcessItems error from catch', error);
