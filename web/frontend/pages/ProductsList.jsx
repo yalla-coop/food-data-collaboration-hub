@@ -229,62 +229,32 @@ export default function ProductsList() {
         </Typography>
 
         <Typography variant="body1">
-          When listing Products in your shopfront, you may wish to map them to a
-          wholesale variant.
+          Here you will see listings for Products your Producer(s) are willing
+          for you to sell in your shopfront.
         </Typography>
         <Typography variant="body1">
-          <Typography variantMapping="span" fontWeight="600">
-            For example:{' '}
-          </Typography>
-          this would allow you to order a box/case of 6 bottles of vinegar from
-          your supplier, whilst listing a single bottle in your shop
+          You can adjust the sale price products will be listed in your store,
+          either by an absolute amount (e.g. +£1.50) or a percentage markup
+          (e.g. 50%). To use the percentage markup functionality, select
+          "increase price by %" from the Markup dropdown menu.
         </Typography>
         <Typography variant="body1">
-          You could also order a 25kg sack of Oats, and sell single 1kg bags to
-          your customers.
+          The markup value/percentage on the listed products will remain
+          constant and any pricing changes from your Producers will be
+          incorporated when a new Sales Session is generated.
+        </Typography>
+        <Typography variantMapping="span" fontWeight="600">
+          For example:
         </Typography>
         <Typography variant="body1">
-          The FDC Ordering process can handle this logic for you (automatically
-          tracking multiple customer orders within a Sales Session and
-          increasing your wholesale order as required).
+          If you list a 500g bag of beans, with a markup of £0.99. and a
+          wholesale price of £1.23, that would give a retail price of £2.22.
         </Typography>
         <Typography variant="body1">
-          In order for this to work you need to provide 4 pieces of information:
+          If the producer then increases the wholesale price to £1.50, at the
+          beginning of the next Sales Session, the retail price in your store
+          would be increased to £2.49.
         </Typography>
-        <List>
-          <ListItem>
-            <ListItemIcon>
-              <Typography variantMapping="span" fontWeight="600">
-                1.
-              </Typography>
-            </ListItemIcon>
-            <ListItemText primary="The variant you wish to list in your shopfront (for customers to order)" />
-          </ListItem>
-          <ListItem>
-            <ListItemIcon>
-              <Typography variantMapping="span" fontWeight="600">
-                2.
-              </Typography>
-            </ListItemIcon>
-            <ListItemText primary="The variant you wish to order from your supplier (the mapped variant)" />
-          </ListItem>
-          <ListItem>
-            <ListItemIcon>
-              <Typography variantMapping="span" fontWeight="600">
-                3.
-              </Typography>
-            </ListItemIcon>
-            <ListItemText primary="A number that indicates the multiplier to apply before ordering another of the mapped variant (for example if a box/case has 6 bottles and you're selling individual bottles, the number would be 6)" />
-          </ListItem>
-          <ListItem>
-            <ListItemIcon>
-              <Typography variantMapping="span" fontWeight="600">
-                4.
-              </Typography>
-            </ListItemIcon>
-            <ListItemText primary="Whether to order another of the mapped variant when the first product is sold out of that case, or to wait until a full case is ordered (this functionality allows you to carry stock, off the system, and simply use it to restock any cases sold)." />
-          </ListItem>
-        </List>
 
         <Button
           sx={{
