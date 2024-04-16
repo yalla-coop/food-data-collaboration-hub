@@ -27,6 +27,7 @@ const updateSingleProduct = async ({
   });
 
   hubProduct.id = hubProductId;
+  hubProduct.status = 'active';
 
   await hubProduct.saveAndUpdate();
 
@@ -39,6 +40,21 @@ const updateSingleProduct = async ({
     });
     await delayFun(500);
   }
+};
+
+const archiveProduct = async ({
+  hubProductId,
+  session
+}) => {
+  const hubProduct = new shopify.api.rest.Product({
+    session
+  });
+
+  hubProduct.id = hubProductId;
+  hubProduct.status = 'archived';
+
+  await hubProduct.saveAndUpdate();
+  await delayFun(500);
 };
 
 const updateExistingProductsUseCase = async ({
@@ -62,16 +78,20 @@ const updateExistingProductsUseCase = async ({
     }
 
     for (const product of productsWithVariants) {
-      const { hubProductId } = product;
+      const { hubProductId, producerProductData } = product;
       const storedVariants = product.variants;
 
-      await updateSingleProduct({
-        hubProductId,
-        session,
-        storedVariants,
-        producerLatestProductData: product.producerProductData,
-        shouldUpdateThePrice
-      });
+      if (producerProductData) {
+        await updateSingleProduct({
+          hubProductId,
+          session,
+          storedVariants,
+          producerLatestProductData: producerProductData,
+          shouldUpdateThePrice
+        });
+      } else {
+        await archiveProduct({session, hubProductId});
+      }
     }
   } catch (e) {
     throwError('Error from updateExistingProductsUseCase', e);

@@ -55,12 +55,6 @@ const getProducerProducts = async () => {
 
     const producerProducts = await generateShopifyFDCProducts(data.products);
 
-    if (!Array.isArray(producerProducts) || producerProducts.length === 0) {
-      throwError(
-        'getProducerProducts: No products found in the producer store'
-      );
-    }
-
     return hubStoreProducts.map((productFromHubDb) => {
       const productDataFromProducer = producerProducts.find(
         (p) => Number(p.retailProduct.id) === Number(productFromHubDb.producerProductId)
@@ -70,7 +64,7 @@ const getProducerProducts = async () => {
         ...productFromHubDb,
         producerProductData: productDataFromProducer
       };
-    }).filter((product) => product.producerProductData);
+    });
   } catch (err) {
     throwError('Error from getProducerProducts', err);
   }
