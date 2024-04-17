@@ -1,10 +1,10 @@
 function VariantCard({ variant, index }) {
   return (
-    <li
+    <div
       key={variant.id}
       style={{
+        flexGrow: 1,
         border: '1px solid black',
-        margin: '10px',
         borderRadius: '8px',
         padding: '10px',
         backgroundColor: index % 2 === 0 ? 'lightgray' : 'white'
@@ -31,7 +31,7 @@ function VariantCard({ variant, index }) {
           {variant.inventory_quantity}
         </p>
       )}
-    </li>
+    </div>
   );
 }
 

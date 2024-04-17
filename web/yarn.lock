@@ -76,16 +76,16 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@datafoodconsortium/connector@^1.0.0-alpha.8":
-  version "1.0.0-alpha.8"
-  resolved "https://registry.yarnpkg.com/@datafoodconsortium/connector/-/connector-1.0.0-alpha.8.tgz#625a9d7868778107508edf044cea3726a7ab12ee"
-  integrity sha512-N9TeUo0BzKPdxi10qv/U9xqdH4G/fjly6YpMOxrIm8N9FGyCcvpC+Z3ZCcZIG+yBZTo/mrJ6TJQGUQj/Am5UiQ==
+"@datafoodconsortium/connector@^1.0.0-alpha.9":
+  version "1.0.0-alpha.9"
+  resolved "https://registry.yarnpkg.com/@datafoodconsortium/connector/-/connector-1.0.0-alpha.9.tgz#0e1bfe0912b07e3b644f871e992b428a8ae60aef"
+  integrity sha512-P93/qpe4SbbhhVgZE0zAmroImbxXI48e75EjHfq+5Jn4eOp/FS1lJCDVxosTJ2yQddg9YiT9MG7G3FuZ+vZTSg==
   dependencies:
     "@rdfjs/serializer-jsonld-ext" "^4.0.0"
-    "@virtual-assembly/semantizer" "^1.0.0-alpha.2"
+    "@virtual-assembly/semantizer" "github:assemblee-virtuelle/semantizer-typescript#alpha.3"
     jsonld "^8.1.0"
     jsonld-streaming-parser "^3.2.0"
-    rdf-ext "^2.2.0"
+    rdf-ext "^2.5.1"
     readable-stream "^4.3.0"
 
 "@digitalbazaar/http-client@^3.4.1":
@@ -1349,12 +1349,11 @@
   resolved "https://registry.yarnpkg.com/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
-"@virtual-assembly/semantizer@^1.0.0-alpha.2":
-  version "1.0.0-alpha.2"
-  resolved "https://registry.yarnpkg.com/@virtual-assembly/semantizer/-/semantizer-1.0.0-alpha.2.tgz#1860cffcee5fd51821bb65aaefad58a9b02c91f5"
-  integrity sha512-sK8LcpiLH/UTFNGCrgf4qLXDMMHg8mvMx/kuGQ31FnL+KuwNgtN+eUt18GBVdHfSyfJSfym0gsKUXsALhFJLDA==
+"@virtual-assembly/semantizer@github:assemblee-virtuelle/semantizer-typescript#alpha.3":
+  version "1.0.0-alpha.3"
+  resolved "https://codeload.github.com/assemblee-virtuelle/semantizer-typescript/tar.gz/a5fb64e1dac5615471d8434444279c7d82856666"
   dependencies:
-    rdf-ext "^2.2.0"
+    rdf-ext "^2.5.1"
 
 "@vitest/expect@0.32.4":
   version "0.32.4"
@@ -5742,7 +5741,7 @@ rdf-data-factory@^1.1.0:
   dependencies:
     "@rdfjs/types" "*"
 
-rdf-ext@^2.2.0:
+rdf-ext@^2.5.1:
   version "2.5.1"
   resolved "https://registry.yarnpkg.com/rdf-ext/-/rdf-ext-2.5.1.tgz#f5e31ee667b76a2693bee8b64399eca8d92e143a"
   integrity sha512-5vpufBzbsjebcyRiS1tcnwhI12au2crufprrGJ6QNmx8A2n4ThiadayhG4GzzdJSq9I0dYuRMoXdZTjDemCINQ==

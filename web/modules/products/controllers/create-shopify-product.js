@@ -13,7 +13,7 @@ const createShopifyProduct = async (req, res) => {
   try {
     const { session } = res.locals.shopify;
 
-    const { title, handle, producerProductId, customVariants, productData } =
+    const { title, producerProductId, variantsMappingData } =
       req.body;
 
     const productExists = await query(
@@ -31,11 +31,14 @@ const createShopifyProduct = async (req, res) => {
       session
     });
 
-    tempHubProduct.title = title;
-    tempHubProduct.body_html = productData.body_html;
-    tempHubProduct.images = productData.images;
+    const parentProduct = variantsMappingData.parentProduct;
+    const retailProduct = variantsMappingData.retailProduct;
+    const wholesaleProduct = variantsMappingData.wholesaleProduct;
 
-    tempHubProduct.handle = handle;
+    tempHubProduct.title = title;
+    tempHubProduct.body_html = parentProduct.body_html;
+    tempHubProduct.images = parentProduct.images;
+
     tempHubProduct.metafields = [
       {
         key: 'producer_product_id',
@@ -45,27 +48,27 @@ const createShopifyProduct = async (req, res) => {
       }
     ];
 
-    tempHubProduct.variants = customVariants.map((v) => ({
-      inventory_item: v.variantA.inventory_item,
+    tempHubProduct.variants = [{
+      inventory_item: retailProduct.inventory_item,
       metafields: [
         {
           key: 'producer_variant_id',
           namespace: 'global',
-          value: v.variantA.id,
+          value: retailProduct.id,
           type: 'single_line_text_field'
         }
       ],
 
-      option1: v.variantA.title,
-      title: v.variantA.title,
-      price: v.price,
-      inventory_policy: v.variantB.inventory_policy,
-      fulfillment_service: v.variantB.fulfillment_service,
-      inventory_management: v.variantB.inventory_management,
+      option1: retailProduct.title,
+      title: retailProduct.title,
+      price: variantsMappingData.price,
+      inventory_policy: wholesaleProduct.inventory_policy,
+      fulfillment_service: wholesaleProduct.fulfillment_service,
+      inventory_management: wholesaleProduct.inventory_management,
       inventory_quantity:
-        Number(v.noOfItemPerCase) * Number(v.variantB.inventory_quantity),
-      old_inventory_quantity: v.variantB.old_inventory_quantity
-    }));
+        Number(variantsMappingData.noOfItemPerCase) * Number(wholesaleProduct.inventory_quantity),
+      old_inventory_quantity: wholesaleProduct.old_inventory_quantity
+    }];
 
     await tempHubProduct.saveAndUpdate();
 
@@ -75,35 +78,25 @@ const createShopifyProduct = async (req, res) => {
 
     hubProduct.id = tempHubProduct.id;
 
-    hubProduct.variants = customVariants.map((v) => {
-      const exitingImageAlt = productData.images.find((i) =>
-        i.variant_ids.includes(v.variantA.id)
-      )?.alt;
+    const exitingImageAlt = parentProduct.images[0]?.alt;
 
-      const newImageId = exitingImageAlt
-        ? tempHubProduct.images.find((i) => i.alt === exitingImageAlt)?.id
-        : null;
+    const newImageId = exitingImageAlt
+      ? tempHubProduct.images.find((i) => i.alt === exitingImageAlt)?.id
+      : null;
 
-      return {
-        ...tempHubProduct.variants.find(
-          (variant) => variant.title === v.variantA.title
-        ),
-        image_id: newImageId
-      };
-    });
+    hubProduct.variants = [{
+      ...tempHubProduct.variants[0],
+      image_id: newImageId
+    }];
 
     await hubProduct.saveAndUpdate();
 
-    hubProduct.variants.forEach(async (variant) => {
-      const inventoryItem = new shopify.api.rest.InventoryItem({
-        session
-      });
-      inventoryItem.id = variant.inventory_item_id;
-      inventoryItem.tracked =
-        customVariants.find((v) => v.variantA.title === variant.title)?.variantB
-          ?.tracked || false;
-      await inventoryItem.saveAndUpdate();
+    const inventoryItem = new shopify.api.rest.InventoryItem({
+      session
     });
+    inventoryItem.id = hubProduct.variants[0].inventory_item_id;
+    inventoryItem.tracked = true;
+    await inventoryItem.saveAndUpdate();
 
     const client = await getClient();
 
@@ -120,9 +113,8 @@ const createShopifyProduct = async (req, res) => {
 
       const { id: productId } = products.rows[0];
 
-      customVariants.forEach(async (customVariant) => {
-        await query(
-          `INSERT INTO variants (
+      await query(
+        `INSERT INTO variants (
             producer_variant_id,
             hub_variant_id,
             product_id,
@@ -134,24 +126,21 @@ const createShopifyProduct = async (req, res) => {
             mapped_variant_id
             )
             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9);`,
-          [
-            convertShopifyGraphQLIdToNumber(customVariant.variantA.id),
-            convertShopifyGraphQLIdToNumber(
-              hubProduct.variants.find(
-                (v) => v.title === customVariant.variantA.title
-              ).id
-            ),
-            productId,
-            Number(customVariant.price),
-            Number(customVariant.addedValue),
-            customVariant.addedValueMethod,
-            Number(customVariant.originalPrice),
-            Number(customVariant.noOfItemPerCase),
-            convertShopifyGraphQLIdToNumber(customVariant.variantB.id)
-          ],
-          client
-        );
-      });
+        [
+          convertShopifyGraphQLIdToNumber(retailProduct.id),
+          convertShopifyGraphQLIdToNumber(
+            hubProduct.variants[0].id
+          ),
+          productId,
+          Number(variantsMappingData.price),
+          Number(variantsMappingData.addedValue),
+          variantsMappingData.addedValueMethod,
+          Number(variantsMappingData.originalPrice),
+          Number(variantsMappingData.noOfItemPerCase),
+          convertShopifyGraphQLIdToNumber(wholesaleProduct.id)
+        ],
+        client
+      );
 
       await client.query('COMMIT');
     } catch (err) {

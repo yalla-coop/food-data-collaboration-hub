@@ -52,52 +52,19 @@ const getProducerProducts = async () => {
         ids: producerProductsIds
       }
     );
+
     const producerProducts = await generateShopifyFDCProducts(data.products);
 
-    if (!Array.isArray(producerProducts) || producerProducts.length === 0) {
-      throwError(
-        'getProducerProducts: No products found in the producer store'
-      );
-    }
-
-    const products = hubStoreProducts.map((product) => {
-      const updatedProductJsonData = producerProducts.find(
-        (p) => Number(p.id) === Number(product.producerProductId)
+    return hubStoreProducts.map((productFromHubDb) => {
+      const productDataFromProducer = producerProducts.find(
+        (p) => Number(p.retailProduct.id) === Number(productFromHubDb.producerProductId)
       );
 
       return {
-        ...product,
-        updatedProductJsonData
+        ...productFromHubDb,
+        producerProductData: productDataFromProducer
       };
     });
-
-    const productsWithVariants = products
-      .filter((product) => product.updatedProductJsonData)
-      .map((product) => {
-        const variants = product.variants.map((variant) => {
-          const producerVariantData =
-            product.updatedProductJsonData.variants.find(
-              (v) => Number(v.id) === Number(variant.producerVariantId)
-            );
-
-          const updatedVariant = {
-            ...variant,
-            updatedPrice: producerVariantData.price,
-            updatedInventoryQuantity: producerVariantData.inventory_quantity,
-            producerVariantData
-          };
-
-          return updatedVariant;
-        });
-
-        return {
-          ...product,
-          producerProductData: product.updatedProductJsonData,
-          variants
-        };
-      });
-
-    return productsWithVariants;
   } catch (err) {
     throwError('Error from getProducerProducts', err);
   }

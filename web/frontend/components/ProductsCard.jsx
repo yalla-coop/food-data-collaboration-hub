@@ -25,15 +25,12 @@ import { VariantMappingComponent } from '../components/VariantMapping';
 import { ItemsIcon } from './ItemsIcon';
 import { ProductsIcon } from './ProductsIcon';
 
-export function ProductsCard({ product, exitingProduct }) {
+export function ProductsCard({ producerProduct, existingProduct }) {
+
   const queryClient = useQueryClient();
 
   const [isProductPriceChanged, setIsProductPriceChanged] = useState(false);
-
-  const exitingCount = exitingProduct?.variants?.length || 1;
-
-  const [variantMappingCount, setVariantMappingCount] = useState(exitingCount);
-  const [variantsMappingData, setVariantsMappingData] = useState([]);
+  const [variantsMappingData, setVariantsMappingData] = useState(null);
 
   const { data: currentSalesSessionData } = useAppQuery({
     url: '/api/sales-session',
@@ -45,7 +42,7 @@ export function ProductsCard({ product, exitingProduct }) {
   const isCurrentSalesSessionActive =
     currentSalesSessionData?.currentSalesSession?.isActive;
 
-  const isProductInStore = !!exitingProduct?.producerProductId;
+  const isProductInStore = !!existingProduct?.producerProductId;
 
   const {
     mutateAsync: createShopifyProduct,
@@ -58,11 +55,13 @@ export function ProductsCard({ product, exitingProduct }) {
     }
   });
 
-  const handleAddToStore = async (modifiedProduct) => {
-    const { title, handle, id: producerProductId } = modifiedProduct;
+  const addToStoreOrUpdate = async () => {
+    const { title, id: producerProductId } = producerProduct.retailProduct;
+
+    const url = variantsMappingData.existingVariantId ? `/api/products/shopify/${variantsMappingData.existingVariantId}` : '/api/products/shopify';
 
     await createShopifyProduct({
-      url: '/api/products/shopify',
+      url: url,
       fetchInit: {
         method: 'POST',
         headers: {
@@ -70,19 +69,17 @@ export function ProductsCard({ product, exitingProduct }) {
         },
         body: JSON.stringify({
           title,
-          handle,
-          customVariants: variantsMappingData,
+          variantsMappingData,
           producerProductId,
-          productData: modifiedProduct
         })
       }
     });
   };
 
-  const numberOfExitingProductVariants = exitingProduct?.variants?.length || 0;
+  const numberOfExistingProductVariants = existingProduct?.variants?.length || 0;
 
   const numberOfExcessOutstandingItems =
-    exitingProduct?.variants?.reduce((acc, v) => {
+    existingProduct?.variants?.reduce((acc, v) => {
       const addedValue = v?.numberOfExcessOrders || 0;
 
       acc = acc + addedValue;
@@ -90,11 +87,12 @@ export function ProductsCard({ product, exitingProduct }) {
       return acc;
     }, 0) || 0;
 
+
   return (
-    <Accordion key={product.title}>
+    <Accordion key={producerProduct.retailProduct.title}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Stack direction="row" justifyContent="space-between" width="100%">
-          <Typography variant="h6">{product.title}</Typography>
+          <Typography variant="h6">{producerProduct.retailProduct.title}</Typography>
 
           {isCurrentSalesSessionActive && (
             <Stack spacing="20px" direction="row" alignItems="center">
@@ -108,17 +106,17 @@ export function ProductsCard({ product, exitingProduct }) {
                 </Tooltip>
               )}
 
-              {exitingProduct?.variants?.length > 0 && (
+              {existingProduct?.variants?.length > 0 && (
                 <Tooltip title="Number of variants">
                   <Badge
-                    badgeContent={numberOfExitingProductVariants}
+                    badgeContent={numberOfExistingProductVariants}
                     color="secondary"
                   >
                     <ProductsIcon />
                   </Badge>
                 </Tooltip>
               )}
-              {exitingProduct?.variants?.length > 0 && (
+              {existingProduct?.variants?.length > 0 && (
                 <Tooltip
                   title={`Number of excess items`}
                 >
@@ -165,62 +163,66 @@ export function ProductsCard({ product, exitingProduct }) {
       <AccordionDetails>
         <Stack spacing="12px">
           <Stack spacing="12px">
-            {[...Array(variantMappingCount)].map((_, index) => (
-              <VariantMappingComponent
-                isProductPriceChanged={isProductPriceChanged}
-                setIsProductPriceChanged={setIsProductPriceChanged}
-                key={index}
-                setVariantsMappingData={setVariantsMappingData}
-                isCurrentSalesSessionActive={isCurrentSalesSessionActive}
-                product={product}
-                exitingProductVariant={exitingProduct?.variants?.[index] || {}}
-              />
-            ))}
+            <VariantMappingComponent
+              isProductPriceChanged={isProductPriceChanged}
+              setIsProductPriceChanged={setIsProductPriceChanged}
+              setVariantsMappingData={setVariantsMappingData}
+              isCurrentSalesSessionActive={isCurrentSalesSessionActive}
+              producerProductMapping={producerProduct}
+              existingProductVariant={existingProduct?.variants ? existingProduct?.variants[0] : null}
+            />
           </Stack>
 
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            sx={{
-              pointerEvents: isProductInStore ? 'none' : 'auto',
-              opacity: isProductInStore ? 0.6 : 1
-            }}
-          >
-            <Stack direction="row" spacing="12px">
-              {variantMappingCount > 0 && (
-                <Button
-                  variant="contained"
-                  type="button"
-                  onClick={() =>
-                    setVariantMappingCount(variantMappingCount - 1)
-                  }
-                >
-                  Remove variant
-                </Button>
-              )}
-
+          {
+            isProductInStore && variantsMappingData?.changed && variantsMappingData?.valid &&
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              sx={{
+                pointerEvents: isCurrentSalesSessionActive ? 'none' : 'auto',
+                opacity: isCurrentSalesSessionActive ? 0.6 : 1
+              }}
+            >
               <Button
                 variant="contained"
                 type="button"
-                onClick={() => setVariantMappingCount(variantMappingCount + 1)}
+                disabled={
+                  createShopifyProductLoading ||
+                  isCurrentSalesSessionActive
+                }
+                onClick={addToStoreOrUpdate}
               >
-                Add more variants
+                {createShopifyProductLoading ? 'Loading...' : 'Save changes'}
               </Button>
             </Stack>
-            <Button
-              variant="contained"
-              type="button"
-              disabled={
-                createShopifyProductLoading ||
-                isProductInStore ||
-                !isCurrentSalesSessionActive ||
-                variantMappingCount !== variantsMappingData.length
-              }
-              onClick={() => handleAddToStore(product)}
+          }
+
+          {!isProductInStore &&
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              sx={{
+                pointerEvents: isCurrentSalesSessionActive ? 'auto' : 'none',
+                opacity: isCurrentSalesSessionActive ? 1 : 0.6
+              }}
             >
-              {createShopifyProductLoading ? 'Loading...' : 'Add to store'}
-            </Button>
-          </Stack>
+              <Button
+                variant="contained"
+                type="button"
+                disabled={
+                  createShopifyProductLoading ||
+                  isProductInStore ||
+                  !variantsMappingData ||
+                  !variantsMappingData.valid ||
+                  !isCurrentSalesSessionActive
+                }
+                onClick={addToStoreOrUpdate}
+              >
+                {createShopifyProductLoading ? 'Loading...' : 'Add to store'}
+              </Button>
+            </Stack>
+          }
+
         </Stack>
       </AccordionDetails>
     </Accordion>

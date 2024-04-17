@@ -7,6 +7,7 @@ import { handleStockAfterOrderUpdate } from './handleStockAfterOrderUpdate.js';
 // TODO move this to utils
 import { updateCurrentVariantInventory } from '../updateCurrentVariantInventory.js';
 import { sendOrderToProducerAndUpdateSalesSessionOrderId } from './sendOrderToProducerAndUpdateSalesSessionOrderId.js';
+import { updateVariantExcessItems } from './updateVariantExcessItems.js';
 
 const selectVariantsQuery = `
 SELECT
@@ -18,6 +19,38 @@ INNER JOIN products as p
 ON v.product_id = p.id
 WHERE hub_variant_id = ANY($1)
 `;
+
+const updateExcessItemsAndInventory = async (variantData, sqlClient) => {
+  const updateExcessItemsPromises = variantData.map(
+    async ({
+      hubVariantId,
+      noOfItemsPerPackage,
+      mappedProducerVariantId,
+      numberOfExcessItems,
+      hubProductId,
+      producerProductId
+    }) => {
+      await updateVariantExcessItems({
+        numberOfExcessItems,
+        hubVariantId,
+        sqlClient
+      });
+      await updateCurrentVariantInventory({
+        storedHubVariant: {
+          hubVariantId,
+          noOfItemsPerPackage,
+          mappedVariantId: mappedProducerVariantId,
+          // TODO rename this to numberOfExcessItems
+          numberOfExcessOrders: numberOfExcessItems
+        },
+        hubProductId,
+        producerProductId
+      });
+    }
+  );
+
+  return Promise.allSettled(updateExcessItemsPromises);
+};
 
 export const handleOrderWebhook = async (
   topic,
@@ -61,8 +94,7 @@ export const handleOrderWebhook = async (
         return handleStockAfterOrderUpdate({
           orderType,
           variantFromOrder: v,
-          variantFromDB: singleVariantFromDB,
-          sqlClient
+          variantFromDB: singleVariantFromDB
         });
       })
     );
@@ -79,15 +111,23 @@ export const handleOrderWebhook = async (
         statusCode: 200
       };
     }
+    // update the excess items for variants that were not sent to producer
+    const variantsWithSufficientExcessItems = updatedVariantsData.filter(
+      (v) => Number(v?.numberOfPackages) < 1
+    );
 
-    const wholeSaleVariantsToOrderFromProducer = updatedVariantsData
-      .filter((v) => v.numberOfPackages > 0)
-      .map((v) => ({
-        mappedProducerVariantId: v.mappedProducerVariantId,
-        numberOfPackages: v.numberOfPackages
-      }));
+    if (variantsWithSufficientExcessItems?.length > 0) {
+      await updateExcessItemsAndInventory(
+        variantsWithSufficientExcessItems,
+        sqlClient
+      );
+    }
 
-    if (wholeSaleVariantsToOrderFromProducer.length === 0) {
+    const variantsToOrderFromProducer = updatedVariantsData.filter(
+      (v) => Number(v?.numberOfPackages) > 0
+    );
+
+    if (variantsToOrderFromProducer.length === 0) {
       console.log(
         `handleOrderWebhook: No line items to be sent to producer for sales session: ${activeSalesSessionId}`
       );
@@ -106,7 +146,7 @@ export const handleOrderWebhook = async (
     const { producerRespondSuccess, newProducerOrderId } =
       await sendOrderToProducerAndUpdateSalesSessionOrderId({
         activeSalesSessionOrderId,
-        variants: wholeSaleVariantsToOrderFromProducer,
+        variants: variantsToOrderFromProducer,
         activeSalesSessionId,
         customer,
         orderType,
@@ -122,32 +162,8 @@ export const handleOrderWebhook = async (
       `handleOrderWebhook: Updated sales session with order id ${newProducerOrderId} as received from producer`
     );
 
-    // TODO add sqlClient to updateCurrentVariantInventory
-    const updateVariantsInventoryPromises = updatedVariantsData
-      .filter((v) => v.numberOfPackages > 0)
-      .map(
-        async ({
-          hubVariantId,
-          noOfItemsPerPackage,
-          mappedProducerVariantId,
-          numberOfExcessItems,
-          hubProductId,
-          producerProductId
-        }) =>
-          updateCurrentVariantInventory({
-            storedHubVariant: {
-              hubVariantId,
-              noOfItemsPerPackage,
-              mappedVariantId: mappedProducerVariantId,
-              // TODO rename this to numberOfExcessItems
-              numberOfExcessOrders: numberOfExcessItems
-            },
-            hubProductId,
-            producerProductId
-          })
-      );
+    await updateExcessItemsAndInventory(variantsToOrderFromProducer, sqlClient);
 
-    await Promise.allSettled(updateVariantsInventoryPromises);
     console.log(
       'handleOrderWebhook: Updated inventory for variants, all done!'
     );
