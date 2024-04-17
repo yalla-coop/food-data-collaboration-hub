@@ -8,6 +8,7 @@ import { handleStockAfterOrderUpdate } from './handleStockAfterOrderUpdate.js';
 import { updateCurrentVariantInventory } from '../updateCurrentVariantInventory.js';
 import { sendOrderToProducerAndUpdateSalesSessionOrderId } from './sendOrderToProducerAndUpdateSalesSessionOrderId.js';
 import { updateVariantExcessItems } from './updateVariantExcessItems.js';
+import { createHubCustomerDetails } from '../../utils/createHubCustomerDetails.js';
 
 const selectVariantsQuery = `
 SELECT
@@ -136,12 +137,7 @@ export const handleOrderWebhook = async (
       };
     }
 
-    const customer = {
-      first_name: shop.split('.myshopify')[0],
-      last_name: '',
-      email: `${shop.split('.myshopify')[0]}@yallacooperative.com`
-    };
-
+    const customer = createHubCustomerDetails(shop);
     // trigger the order to producer
     const { producerRespondSuccess, newProducerOrderId } =
       await sendOrderToProducerAndUpdateSalesSessionOrderId({
