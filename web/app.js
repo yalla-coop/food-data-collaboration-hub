@@ -85,7 +85,7 @@ const sessionStore = new SQLiteStore({
 });
 
 const sessionObject = {
-  secret: process.env.OIDC_SESSION_SECRET,
+  secret: process.env.SESSION_SIGNING_KEY,
   resave: false, // don't save session if unmodified
   saveUninitialized: false,
   store: sessionStore
