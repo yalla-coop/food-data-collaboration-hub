@@ -195,12 +195,11 @@ app.get(
 app.use('/api/*', shopify.validateAuthenticatedSession());
 
 app.post('/api/user/logout', isAuthenticated, async (req, res) => {
-  const url =
-    'https://login.lescommuns.org/auth/realms/data-food-consortium/protocol/openid-connect/logout';
+  const url = process.env.OIDC_LOGOUT_URL;
 
   const queryParams = new URLSearchParams({
     id_token_hint: req.user.idToken,
-    post_logout_redirect_uri: `https://food-data-collaboration-hub-82234d1e2fc5.herokuapp.com/oidc/logout`
+    post_logout_redirect_uri: `${process.env.HOST}oidc/logout`
   });
 
   try {
