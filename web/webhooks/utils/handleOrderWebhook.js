@@ -137,7 +137,7 @@ export const handleOrderWebhook = async (
       };
     }
 
-    const customer = createHubCustomerDetails(shop);
+    const customer = createHubCustomerDetails(shop, {});
     // trigger the order to producer
     const { producerRespondSuccess, newProducerOrderId } =
       await sendOrderToProducerAndUpdateSalesSessionOrderId({

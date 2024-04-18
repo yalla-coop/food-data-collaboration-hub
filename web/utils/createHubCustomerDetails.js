@@ -1,4 +1,4 @@
-export const createHubCustomerDetails = (hubString, userObject = {}) => ({
+export const createHubCustomerDetails = (hubString, userObject) => ({
   first_name: hubString?.split('.myshopify')[0] || userObject?.name || '',
   last_name: '',
   email:
