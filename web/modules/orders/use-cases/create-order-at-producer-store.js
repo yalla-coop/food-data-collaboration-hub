@@ -14,7 +14,7 @@ const { PRODUCER_SHOP_URL, PRODUCER_SHOP } = process.env;
 const createOrderAtProducerStore = async ({ user }) => {
   const { accessToken } = user;
   const shop = process.env.HUB_SHOP_NAME;
-  const customer = createHubCustomerDetails(shop);
+  const customer = createHubCustomerDetails(shop, user);
 
   try {
     const { data } = await axios.post(
