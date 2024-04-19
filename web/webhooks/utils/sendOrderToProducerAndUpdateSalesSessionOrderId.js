@@ -52,10 +52,11 @@ export const sendOrderToProducerAndUpdateSalesSessionOrderId = async ({
 
     return { producerRespondSuccess, newProducerOrderId };
   } catch (error) {
-    await sqlClient.query('ROLLBACK');
-    throwError(
+    console.log(
       'sendOrderToProducerAndUpdateSalesSessionOrderId: Error occurred while sending the order to producer',
       error
     );
+    await sqlClient.query('ROLLBACK');
+    return { producerRespondSuccess, newProducerOrderId: null };
   }
 };
