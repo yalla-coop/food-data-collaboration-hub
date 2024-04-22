@@ -51,10 +51,6 @@ const createSalesSessionCronJob = async () => {
           if (latestSessionOrder) {
             await completeOrderAtProducerStoreUseCase({
               producerOrderId: latestSessionOrder,
-              user: {
-                id: 212,
-                accessToken: 'access_token'
-              }
             });
           }
 
@@ -69,10 +65,6 @@ const createSalesSessionCronJob = async () => {
               startDate: newStartDate.toISOString(),
               sessionDurationInDays: latestSession.sessionDuration,
               session,
-              user: {
-                id: 212,
-                accessToken: 'access_token'
-              }
             },
             client
           );

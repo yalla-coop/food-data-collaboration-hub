@@ -36,6 +36,11 @@ const getLatestProducerProductData = async (producerProductId) => {
       `${PRODUCER_SHOP_URL}fdc/products/all?shop=${PRODUCER_SHOP}`,
       {
         ids: `${producerProductId}`
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.PRODUCER_API_KEY}`
+        }
       }
     );
 

@@ -4,6 +4,7 @@ import completeOrderAtProducerStoreUseCase from '../../orders/use-cases/complete
 const completeCurrentSalesSession = async (req, res, next) => {
   try {
     const sqlClient = await getClient();
+    const {user} = req;
     try {
       const selectCurrentSalesSessionSql = `
         SELECT * FROM sales_sessions
@@ -21,10 +22,7 @@ const completeCurrentSalesSession = async (req, res, next) => {
 
       const { order } = await completeOrderAtProducerStoreUseCase({
         producerOrderId: currentSalesSessionOrderId,
-        user: {
-          id: '212',
-          accessToken: 'access_token'
-        }
+        user
       });
 
       const orderId = order.id;

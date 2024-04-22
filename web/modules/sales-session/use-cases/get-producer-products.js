@@ -50,6 +50,11 @@ const getProducerProducts = async () => {
       `${PRODUCER_SHOP_URL}fdc/products/all?shop=${PRODUCER_SHOP}`,
       {
         ids: producerProductsIds
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.PRODUCER_API_KEY}`
+        }
       }
     );
 

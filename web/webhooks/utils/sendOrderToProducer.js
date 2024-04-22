@@ -34,16 +34,14 @@ export const sendOrderToProducer = async ({
     const { data } = await axios.patch(
       `${PRODUCER_SHOP_URL}fdc/orders/${activeSalesSessionOrderId}?shop=${PRODUCER_SHOP}&orderType=${orderType}`,
       {
-        // TODO replace with actual userId and accessToken
-        userId: '123',
-        accessToken: 'access-token',
         orderId: activeSalesSessionOrderId,
         exportedOrder,
         exportedCustomer
       },
       {
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.PRODUCER_API_KEY}`
         }
       }
     );
