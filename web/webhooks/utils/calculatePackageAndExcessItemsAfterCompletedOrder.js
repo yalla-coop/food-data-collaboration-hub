@@ -1,5 +1,5 @@
 // @params {number} noOfItemsPerPackage - number of items per package to order from producer
-// @params {number} quantityToBeCancelled - items of paid/completed hub order
+// @params {number} quantity - items of paid/completed hub order
 // @params {number} numberOfExistingExcessItems - excess items from previous orders
 // @returns {number} - numberOfExcessItems - number of excess items after new order
 // @returns {number} - numberOfPackages - number of packages to order from producer to fulfill currrent orders
