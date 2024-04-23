@@ -31,6 +31,7 @@ export const addOrdersWebhookToDBAndReturnVariants = async (
       };
     }
     const payload = JSON.parse(body);
+
     await sqlClient.query('BEGIN');
     await query(insertWebhookQuery, [webhookId, topic, payload], sqlClient);
     await sqlClient.query('COMMIT');
@@ -44,7 +45,10 @@ export const addOrdersWebhookToDBAndReturnVariants = async (
       quantity: Number(lineItem.quantity)
     }));
 
-    return { variants };
+    return {
+      variants,
+      orderNumber: payload?.order_number
+    };
   } catch (err) {
     await sqlClient.query('ROLLBACK');
     throwError(

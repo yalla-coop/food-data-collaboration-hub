@@ -9,6 +9,19 @@ import { updateCurrentVariantInventory } from '../updateCurrentVariantInventory.
 import { sendOrderToProducerAndUpdateSalesSessionOrderId } from './sendOrderToProducerAndUpdateSalesSessionOrderId.js';
 import { updateVariantExcessItems } from './updateVariantExcessItems.js';
 import { createHubCustomerDetails } from '../../utils/createHubCustomerDetails.js';
+import {
+  addSalesSessionsOrder,
+  updateSalesSessionsOrdersStatus
+} from './addUpdateSalesSessionsOrders.js';
+
+const orderStatuses = {
+  PENDING: 'pending',
+  PRODUCER_CONFIRMED: 'producer_confirmed',
+  PRODUCER_REJECTED: 'producer_rejected',
+  INTERNAL_CONFIRMATION: 'internal_confirmation',
+  PART_INTERNAL_PART_PRODUCER_CONFIRMATION:
+    'part_internal_part_producer_confirmation'
+};
 
 const selectVariantsQuery = `
 SELECT
@@ -62,17 +75,29 @@ export const handleOrderWebhook = async (
 ) => {
   const sqlClient = await getClient();
   try {
-    const { variants } = await addOrdersWebhookToDBAndReturnVariants(
-      webhookId,
-      topic,
-      body,
-      sqlClient
-    );
+    const { variants, orderNumber } =
+      await addOrdersWebhookToDBAndReturnVariants(
+        webhookId,
+        topic,
+        body,
+        sqlClient
+      );
 
-    console.log(`handleOrderWebhook: added webhook with id ${webhookId} to db`);
+    console.log(
+      `handleOrderWebhook: added webhook with id ${webhookId} to db for order number ${orderNumber}`
+    );
 
     const { activeSalesSessionOrderId, activeSalesSessionId } =
       await getActiveSalesSessionDetails(sqlClient);
+
+    const { salesSessionsOrderId } = await addSalesSessionsOrder({
+      salesSessionId: activeSalesSessionId,
+      webhookId,
+      orderNumber,
+      orderType,
+      orderStatus: orderStatuses.PENDING,
+      sqlClient
+    });
 
     const variantFromDB = await query(
       selectVariantsQuery,
@@ -129,6 +154,12 @@ export const handleOrderWebhook = async (
     );
 
     if (variantsToOrderFromProducer.length === 0) {
+      await updateSalesSessionsOrdersStatus({
+        salesSessionsOrderId,
+        status: orderStatuses.INTERNAL_CONFIRMATION,
+        sqlClient
+      });
+
       console.log(
         `handleOrderWebhook: No line items to be sent to producer for sales session: ${activeSalesSessionId}`
       );
@@ -149,7 +180,12 @@ export const handleOrderWebhook = async (
         sqlClient
       });
 
-    if (!producerRespondSuccess) {
+    if (!producerRespondSuccess || !newProducerOrderId) {
+      await updateSalesSessionsOrdersStatus({
+        salesSessionsOrderId,
+        status: orderStatuses.PRODUCER_REJECTED,
+        sqlClient
+      });
       throwError(
         'handleOrderWebhook: Error occurred while sending the order to producer'
       );
@@ -163,6 +199,16 @@ export const handleOrderWebhook = async (
     console.log(
       'handleOrderWebhook: Updated inventory for variants, all done!'
     );
+
+    await updateSalesSessionsOrdersStatus({
+      salesSessionsOrderId,
+      status:
+        variantsWithSufficientExcessItems?.length > 0
+          ? orderStatuses.PART_INTERNAL_PART_PRODUCER_CONFIRMATION
+          : orderStatuses.PRODUCER_CONFIRMED,
+      sqlClient
+    });
+
     return {
       statusCode: 200
     };
