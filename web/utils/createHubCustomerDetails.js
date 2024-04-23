@@ -1,5 +1,8 @@
-export const createHubCustomerDetails = (hubString) => ({
-  first_name: hubString?.split('.myshopify')[0] || '',
+export const createHubCustomerDetails = (hubString, userObject) => ({
+  first_name: hubString?.split('.myshopify')[0] || userObject?.name || '',
   last_name: '',
-  email: `${hubString?.split('.myshopify')?.[0]}@dfc-hub.org` || ''
+  email:
+    userObject?.email ||
+    `${hubString?.split('.myshopify')?.[0]}@dfc-hub.org` ||
+    ''
 });
