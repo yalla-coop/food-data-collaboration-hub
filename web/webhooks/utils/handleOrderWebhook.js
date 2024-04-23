@@ -90,15 +90,6 @@ export const handleOrderWebhook = async (
     const { activeSalesSessionOrderId, activeSalesSessionId } =
       await getActiveSalesSessionDetails(sqlClient);
 
-    const { salesSessionsOrderId } = await addSalesSessionsOrder({
-      salesSessionId: activeSalesSessionId,
-      webhookId,
-      orderNumber,
-      orderType,
-      orderStatus: orderStatuses.PENDING,
-      sqlClient
-    });
-
     const variantFromDB = await query(
       selectVariantsQuery,
       [variants.map((v) => v.variantId)],
@@ -110,6 +101,14 @@ export const handleOrderWebhook = async (
         'handleOrderPaidWebhookHandler: No matching variants found in DB'
       );
     }
+    const { salesSessionsOrderId } = await addSalesSessionsOrder({
+      salesSessionId: activeSalesSessionId,
+      webhookId,
+      orderNumber,
+      orderType,
+      orderStatus: orderStatuses.PENDING,
+      sqlClient
+    });
 
     const handleStockAfterOrderUpdatePromises = await Promise.allSettled(
       variants.map(async (v) => {
