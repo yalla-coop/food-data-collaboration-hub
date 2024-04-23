@@ -65,17 +65,19 @@ async function getSingleVariantSuppliedProduct(suppliedProduct) {
 
     const quantityUnitsObj = await loadQuantityUnits();
 
+    const isContinueSelling = stockLimitation === -1;
+
     const variantSuppliedProduct = {
       id: getTargetStringFromSemanticId(semanticId, 'product'),
       title: productName,
       price: priceValue,
       weight: quantityValue,
       weight_unit: quantityUnitsObj[quantityUnit],
-      inventory_quantity: stockLimitation,
+      inventory_quantity: isContinueSelling ? 0 : stockLimitation,
       sku,
       taxable: hasVat,
       tracked: true,
-      inventory_policy: stockLimitation === -1 ? 'continue' : 'deny',
+      inventory_policy: isContinueSelling ? 'continue' : 'deny',
       // TODO check if these are needed and make these dynamic
       fulfillment_service: 'manual',
       inventory_management: 'shopify'

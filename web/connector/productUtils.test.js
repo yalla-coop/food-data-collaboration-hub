@@ -1,8 +1,8 @@
-const {
+import {
   exportedDFCProducerProducts,
   importedShopifyProductsFromDFC
-} = require('./mocks');
-const { generateShopifyFDCProducts } = require('./productUtils');
+} from './mocks';
+import { generateShopifyFDCProducts } from './productUtils';
 
 describe('generateShopifyFDCProducts', () => {
   it('should generate shopify FDC products from dfc exported JSON-LD', async () => {
@@ -20,7 +20,7 @@ describe('generateShopifyFDCProducts', () => {
 
     const variant = result[0].variants[0]
 
-    expect(variant.inventory_quantity).toEqual(-1);
+    expect(variant.inventory_quantity).toEqual(0);
     expect(variant.inventory_policy).toEqual('continue');
   });
 });
