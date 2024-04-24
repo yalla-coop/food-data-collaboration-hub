@@ -1,14 +1,15 @@
 import { DeliveryMethod } from '@shopify/shopify-api';
 import * as Sentry from '@sentry/node';
 
-import { getClient, query } from '../database/connect.js';
+import { getClient } from '../database/connect.js';
 import { updateCurrentVariantInventory } from './updateCurrentVariantInventory.js';
-import { getStoredHubVariant } from './getStoredHubVariant.js';
 
-export const handleHubVariantUpdate = async (v, activeSalesSession) => {
-  const { variantId, quantity } = v;
+import { addOrdersWebhookToDB } from './utils/addOrdersWebhookToDB.js';
+import { validateLineItemsAndCallHandler } from './utils/validateLineItemsAndCallHandler.js';
+import { throwError } from '../utils/index.js';
 
-  if (!variantId || !quantity) {
+export const handleHubVariantUpdate = async (singleVariantFromDB) => {
+  if (!singleVariantFromDB) {
     return;
   }
 
@@ -18,96 +19,61 @@ export const handleHubVariantUpdate = async (v, activeSalesSession) => {
       producerProductId,
       hubVariantId,
       noOfItemsPerPackage,
-      mappedProducerVariantId,
-      numberOfExitingExcessOrders,
-    } = await getStoredHubVariant({
-      variantId,
-      quantity
-    });
+      mappedVariantId,
+      numberOfExcessOrders
+    } = singleVariantFromDB;
 
     await updateCurrentVariantInventory({
       hubProductId,
       storedHubVariant: {
         hubVariantId,
         noOfItemsPerPackage,
-        mappedVariantId: mappedProducerVariantId,
-        numberOfExcessOrders: numberOfExitingExcessOrders,
+        mappedVariantId,
+        numberOfExcessOrders
       },
       producerProductId
     });
   } catch (e) {
-    console.log(e);
-    throw new Error(e);
+    throwError('handleHubVariantUpdate: Error updating variant inventory', e);
   }
 };
 
-const handleCartCreateUpdateCheckoutCreateUpdateWebhook = async (
+const handleCartCreateUpdateCheckoutCreateUpdateWebhook = async ({
   topic,
-  shop,
-  body,
-  webhookId
-) => {
+  webhookId,
+  payload,
+  activeSalesSessions,
+  variantsFromPayload,
+  variantsFromDB
+}) => {
+  const sqlClient = await getClient();
   try {
-    const sqlClient = await getClient();
-    try {
-      await sqlClient.query('BEGIN');
-      const selectWebhookQuery = `
-          SELECT
-          *
-          FROM webhooks
-          WHERE id = $1
-          `;
-      const result = await query(selectWebhookQuery, [webhookId], sqlClient);
-      const webhook = result.rows[0];
-      if (webhook) {
-        return;
-      }
+    await addOrdersWebhookToDB(webhookId, topic, payload, sqlClient);
 
-      const payload = JSON.parse(body);
-      const insertWebhookQuery = `
-          INSERT INTO webhooks
-          (id,topic,data)
-          VALUES ($1,$2,$3)
-    `;
-      await query(insertWebhookQuery, [webhookId, topic, payload], sqlClient);
-      await sqlClient.query('COMMIT');
+    console.log(`handleCartsWebhook: added webhook with id ${webhookId} to db`);
 
-      const selectActiveSalesSessionQuery = `
-          SELECT
-          *
-          FROM sales_sessions
-          WHERE sales_sessions.is_active = true
-        `;
+    const activeSalesSession = activeSalesSessions?.[0];
 
-      const activeSalesSessionResult = await query(
-        selectActiveSalesSessionQuery
-      );
-
-      const activeSalesSession = activeSalesSessionResult.rows[0];
-
-      if (!activeSalesSession) {
-        throw new Error('No active sales session found');
-      }
-
-      const variants = payload.line_items.map((lineItem) => ({
-        variantId: lineItem.variant_id,
-        quantity: Number(lineItem.quantity)
-      }));
-
-      const promises = variants.map(async (v) =>
-        handleHubVariantUpdate(v, activeSalesSession)
-      );
-
-      await Promise.all(promises);
-    } catch (err) {
-      await sqlClient.query('ROLLBACK');
-      throw new Error(err);
-    } finally {
-      sqlClient.release();
+    if (!activeSalesSession) {
+      throw new Error('No active sales session found');
     }
+
+    const promises = variantsFromPayload.map(async (v) => {
+      const singleVariantFromDB = variantsFromDB.find(
+        (ev) => Number(ev.hubVariantId) === Number(v.variantId)
+      );
+      return handleHubVariantUpdate(singleVariantFromDB);
+    });
+
+    await Promise.all(promises);
+    console.log('handleCartWebhook: Updated inventory for variants, all done!');
   } catch (err) {
-    console.log('Error:----', err);
     Sentry.captureException(err);
+    return {
+      statusCode: 500
+    };
+  } finally {
+    sqlClient.release();
   }
 };
 
@@ -117,13 +83,11 @@ const handleCartCreateUpdateCheckoutCreateUpdateWebhookCallback = async (
   body,
   webhookId
 ) => {
-  console.log('handleCartCreateUpdateCheckoutCreateUpdateWebhookCallback');
-  handleCartCreateUpdateCheckoutCreateUpdateWebhook(
-    topic,
-    shop,
-    body,
-    webhookId
+  validateLineItemsAndCallHandler(
+    { topic, shop, body, webhookId },
+    handleCartCreateUpdateCheckoutCreateUpdateWebhook
   );
+
   return {
     statusCode: 200
   };
