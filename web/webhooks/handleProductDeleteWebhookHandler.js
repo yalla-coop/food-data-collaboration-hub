@@ -1,58 +1,88 @@
-import { DeliveryMethod } from '@shopify/shopify-api';
 import * as Sentry from '@sentry/node';
+import { DeliveryMethod } from '@shopify/shopify-api';
 
 import { query, getClient } from '../database/connect.js';
+import { addOrdersWebhookToDB } from './utils/addOrdersWebhookToDB.js';
+import { throwError } from '../utils/index.js';
+const deleteVariantsQuery = `
+DELETE FROM variants
+ WHERE product_id = (
+   SELECT id
+   FROM products
+   WHERE hub_product_id = $1
+ )
+`;
+const deleteProductQuery = `
+DELETE FROM products
+WHERE hub_product_id = $1
+`;
 
-export const deleteVariantsAndProductCachedData = async (hubProductId) => {
-  try {
-    const client = await getClient();
-    try {
-      await client.query('BEGIN');
-
-      const deleteVariantsQuery = `
-     DELETE FROM variants
+const findVariantQuery = `
+     SELECT *
+      FROM variants
       WHERE product_id = (
-        SELECT id
-        FROM products
-        WHERE hub_product_id = $1
+      SELECT id
+      FROM products
+      WHERE hub_product_id = $1
       )
     `;
-      await query(deleteVariantsQuery, [hubProductId], client);
 
-      const deleteProductQuery = `
-      DELETE FROM products
-      WHERE hub_product_id = $1
-    `;
+export const deleteVariantsAndProductCachedData = async (
+  hubProductId,
+  sqlClient
+) => {
+  try {
+    await sqlClient.query('BEGIN');
 
-      await query(deleteProductQuery, [hubProductId], client);
+    await query(deleteVariantsQuery, [hubProductId], sqlClient);
+    await query(deleteProductQuery, [hubProductId], sqlClient);
 
-      await client.query('COMMIT');
-    } catch (err) {
-      console.log(err);
-
-      await client.query('ROLLBACK');
-      throw new Error(err);
-    } finally {
-      client.release();
-    }
+    await sqlClient.query('COMMIT');
   } catch (err) {
-    console.log(err);
-    Sentry.captureException(err);
+    await sqlClient.query('ROLLBACK');
+    throwError(
+      'deleteVariantsAndProductCachedData: Error occurred while processing the query',
+      err
+    );
   }
 };
 
 const handleProductDeleteCallback = async (topic, shop, body, webhookId) => {
-  const payload = JSON.parse(body);
+  const sqlClient = await getClient();
+  try {
+    const payload = JSON.parse(body);
+    const { id: hubProductId } = payload;
 
-  const { id: producerProductId } = payload;
-  // we should not await this
-  // function because it will take a long time and we should reply to shopify as soon as possible
-  console.log('deleting product webhook');
-  deleteVariantsAndProductCachedData(producerProductId);
+    const { rows: variants } = await query(findVariantQuery, [hubProductId]);
 
-  return {
-    statusCode: 200
-  };
+    if (variants.length < 1) {
+      return {
+        statusCode: 200,
+        body: 'Webhook - handleProductDeleteCallback: No variants found'
+      };
+    }
+    await addOrdersWebhookToDB(webhookId, topic, payload, sqlClient);
+    console.log(
+      `handleProductDeleteCallback: added webhook with id ${webhookId} to db for product id ${hubProductId}`
+    );
+
+    await deleteVariantsAndProductCachedData(hubProductId, sqlClient);
+
+    return {
+      statusCode: 200
+    };
+  } catch (err) {
+    console.error(
+      'handleProductDeleteWebhook: Error occurred while processing the request',
+      err
+    );
+    Sentry.captureException(err);
+    return {
+      statusCode: 500
+    };
+  } finally {
+    sqlClient.release();
+  }
 };
 
 const handleProductDeleteWebhookHandler = {
