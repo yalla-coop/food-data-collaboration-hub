@@ -2,6 +2,7 @@
 import { DeliveryMethod } from '@shopify/shopify-api';
 import dotenv from 'dotenv';
 import { handleOrderWebhook } from './utils/handleOrderWebhook.js';
+import { validateLineItemsAndCallHandler } from './utils/validateLineItemsAndCallHandler.js';
 
 dotenv.config();
 
@@ -12,7 +13,11 @@ const handleOrderCancelledWebhookCallback = async (
   webhookId
 ) => {
   // without awaiting
-  handleOrderWebhook(topic, shop, body, webhookId, 'cancelled');
+  validateLineItemsAndCallHandler(
+    { topic, shop, body, webhookId, orderType: 'cancelled' },
+    handleOrderWebhook
+  );
+
   return {
     statusCode: 200
   };

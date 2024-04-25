@@ -2,6 +2,7 @@ import axios from 'axios';
 import * as Sentry from '@sentry/node';
 import dotenv from 'dotenv';
 import { join } from 'path';
+import { addUserIfPresent, addApiKeyIfNoUser } from './create-order-at-producer-store.js';
 import { throwError } from '../../../utils/index.js';
 
 dotenv.config({
@@ -14,19 +15,14 @@ const completeOrderAtProducerStoreUseCase = async ({
   user,
   producerOrderId
 }) => {
-  const { accessToken } = user;
-
   try {
     const { data } = await axios.patch(
       `${PRODUCER_SHOP_URL}fdc/orders/${producerOrderId}/complete?shop=${PRODUCER_SHOP}&orderType=completed`,
+      addUserIfPresent({}, user),
       {
-        userId: user.id,
-        accessToken
-      },
-      {
-        headers: {
+        headers: addApiKeyIfNoUser({
           'Content-Type': 'application/json'
-        }
+        }, user)
       }
     );
 

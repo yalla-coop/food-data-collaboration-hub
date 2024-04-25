@@ -1,24 +1,26 @@
 import * as Sentry from '@sentry/node';
-import { getClient, query } from '../../database/connect.js';
-import { addOrdersWebhookToDBAndReturnVariants } from './addOrdersWebhookToDBAndReturnVariants.js';
-import { getActiveSalesSessionDetails } from './getActiveSalesSessionDetails.js';
+import { getClient } from '../../database/connect.js';
+import { addOrdersWebhookToDB } from './addOrdersWebhookToDB.js';
 import { throwError } from '../../utils/index.js';
 import { handleStockAfterOrderUpdate } from './handleStockAfterOrderUpdate.js';
 // TODO move this to utils
 import { updateCurrentVariantInventory } from '../updateCurrentVariantInventory.js';
 import { sendOrderToProducerAndUpdateSalesSessionOrderId } from './sendOrderToProducerAndUpdateSalesSessionOrderId.js';
 import { updateVariantExcessItems } from './updateVariantExcessItems.js';
+import { createHubCustomerDetails } from '../../utils/createHubCustomerDetails.js';
+import {
+  addSalesSessionsOrder,
+  updateSalesSessionsOrdersStatus
+} from './addUpdateSalesSessionsOrders.js';
 
-const selectVariantsQuery = `
-SELECT
-  v.*,
-  p.producer_product_id,
-  p.hub_product_id
-FROM variants as v
-INNER JOIN products as p
-ON v.product_id = p.id
-WHERE hub_variant_id = ANY($1)
-`;
+const orderStatuses = {
+  PENDING: 'pending',
+  PRODUCER_CONFIRMED: 'producer_confirmed',
+  PRODUCER_REJECTED: 'producer_rejected',
+  INTERNAL_CONFIRMATION: 'internal_confirmation',
+  PART_INTERNAL_PART_PRODUCER_CONFIRMATION:
+    'part_internal_part_producer_confirmation'
+};
 
 const updateExcessItemsAndInventory = async (variantData, sqlClient) => {
   const updateExcessItemsPromises = variantData.map(
@@ -52,42 +54,40 @@ const updateExcessItemsAndInventory = async (variantData, sqlClient) => {
   return Promise.allSettled(updateExcessItemsPromises);
 };
 
-export const handleOrderWebhook = async (
+export const handleOrderWebhook = async ({
   topic,
   shop,
-  body,
   webhookId,
-  orderType
-) => {
+  orderType,
+  payload,
+  activeSalesSessions,
+  variantsFromPayload,
+  variantsFromDB
+}) => {
   const sqlClient = await getClient();
   try {
-    const { variants } = await addOrdersWebhookToDBAndReturnVariants(
+    const orderNumber = payload?.order_number;
+
+    await addOrdersWebhookToDB(webhookId, topic, payload, sqlClient);
+
+    console.log(
+      `handleOrderWebhook: added webhook with id ${webhookId} to db for order number ${orderNumber}`
+    );
+
+    const activeSalesSessionOrderId = activeSalesSessions?.[0].orderId;
+    const activeSalesSessionId = activeSalesSessions?.[0].id;
+    const { salesSessionsOrderId } = await addSalesSessionsOrder({
+      salesSessionId: activeSalesSessionId,
       webhookId,
-      topic,
-      body,
+      orderNumber,
+      orderType,
+      orderStatus: orderStatuses.PENDING,
       sqlClient
-    );
-
-    console.log(`handleOrderWebhook: added webhook with id ${webhookId} to db`);
-
-    const { activeSalesSessionOrderId, activeSalesSessionId } =
-      await getActiveSalesSessionDetails(sqlClient);
-
-    const variantFromDB = await query(
-      selectVariantsQuery,
-      [variants.map((v) => v.variantId)],
-      sqlClient
-    );
-
-    if (variantFromDB?.rows?.length === 0) {
-      throwError(
-        'handleOrderPaidWebhookHandler: No matching variants found in DB'
-      );
-    }
+    });
 
     const handleStockAfterOrderUpdatePromises = await Promise.allSettled(
-      variants.map(async (v) => {
-        const singleVariantFromDB = variantFromDB.rows.find(
+      variantsFromPayload.map(async (v) => {
+        const singleVariantFromDB = variantsFromDB.find(
           (ev) => Number(ev.hubVariantId) === Number(v.variantId)
         );
 
@@ -128,6 +128,12 @@ export const handleOrderWebhook = async (
     );
 
     if (variantsToOrderFromProducer.length === 0) {
+      await updateSalesSessionsOrdersStatus({
+        salesSessionsOrderId,
+        status: orderStatuses.INTERNAL_CONFIRMATION,
+        sqlClient
+      });
+
       console.log(
         `handleOrderWebhook: No line items to be sent to producer for sales session: ${activeSalesSessionId}`
       );
@@ -136,12 +142,7 @@ export const handleOrderWebhook = async (
       };
     }
 
-    const customer = {
-      first_name: shop.split('.myshopify')[0],
-      last_name: '',
-      email: `${shop.split('.myshopify')[0]}@yallacooperative.com`
-    };
-
+    const customer = createHubCustomerDetails(shop, {});
     // trigger the order to producer
     const { producerRespondSuccess, newProducerOrderId } =
       await sendOrderToProducerAndUpdateSalesSessionOrderId({
@@ -153,7 +154,12 @@ export const handleOrderWebhook = async (
         sqlClient
       });
 
-    if (!producerRespondSuccess) {
+    if (!producerRespondSuccess || !newProducerOrderId) {
+      await updateSalesSessionsOrdersStatus({
+        salesSessionsOrderId,
+        status: orderStatuses.PRODUCER_REJECTED,
+        sqlClient
+      });
       throwError(
         'handleOrderWebhook: Error occurred while sending the order to producer'
       );
@@ -167,6 +173,16 @@ export const handleOrderWebhook = async (
     console.log(
       'handleOrderWebhook: Updated inventory for variants, all done!'
     );
+
+    await updateSalesSessionsOrdersStatus({
+      salesSessionsOrderId,
+      status:
+        variantsWithSufficientExcessItems?.length > 0
+          ? orderStatuses.PART_INTERNAL_PART_PRODUCER_CONFIRMATION
+          : orderStatuses.PRODUCER_CONFIRMED,
+      sqlClient
+    });
+
     return {
       statusCode: 200
     };
