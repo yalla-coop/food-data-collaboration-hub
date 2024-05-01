@@ -52,7 +52,7 @@ export const validateLineItemsAndCallHandler = async (
       variantsFromPayload.map((v) => v.variantId)
     ]);
 
-    if (variantsFromDB?.rows?.length === 0) {
+    if (variantsFromDB?.length < 1) {
       return {
         statusCode: 200,
         body: 'Webhook - validateLineItemsAndCallHandler: No matching variants found'
