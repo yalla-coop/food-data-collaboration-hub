@@ -35,14 +35,9 @@ jobs:
         # This step uses [docker/metadata-action](https://github.com/docker/metadata-action#about) to extract tags and labels that will be applied to the specified image. The `id` "meta" allows the output of this step to be referenced in a subsequent step. The `images` value provides the base name for the tags and labels.
         - name: Extract metadata (tags, labels) for Docker
           id: meta
-          uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+          uses: docker/metadata-action@v5
           with:
-            images: ghcr.io/${{ inputs.image_name }}
             tags: |
-                type=ref,event=branch
-                type=ref,event=pr
-                type=ref,event=tag
-                type=sha
                 type=sha,prefix={{branch}}-
 
         # This step uses the `docker/build-push-action` action to build the image, based on your repository's `Dockerfile`. If the build succeeds, it pushes the image to GitHub Packages.
@@ -56,7 +51,7 @@ jobs:
             push: true
             build-args: |
               SHOPIFY_API_KEY=${{ secrets.shopify_api_key }}
-            tags: ${{ steps.meta.outputs.tags }}
+            tags: ghcr.io/${{ inputs.image_name }}:${{ steps.meta.outputs.tags }}
             labels: ${{ steps.meta.outputs.labels }}
         
         # This step generates an artifact attestation for the image, which is an unforgeable statement about where and how it was built. It increases supply chain security for people who consume the image. For more information, see "[AUTOTITLE](/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds)." 
@@ -69,4 +64,4 @@ jobs:
         - name: Redeploy containers
           run: |
             sudo apt-get install curl -y
-            curl https://app.jpc.infomaniak.com/1.0/environment/control/rest/redeploycontainersbygroup?envName=${{inputs.jelastic_env}}\&session=${{secrets.jelastic_access_token}}\&tag=${{steps.meta.outputs.tags[0]}}\&nodeGroup=cp
+            curl https://app.jpc.infomaniak.com/1.0/environment/control/rest/redeploycontainersbygroup?envName=${{inputs.jelastic_env}}\&session=${{secrets.jelastic_access_token}}\&tag=${{steps.meta.outputs.tags}}\&nodeGroup=cp
