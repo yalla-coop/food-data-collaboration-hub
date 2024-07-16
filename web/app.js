@@ -129,9 +129,12 @@ async function createApp() {
         // profile.accessToken = accessToken;
         // profile.refreshToken = refreshToken;
         // profile.idToken = idToken;
-        console.log('tokenSet', tokenSet);
+        console.log('tokenSet', tokenset);
         console.log('userinfo', userinfo);
         console.log('done', done);
+        userinfo.accessToken = tokenset.access_token;
+        userinfo.refreshToken = tokenset.refresh_token;
+        userinfo.idToken = tokenset.id_token;
         return done(null, userinfo);
       }
     )
