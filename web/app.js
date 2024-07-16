@@ -121,14 +121,10 @@ async function createApp() {
     new Strategy({
       client: client,
       usePKCE: true,
-      // sessionKey: process.env.OIDC_SESSION_KEY,
     },
       function authCallback(
         tokenset, userinfo, done
       ) {
-        console.log('tokenSet', tokenset);
-        console.log('userinfo', userinfo);
-        console.log('done', done);
         userinfo.accessToken = tokenset.access_token;
         userinfo.refreshToken = tokenset.refresh_token;
         userinfo.idToken = tokenset.id_token;
