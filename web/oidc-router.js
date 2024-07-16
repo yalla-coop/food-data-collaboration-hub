@@ -8,7 +8,7 @@ const STATIC_PATH = `${process.cwd()}/frontend/`;
 
 const oidcRouter = Router();
 
-oidcRouter.get('/login', passport.authenticate('openidconnect'));
+oidcRouter.get('/login', passport.authenticate('login.lescommuns.org'));
 
 oidcRouter.get('/success', (_req, res) =>
   res
@@ -27,7 +27,7 @@ oidcRouter.get(
     next();
   },
 
-  passport.authenticate('openidconnect', {
+  passport.authenticate('login.lescommuns.org', {
     successRedirect: '/oidc/success',
     failureRedirect: '/oidc/failure',
     failureMessage: true
