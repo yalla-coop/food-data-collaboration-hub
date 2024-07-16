@@ -1,28 +1,17 @@
-import { query } from '../../database/connect.js';
+import { getMostRecentActiveSalesSession } from '../../database/sales-sessions/salesSession.js';
 import { throwError } from '../../utils/index.js';
-
-const selectActiveSalesSessionQuery = `
-SELECT
-  *
-FROM sales_sessions
-WHERE is_active = true
-`;
 
 export const getActiveSalesSessionDetails = async (sqlClient) => {
   try {
-    const activeSalesSessionResult = await query(
-      selectActiveSalesSessionQuery,
-      [],
-      sqlClient
-    );
-
-    if (activeSalesSessionResult.rows.length === 0) {
+    const activeSalesSession = await getMostRecentActiveSalesSession(sqlClient);
+    
+    if (!activeSalesSession) {
       throwError('getActiveSalesSessionDetails: No active sales session found');
     }
 
-    const activeSalesSessionOrderId = activeSalesSessionResult.rows[0].orderId;
+    const activeSalesSessionOrderId = activeSalesSession.orderId;
 
-    const activeSalesSessionId = activeSalesSessionResult.rows[0].id;
+    const activeSalesSessionId = activeSalesSession.id;
 
     return { activeSalesSessionOrderId, activeSalesSessionId };
   } catch (err) {
