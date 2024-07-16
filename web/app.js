@@ -125,20 +125,15 @@ async function createApp() {
       // sessionKey: process.env.OIDC_SESSION_KEY,
     },
       function authCallback(
-        req,
-        issure,
-        profile,
-        context,
-        idToken,
-        accessToken,
-        refreshToken,
-        done
+        tokenset, userinfo, done
       ) {
         // profile.accessToken = accessToken;
         // profile.refreshToken = refreshToken;
         // profile.idToken = idToken;
-        console.log('profile :>> ', profile);
-        // return done(null, profile);
+        console.log('tokenSet', tokenSet);
+        console.log('userinfo', userinfo);
+        console.log('done', done);
+        return done(null, userinfo);
       }
     )
   );
