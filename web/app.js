@@ -107,7 +107,7 @@ async function createApp() {
     })
   );
 
-  const issuer = await Issuer.discover(process.env.OIDC_DISCOVERY_URL);
+  const issuer = await Issuer.discover(process.env.OIDC_ISSUER);
 
   const client = new issuer.Client({
     client_id: process.env.OIDC_CLIENT_ID,
