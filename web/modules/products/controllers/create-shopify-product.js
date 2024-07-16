@@ -9,12 +9,159 @@ const convertShopifyGraphQLIdToNumber = (id) => {
   return parseInt(id.split('/').pop(), 10);
 };
 
+const createProductMutation = `
+      mutation CreateProduct($input: ProductInput!) {
+        productCreate(input: $input) {
+          product {
+            id
+            variants(first: 10) {
+              edges {
+                node {
+                  id
+                  inventoryItem {
+                    id
+                  }
+                }
+              }
+            }
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+const updateInventoryItemMutation = `
+    mutation UpdateInventoryItem($input: InventoryItemUpdateInput!) {
+      inventoryItemUpdate(input: $input) {
+        inventoryItem {
+          id
+          tracked
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `;
+
+const createShopifyProductAndInventoryItem = async (
+  gqlClient,
+  variantsMappingData,
+  producerProductData
+) => {
+  const { parentProduct, retailProduct, wholesaleProduct } =
+    variantsMappingData;
+
+  const exitingImageAlt = parentProduct.images[0]?.alt;
+  const newImageId = exitingImageAlt
+    ? parentProduct.images.find((i) => i.alt === exitingImageAlt)?.id
+    : null;
+
+  const productInput = {
+    title: producerProductData.title,
+    bodyHtml: parentProduct.body_html,
+    images: parentProduct.images.map((img) => ({
+      src: img.src,
+      altText: img.alt
+    })),
+    metafields: [
+      {
+        key: 'producer_product_id',
+        namespace: 'global',
+        value: producerProductData.id,
+        type: 'single_line_text_field'
+      }
+    ],
+    variants: [
+      {
+        option1: retailProduct.title,
+        title: retailProduct.title,
+        price: variantsMappingData.price,
+        inventoryPolicy: wholesaleProduct.inventory_policy,
+        fulfillmentService: wholesaleProduct.fulfillment_service,
+        inventoryManagement: wholesaleProduct.inventory_management,
+        inventoryQuantity:
+          Number(variantsMappingData.noOfItemPerCase) *
+          Number(wholesaleProduct.inventory_quantity),
+        oldInventoryQuantity: wholesaleProduct.old_inventory_quantity,
+        metafields: [
+          {
+            key: 'producer_variant_id',
+            namespace: 'global',
+            value: retailProduct.id,
+            type: 'single_line_text_field'
+          }
+        ],
+        image: newImageId ? { id: newImageId } : undefined
+      }
+    ]
+  };
+
+  const productCreateResponse = await gqlClient.query({
+    data: {
+      query: createProductMutation,
+      variables: { input: productInput }
+    }
+  });
+
+  const { data, errors } = productCreateResponse || {};
+
+  if (errors) {
+    throw new Error(errors[0].message);
+  }
+  const { productCreate: { product, userErrors } = {} } = data || {};
+
+  if (userErrors.length > 0) {
+    throw new Error(userErrors[0].message);
+  }
+
+  const hubInventoryItemId = convertShopifyGraphQLIdToNumber(
+    product.variants.edges[0].node.inventoryItem.id
+  );
+
+  const inventoryItemInput = {
+    id: `gid://shopify/InventoryItem/${hubInventoryItemId}`,
+    tracked: true
+  };
+
+  const inventoryItemUpdateResponse = await gqlClient.query({
+    data: {
+      query: updateInventoryItemMutation,
+      variables: { input: inventoryItemInput }
+    }
+  });
+
+  const { data: inventoryItemData, errors: inventoryItemErrors } =
+    inventoryItemUpdateResponse || {};
+
+  if (inventoryItemErrors) {
+    throw new Error(inventoryItemErrors[0].message);
+  }
+
+  const {
+    inventoryItemUpdate: {
+      inventoryItem,
+      userErrors: inventoryItemUserErrors
+    } = {}
+  } = inventoryItemData || {};
+
+  if (inventoryItemUserErrors.length > 0) {
+    throw new Error(inventoryItemUserErrors[0].message);
+  }
+
+  return { newProduct: product, newInventoryItem: inventoryItem };
+};
+
 const createShopifyProduct = async (req, res) => {
   try {
     const { session } = res.locals.shopify;
+    const gqlClient = new shopify.api.clients.Graphql({ session });
 
-    const { title, producerProductId, variantsMappingData } =
-      req.body;
+    const { title, producerProductId, variantsMappingData } = req.body;
 
     const productExists = await query(
       `
@@ -27,76 +174,17 @@ const createShopifyProduct = async (req, res) => {
       throw new Error('Product already exists');
     }
 
-    const tempHubProduct = new shopify.api.rest.Product({
-      session
-    });
+    const { newProduct } = await createShopifyProductAndInventoryItem(
+      gqlClient,
+      variantsMappingData,
+      { title, producerProductId }
+    );
 
-    const parentProduct = variantsMappingData.parentProduct;
-    const retailProduct = variantsMappingData.retailProduct;
-    const wholesaleProduct = variantsMappingData.wholesaleProduct;
+    const hubVariantId = convertShopifyGraphQLIdToNumber(
+      newProduct.variants.edges[0].node.id
+    );
 
-    tempHubProduct.title = title;
-    tempHubProduct.body_html = parentProduct.body_html;
-    tempHubProduct.images = parentProduct.images;
-
-    tempHubProduct.metafields = [
-      {
-        key: 'producer_product_id',
-        namespace: 'global',
-        value: producerProductId,
-        type: 'single_line_text_field'
-      }
-    ];
-
-    tempHubProduct.variants = [{
-      inventory_item: retailProduct.inventory_item,
-      metafields: [
-        {
-          key: 'producer_variant_id',
-          namespace: 'global',
-          value: retailProduct.id,
-          type: 'single_line_text_field'
-        }
-      ],
-
-      option1: retailProduct.title,
-      title: retailProduct.title,
-      price: variantsMappingData.price,
-      inventory_policy: wholesaleProduct.inventory_policy,
-      fulfillment_service: wholesaleProduct.fulfillment_service,
-      inventory_management: wholesaleProduct.inventory_management,
-      inventory_quantity:
-        Number(variantsMappingData.noOfItemPerCase) * Number(wholesaleProduct.inventory_quantity),
-      old_inventory_quantity: wholesaleProduct.old_inventory_quantity
-    }];
-
-    await tempHubProduct.saveAndUpdate();
-
-    const hubProduct = new shopify.api.rest.Product({
-      session
-    });
-
-    hubProduct.id = tempHubProduct.id;
-
-    const exitingImageAlt = parentProduct.images[0]?.alt;
-
-    const newImageId = exitingImageAlt
-      ? tempHubProduct.images.find((i) => i.alt === exitingImageAlt)?.id
-      : null;
-
-    hubProduct.variants = [{
-      ...tempHubProduct.variants[0],
-      image_id: newImageId
-    }];
-
-    await hubProduct.saveAndUpdate();
-
-    const inventoryItem = new shopify.api.rest.InventoryItem({
-      session
-    });
-    inventoryItem.id = hubProduct.variants[0].inventory_item_id;
-    inventoryItem.tracked = true;
-    await inventoryItem.saveAndUpdate();
+    const { retailProduct, wholesaleProduct } = variantsMappingData;
 
     const client = await getClient();
 
@@ -107,7 +195,10 @@ const createShopifyProduct = async (req, res) => {
         `
       INSERT INTO products (producer_product_id,hub_product_id) VALUES ($1,$2) returning id;
       `,
-        [convertShopifyGraphQLIdToNumber(producerProductId), hubProduct.id],
+        [
+          convertShopifyGraphQLIdToNumber(producerProductId),
+          convertShopifyGraphQLIdToNumber(newProduct.id)
+        ],
         client
       );
 
@@ -128,9 +219,7 @@ const createShopifyProduct = async (req, res) => {
             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9);`,
         [
           convertShopifyGraphQLIdToNumber(retailProduct.id),
-          convertShopifyGraphQLIdToNumber(
-            hubProduct.variants[0].id
-          ),
+          hubVariantId,
           productId,
           Number(variantsMappingData.price),
           Number(variantsMappingData.addedValue),
