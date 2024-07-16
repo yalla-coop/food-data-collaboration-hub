@@ -126,9 +126,6 @@ async function createApp() {
       function authCallback(
         tokenset, userinfo, done
       ) {
-        // profile.accessToken = accessToken;
-        // profile.refreshToken = refreshToken;
-        // profile.idToken = idToken;
         console.log('tokenSet', tokenset);
         console.log('userinfo', userinfo);
         console.log('done', done);
@@ -142,10 +139,10 @@ async function createApp() {
 
   passport.serializeUser(function serializeUserFunction(user, cb) {
     return cb(null, {
-      id: user.id,
-      username: user.username,
-      name: user.displayName,
-      email: user.emails[0].value,
+      id: user.sub,
+      username: user.preferred_username,
+      name: user.name,
+      email: user.email,
       accessToken: user.accessToken,
       refreshToken: user.refreshToken,
       idToken: user.idToken
