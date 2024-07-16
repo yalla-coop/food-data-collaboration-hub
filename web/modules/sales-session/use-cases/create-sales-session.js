@@ -7,6 +7,7 @@ dotenv.config();
 
 const createSalesSessionUseCase = async (
   { startDate: startDateValue, sessionDurationInDays, creatorRefreshToken },
+  accessToken,
   client
 ) => {
   const startDate = moment(startDateValue);
@@ -16,6 +17,7 @@ const createSalesSessionUseCase = async (
   await createSalesSession({startDate, endDate, sessionDurationInDays, creatorRefreshToken, active: true}, client);
 
   await updateExistingProductsUseCase({
+    accessToken,
     shouldUpdateThePrice: true
   });
 };

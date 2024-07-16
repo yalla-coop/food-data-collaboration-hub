@@ -51,6 +51,7 @@ const createSalesSession = async (req, res, next) => {
         creatorRefreshToken: user.refreshToken,
         session
       },
+      user.accessToken,
       client
     );
 

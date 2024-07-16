@@ -6,6 +6,7 @@ import { getMostRecentActiveSalesSession } from '../../database/sales-sessions/s
 import createSalesSessionUseCase from '../sales-session/use-cases/create-sales-session.js';
 import completeOrderAtProducerStoreUseCase from '../orders/use-cases/complete-order-at-producer-store.js';
 import shopify from '../../shopify.js';
+import { getNewAccessToken } from './getNewAccessToken.js';
 
 dotenv.config();
 
@@ -47,6 +48,8 @@ const createSalesSessionCronJob = async () => {
             });
           }
 
+          const accessToken = await getNewAccessToken(latestSession);
+
           await client.query('BEGIN');
 
           await createSalesSessionUseCase(
@@ -56,6 +59,7 @@ const createSalesSessionCronJob = async () => {
               creatorRefreshToken: latestSession.creatorRefreshToken,
               session,
             },
+            accessToken,
             client
           );
           await client.query('COMMIT');
