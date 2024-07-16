@@ -120,7 +120,6 @@ async function createApp() {
   passport.use(
     new Strategy({
       client: client,
-      passReqToCallback: true,
       usePKCE: true,
       // sessionKey: process.env.OIDC_SESSION_KEY,
     },
