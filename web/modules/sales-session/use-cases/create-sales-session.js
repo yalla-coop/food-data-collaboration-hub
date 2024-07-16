@@ -3,7 +3,6 @@ import moment from 'moment';
 import dotenv from 'dotenv';
 import { query } from '../../../database/connect.js';
 import updateExistingProductsUseCase from './updateExistingProducts.js';
-import * as Sentry from '@sentry/node';
 dotenv.config();
 
 const createSalesSessionUseCase = async (
@@ -33,13 +32,9 @@ const createSalesSessionUseCase = async (
     client
   );
 
-  try {
-    await updateExistingProductsUseCase({
-      shouldUpdateThePrice: true
-    });
-  } catch (error) {
-    Sentry.captureException(error, 'Unable to refresh products on sales session creation');
-  }
+  await updateExistingProductsUseCase({
+    shouldUpdateThePrice: true
+  });
 };
 
 export default createSalesSessionUseCase;
