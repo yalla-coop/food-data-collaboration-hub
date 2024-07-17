@@ -9,7 +9,7 @@ dotenv.config();
 const PRODUCER_SHOP_URL = process.env.PRODUCER_SHOP_URL;
 const PRODUCER_SHOP = process.env.PRODUCER_SHOP;
 
-const getProducerProducts = async () => {
+const getProducerProducts = async (accessToken) => {
   const sql = `
   SELECT p.* ,
   ARRAY_AGG(
@@ -46,19 +46,22 @@ const getProducerProducts = async () => {
       .map((p) => p.producerProductId)
       .join(',');
 
-    const { data } = await axios.post(
-      `${PRODUCER_SHOP_URL}fdc/products/all?shop=${PRODUCER_SHOP}`,
+      //todo we used to send ids to filter the products that were returned. We will have to either do something similar or call multiple times for the pages
+
+    const {data} = await axios.get(
+      `${PRODUCER_SHOP_URL}api/dfc/Enterprises/${PRODUCER_SHOP}/SuppliedProducts`,
       {
-        ids: producerProductsIds
-      },
-      {
+        transformResponse: (res) => {
+          return res;
+        },
         headers: {
-          Authorization: `Bearer ${process.env.PRODUCER_API_KEY}`
+          Accept: 'application/json',
+          Authorization: 'Bearer ' + accessToken
         }
       }
     );
 
-    const producerProducts = await generateShopifyFDCProducts(data.products);
+    const producerProducts = await generateShopifyFDCProducts(data);
 
     return hubStoreProducts.map((productFromHubDb) => {
       const productDataFromProducer = producerProducts.find(

@@ -1,4 +1,5 @@
 import { getClient, query } from '../../../database/connect.js';
+import { getMostRecentActiveSalesSession } from '../../../database/sales-sessions/salesSession.js';
 import completeOrderAtProducerStoreUseCase from '../../orders/use-cases/complete-order-at-producer-store.js';
 
 const completeCurrentSalesSession = async (req, res, next) => {
@@ -6,18 +7,9 @@ const completeCurrentSalesSession = async (req, res, next) => {
     const sqlClient = await getClient();
     const {user} = req;
     try {
-      const selectCurrentSalesSessionSql = `
-        SELECT * FROM sales_sessions
-        WHERE is_active = true
-        `;
-      const selectCurrentSalesSessionResult = await query(
-        selectCurrentSalesSessionSql,
-        [],
-        sqlClient
-      );
 
-      const currentSalesSession = selectCurrentSalesSessionResult.rows[0];
-
+      const currentSalesSession = await getMostRecentActiveSalesSession(sqlClient)
+   
       const currentSalesSessionOrderId = currentSalesSession.orderId;
 
       const { order } = await completeOrderAtProducerStoreUseCase({
