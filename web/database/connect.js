@@ -42,7 +42,7 @@ const pool = __pool;
 // check out a client from the pool to run several queries in a row in a transaction
 // You must call the releaseCallback or client.release
 // (which points to the releaseCallback) when you are finished with a client.
-const getClient = async () => {
+const getClient = async (label) => {
   const client = await pool.connect();
   const { query, release } = client;
 
@@ -70,11 +70,11 @@ const getClient = async () => {
 
   // set a timeout of 5 seconds, after which we will log this client's last query
   const timeout = setTimeout(() => {
-    console.log('A client has been checked out for more than 5 seconds!');
+    console.log('A client has been checked out for more than 5 seconds!', label);
     console.log(
       `The last executed query on this client was: ${client.lastQuery}`
     );
-  }, 9000);
+  }, 20000);
 
   const done = (err2) => {
     // call the actual 'done' method, returning this client to the pool

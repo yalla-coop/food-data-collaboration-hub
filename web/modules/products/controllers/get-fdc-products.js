@@ -12,30 +12,25 @@ const { PRODUCER_SHOP_URL, PRODUCER_SHOP } = process.env;
 const getFDCProducts = async (req, res, next) => {
   const { sinceId, remainingProductsCountBeforeNextFetch } = req.query;
 
-  const {
-    user: { accessToken, id: userId }
-  } = req;
-
   try {
-    const { data } = await axios.post(
-      `${PRODUCER_SHOP_URL}fdc/products?shop=${PRODUCER_SHOP}&sinceId=${sinceId}&remainingProductsCountBeforeNextFetch=${remainingProductsCountBeforeNextFetch}`,
+
+
+    const {data} = await axios.get(
+      `${PRODUCER_SHOP_URL}api/dfc/Enterprises/${PRODUCER_SHOP}/SuppliedProducts`,
       {
-        userId,
-        accessToken
-      },
-      {
+        transformResponse: (res) => {
+          return res;
+        },
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + req.user.accessToken
         }
       }
     );
 
-    const products = await generateShopifyFDCProducts(data.products);
+    const products = await generateShopifyFDCProducts(data);
 
-    return res.json({
-      ...data,
-      products
-    });
+    return res.json(products);
   } catch (err) {
     console.error('get-fdc-products error: ', err);
     return next(err);

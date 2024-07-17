@@ -1,23 +1,27 @@
 import * as Sentry from '@sentry/node';
 import updateExistingProductsUseCase from '../sales-session/use-cases/updateExistingProducts.js';
-import { query } from '../../database/connect.js';
+import { getClient} from '../../database/connect.js';
+import { getMostRecentActiveSalesSession } from '../../database/sales-sessions/salesSession.js';
+import { getNewAccessToken } from './getNewAccessToken.js'
 
 const updateExistingProductsCronJob = async () => {
+  let client = null;
   try {
-    const selectActiveSalesSessionSql = `
-    SELECT * FROM sales_sessions WHERE is_active = true LIMIT 1
-    `;
-    const { rows: activeSalesSessions } = await query(
-      selectActiveSalesSessionSql
-    );
-    if (activeSalesSessions.length === 0) {
+    client = await getClient();
+
+    const activeSalesSession = await getMostRecentActiveSalesSession(client)
+    if (!activeSalesSession) {
       return;
     }
 
-    await updateExistingProductsUseCase({});
+    const accessToken = await getNewAccessToken(activeSalesSession);
+
+    await updateExistingProductsUseCase({accessToken});
   } catch (err) {
     console.log('Error in updateExistingProductsCronJob', err);
     Sentry.captureException(err);
+  } finally {
+    client.release();
   }
 };
 

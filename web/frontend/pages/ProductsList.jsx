@@ -80,10 +80,10 @@ export default function ProductsList() {
     getProductDataError?.stack?.includes('403');
 
   useLayoutEffect(() => {
-    if (producerProductsData?.products) {
+    if (producerProductsData) {
       setProducerProducts((prev) => [
         ...prev,
-        ...producerProductsData?.products
+        ...producerProductsData
       ]);
     }
   }, [producerProductsData]);

@@ -48,9 +48,10 @@ const createSalesSession = async (req, res, next) => {
       {
         startDate,
         sessionDurationInDays,
-        user,
+        creatorRefreshToken: user.refreshToken,
         session
       },
+      user.accessToken,
       client
     );
 

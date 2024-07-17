@@ -58,6 +58,7 @@ const archiveProduct = async ({
 };
 
 const updateExistingProductsUseCase = async ({
+  accessToken,
   shouldUpdateThePrice = false
 }) => {
   try {
@@ -71,7 +72,7 @@ const updateExistingProductsUseCase = async ({
       );
     }
 
-    const productsWithVariants = await getProducerProducts();
+    const productsWithVariants = await getProducerProducts(accessToken);
 
     if (productsWithVariants.length === 0) {
       return;

@@ -1,10 +1,13 @@
 import {
-  getTargetStringFromSemanticId,
   throwError
 } from '../utils/index.js';
 
 import { loadConnectorWithResources, PlannedTransformation } from './index.js';
 import { loadProductTypes, loadQuantityUnits } from './mappings.js';
+
+function extractId(dfcSemanticId) {
+  return dfcSemanticId.substring(dfcSemanticId.lastIndexOf('/') + 1);
+}
 
 async function getSingleSuppliedProduct(suppliedProduct) {
   try {
@@ -14,7 +17,7 @@ async function getSingleSuppliedProduct(suppliedProduct) {
     const images = suppliedProduct.getImages();
 
     const suppliedProductDetails = {
-      id: getTargetStringFromSemanticId(semanticId, 'product'),
+      id: extractId(semanticId),
       title: suppliedProduct.getName(),
       body_html: suppliedProduct.getDescription(),
       product_type: productTypesObj[productType],
@@ -68,7 +71,7 @@ async function getSingleVariantSuppliedProduct(suppliedProduct) {
     const isContinueSelling = stockLimitation === -1;
 
     const variantSuppliedProduct = {
-      id: getTargetStringFromSemanticId(semanticId, 'product'),
+      id: extractId(semanticId),
       title: productName,
       price: priceValue,
       weight: quantityValue,

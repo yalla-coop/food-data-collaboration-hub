@@ -2,7 +2,10 @@ import { createSalesSessionCronJob } from './createSalesSessionCronJob';
 import UseCases from '../sales-session/use-cases/index.js';
 import { query } from '../../database/connect.js';
 
-describe('CreateSalesSession Cron job', () => {
+  //todo Rethink this test. It's very flawed, unless there's secret mocking going on I'm not sure how its supposed to work as its making real calls to a producer.
+
+
+describe.skip('CreateSalesSession Cron job', () => {
   test('cron job', async () => {
     await query('DELETE FROM sales_sessions');
 
