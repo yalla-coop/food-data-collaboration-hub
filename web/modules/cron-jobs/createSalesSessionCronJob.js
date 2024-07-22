@@ -4,10 +4,9 @@ import dotenv from 'dotenv';
 import { getClient } from '../../database/connect.js';
 import { getMostRecentActiveSalesSession } from '../../database/sales-sessions/salesSession.js';
 import createSalesSessionUseCase from '../sales-session/use-cases/create-sales-session.js';
-import completeOrderAtProducerStoreUseCase from '../orders/use-cases/complete-order-at-producer-store.js';
 import shopify from '../../shopify.js';
 import { getNewAccessToken } from './getNewAccessToken.js';
-
+import { completeOrder } from '../../modules/producer-orders/order.js';
 dotenv.config();
 
 const { HUB_SHOP_NAME } = process.env;
@@ -40,15 +39,13 @@ const createSalesSessionCronJob = async () => {
         const newStartDate = moment(latestSessionEndDate).clone();
 
         try {
+          const accessToken = await getNewAccessToken(latestSession);
+
           const latestSessionOrder = latestSession.orderId;
 
           if (latestSessionOrder) {
-            await completeOrderAtProducerStoreUseCase({
-              producerOrderId: latestSessionOrder,
-            });
+            await completeOrder(latestSession, accessToken);
           }
-
-          const accessToken = await getNewAccessToken(latestSession);
 
           await client.query('BEGIN');
 
