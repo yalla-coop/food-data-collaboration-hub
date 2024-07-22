@@ -8,6 +8,9 @@ export async function recordOrderLines(salesSessionId, orderLines, client) {
   (SELECT *
     FROM json_to_recordset($1)
     AS x("salesSessionId" bigint, "producerOrderLineId" bigint, "producerProductId" bigint, "quantity" INTEGER))
+    on CONFLICT(sales_session_id, producer_order_line_id)
+            DO UPDATE SET
+            quantity = EXCLUDED.quantity 
     RETURNING id`;
 
     const result = await query(

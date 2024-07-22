@@ -1,7 +1,7 @@
 import { Offer, Order, OrderLine, SaleSession } from '@datafoodconsortium/connector';
 import {loadConnectorWithResources} from '../../connector/index.js';
 
-export async function createOrderGraph(salesSession, orderLines) {
+export async function createNewOrderGraph(salesSession, orderLines) {
 
     const connector = await loadConnectorWithResources();
 
@@ -12,8 +12,7 @@ export async function createOrderGraph(salesSession, orderLines) {
             quantity: line.numberOfPackages,
             offer: new Offer({ connector, semanticId: `${PRODUCER_SHOP_URL}api/dfc/Enterprises/${PRODUCER_SHOP}/SuppliedProducts/${line.mappedProducerVariantId}` })
         })
-
-    }))
+    }));
 
     const order = new Order({
         connector,
@@ -31,6 +30,31 @@ export async function createOrderGraph(salesSession, orderLines) {
 
     return await connector.export([order, ...lines, salesSessionInfo]);
 }
+
+export async function createUpdatedOrderGraph(orderId, orderLines) {
+
+    const connector = await loadConnectorWithResources();
+
+    const lines = (orderLines.map(line => {
+        orderLine1Request = new OrderLine({
+            connector,
+            semanticId: `${PRODUCER_SHOP_URL}api/dfc/Enterprises/${PRODUCER_SHOP}/Orders/#/orderlines/${line.id ? line.id : '#'}`,
+            quantity: line.numberOfPackages,
+            offer: new Offer({ connector, semanticId: `${PRODUCER_SHOP_URL}api/dfc/Enterprises/${PRODUCER_SHOP}/SuppliedProducts/${line.mappedProducerVariantId}` })
+        })
+    }));
+
+    const order = new Order({
+        connector,
+        semanticId: `${PRODUCER_SHOP_URL}api/dfc/Enterprises/${PRODUCER_SHOP}/Orders/${orderId}`,
+        lines: lines,
+        orderStatus: connector.VOCABULARY.STATES.ORDERSTATE.HELD
+    });
+
+    return await connector.export([order, ...lines]);
+}
+
+
 
 export async function extractOrder(orderGraph){
     const connector = await loadConnectorWithResources();

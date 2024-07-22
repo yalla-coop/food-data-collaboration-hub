@@ -1,14 +1,14 @@
 
 import { handleNewOrder } from './newOrder'
-import {loadConnectorWithResources} from '../../connector/index.js';
+import { loadConnectorWithResources } from '../../connector/index.js';
 import { Offer, Order, OrderLine, SuppliedProduct } from '@datafoodconsortium/connector';
 import { getClient } from '../../database/connect.js';
 jest.mock('../../modules/authentication/getNewAccessToken');
 import { getNewAccessToken } from '../../modules/authentication/getNewAccessToken'
 jest.mock('./dfc-order')
-import { createOrderGraph, extractOrder } from './dfc-order'
+import { createNewOrderGraph, createUpdatedOrderGraph, extractOrder } from './dfc-order'
 jest.mock('../../database/producer-order-lines/producerOrderLines')
-import { recordOrderLines } from '../../database/producer-order-lines/producerOrderLines'
+import { recordOrderLines, retrieveOrderLines } from '../../database/producer-order-lines/producerOrderLines'
 jest.mock('../../database/sales-sessions/salesSession')
 import { addProducerOrder } from '../../database/sales-sessions/salesSession'
 import axios from 'axios';
@@ -26,17 +26,17 @@ describe('New Order', () => {
         sqlClient.release();
     })
 
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
     it('When first order of a sales session, creates new order at producer', async () => {
-
-        const startDate = new Date('2024-03-14T01:00:00+01:00');
-        const endDate = new Date('2024-03-20T01:00:00+01:00');
-
         const salesSession = {
             id: '1234',
             orderId: null,
             creatorRefreshToken: 'refresh',
-            startDate,
-            endDate
+            startDate: new Date('2024-03-14T01:00:00+01:00'),
+            endDate: new Date('2024-03-20T01:00:00+01:00')
         }
 
         const lineItems = [
@@ -46,12 +46,17 @@ describe('New Order', () => {
 
         getNewAccessToken.mockResolvedValue('newAccessToken');
 
-        createOrderGraph.mockResolvedValue('complicated DFC order graph');
-        extractOrder.mockResolvedValue(await dfcOrder());
+        createNewOrderGraph.mockResolvedValue('complicated DFC order graph');
+        extractOrder.mockResolvedValue(await dfcOrder([
+            { orderId: '666', lineId: '1', productId: '12345', quantity: 4 },
+            { orderId: '666', lineId: '2', productId: '6789', quantity: 10 }
+        ]));
 
         axios.post.mockResolvedValue({ data: [] });
 
-        await handleNewOrder(salesSession, lineItems)
+        await handleNewOrder(salesSession, lineItems);
+
+        expect(createNewOrderGraph).toHaveBeenCalledWith(salesSession, lineItems);
 
         expect(axios.post).toHaveBeenCalledWith(
             'http://madeupproducer.com/api/dfc/Enterprises/made-up-shop/Orders',
@@ -69,21 +74,61 @@ describe('New Order', () => {
             { quantity: 4, producerOrderLineId: '1', producerProductId: '12345' },
             { quantity: 10, producerOrderLineId: '2', producerProductId: '6789' }]));
 
-        expect(addProducerOrder).toHaveBeenCalledWith('1234', '1001');
+        expect(addProducerOrder).toHaveBeenCalledWith('1234', '666');
     });
 
-    async function dfcOrder() {
+    it('When a subsequent order of a sales session, merges existing items with new items and sends new updated order to producer', async () => {
+        const salesSession = {
+            id: '1234',
+            orderId: '666',
+            creatorRefreshToken: 'refresh',
+            startDate: new Date('2024-03-14T01:00:00+01:00'),
+            endDate: new Date('2024-03-20T01:00:00+01:00')
+        }
+
+        const newlineItems = [
+            { numberOfPackages: 4, mappedProducerVariantId: '12345' },
+            { numberOfPackages: 12, mappedProducerVariantId: '999' },
+        ];
+
+        getNewAccessToken.mockResolvedValue('newAccessToken');
+        retrieveOrderLines.mockResolvedValue([
+            { quantity: 4, producerOrderLineId: '1', producerProductId: '12345' },
+            { quantity: 10, producerOrderLineId: '2', producerProductId: '6789' }])
+
+        createUpdatedOrderGraph.mockResolvedValue('complicated DFC order graph');
+        extractOrder.mockResolvedValue(await dfcOrder([
+            { orderId: '666', lineId: '1', productId: '12345', quantity: 8 },
+            { orderId: '666', lineId: '2', productId: '6789', quantity: 10 },
+            { orderId: '666', lineId: '3', productId: '999', quantity: 12 }
+        ]));
+
+        axios.post.mockResolvedValue({ data: [] });
+
+        await handleNewOrder(salesSession, newlineItems);
+
+        expect(createUpdatedOrderGraph).toHaveBeenCalledWith('666', expect.arrayContaining([
+            { id: "1", numberOfPackages: 8, mappedProducerVariantId: '12345' },
+            { id: "2", numberOfPackages: 10, mappedProducerVariantId: '6789' },
+            { numberOfPackages: 12, mappedProducerVariantId: '999' },
+        ]));
+
+        expect(recordOrderLines).toHaveBeenCalledWith('1234', expect.arrayContaining([
+            { quantity: 8, producerOrderLineId: '1', producerProductId: '12345' },
+            { quantity: 10, producerOrderLineId: '2', producerProductId: '6789' },
+            { quantity: 12, producerOrderLineId: '3', producerProductId: '999' },
+        ]));
+    })
+
+    async function dfcOrder(lines) {
         const connector = await loadConnectorWithResources();
 
-        const lines = [
-            dfcLine({ orderId: '1001', lineId: '1', productId: '12345', quantity: 4 }, connector),
-            dfcLine({ orderId: '1001', lineId: '2', productId: '6789', quantity: 10 }, connector),
-        ];
+        const dfcLines = lines.map(line => dfcLine(line, connector));
 
         return new Order({
             connector,
-            semanticId: 'http://test.host/api/dfc/Enterprises/Orders/1001',
-            lines: lines,
+            semanticId: `${process.env.PRODUCER_SHOP_URL}api/dfc/Enterprises/${process.env.PRODUCER_SHOP}/Orders/666`,
+            lines: dfcLines,
             orderStatus: connector.VOCABULARY.STATES.ORDERSTATE.HELD
         });
     }
@@ -93,14 +138,15 @@ describe('New Order', () => {
             connector,
             semanticId: `${process.env.PRODUCER_SHOP_URL}api/dfc/Enterprises/${process.env.PRODUCER_SHOP}/Orders/${orderId}/orderlines/${lineId}`,
             quantity: quantity,
-            offer: new Offer({ connector, 
+            offer: new Offer({
+                connector,
                 semanticId: `${process.env.PRODUCER_SHOP_URL}api/dfc/Enterprises/${process.env.PRODUCER_SHOP}/Offers/${productId}`,
                 offeredItem: new SuppliedProduct({
                     connector,
                     semanticId: `${process.env.PRODUCER_SHOP_URL}api/dfc/Enterprises/${process.env.PRODUCER_SHOP}/SuppliedProducts/${productId}`
                 })
 
-             })
+            })
         });
 
     }

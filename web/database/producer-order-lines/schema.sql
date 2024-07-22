@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS producer_order_lines (
     "producer_product_id" BIGINT NOT NULL,
     quantity INTEGER NOT NULL,
     "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
-    "updated_at" TIMESTAMP NOT NULL DEFAULT NOW()
+    "updated_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT sales_session_id_line_id UNIQUE (sales_session_id, producer_order_line_id)
 );
 
 
