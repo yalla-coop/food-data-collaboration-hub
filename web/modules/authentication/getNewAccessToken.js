@@ -1,5 +1,5 @@
 import { Issuer } from 'openid-client'
-
+import {replaceRefreshToken} from '../../database/sales-sessions/salesSession.js'
 export async function getNewAccessToken(salesSession) {
     const issuer = await Issuer.discover(process.env.OIDC_ISSUER);
 
@@ -10,6 +10,9 @@ export async function getNewAccessToken(salesSession) {
       redirect_uris: [process.env.OIDC_CALLBACK_URL],
     });
 
-    const {access_token} = await client.refresh(salesSession.creatorRefreshToken);
+    const {access_token, refresh_token} = await client.refresh(salesSession.creatorRefreshToken);
+
+    await replaceRefreshToken(salesSession.id, refresh_token);
+
     return access_token;
 }

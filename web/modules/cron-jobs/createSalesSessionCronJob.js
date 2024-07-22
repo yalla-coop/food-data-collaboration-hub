@@ -5,7 +5,7 @@ import { getClient } from '../../database/connect.js';
 import { getMostRecentActiveSalesSession } from '../../database/sales-sessions/salesSession.js';
 import createSalesSessionUseCase from '../sales-session/use-cases/create-sales-session.js';
 import shopify from '../../shopify.js';
-import { getNewAccessToken } from './getNewAccessToken.js';
+import { getNewAccessToken } from '../../modules/authentication/getNewAccessToken.js';
 import { completeOrder } from '../../modules/producer-orders/order.js';
 dotenv.config();
 

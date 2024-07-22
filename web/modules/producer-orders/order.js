@@ -1,8 +1,8 @@
 
-import { createNewOrderGraph, createUpdatedOrderGraph, extractOrder } from "./dfc-order";
+import { createNewOrderGraph, createUpdatedOrderGraph, extractOrder } from "./dfc-order.js";
 import axios from 'axios';
-import { recordOrderLines, retrieveOrderLines } from '../../database/producer-order-lines/producerOrderLines'
-import { addProducerOrder } from '../../database/sales-sessions/salesSession'
+import { recordOrderLines, retrieveOrderLines } from '../../database/producer-order-lines/producerOrderLines.js'
+import { addProducerOrder } from '../../database/sales-sessions/salesSession.js'
 
 const { PRODUCER_SHOP_URL, PRODUCER_SHOP } = process.env;
 

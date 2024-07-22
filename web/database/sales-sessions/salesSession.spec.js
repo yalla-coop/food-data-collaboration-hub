@@ -1,4 +1,4 @@
-import { createSalesSession, deactivateAllSalesSessions, getMostRecentActiveSalesSession, addProducerOrder} from './salesSession.js'
+import { createSalesSession, deactivateAllSalesSessions, getMostRecentActiveSalesSession, addProducerOrder, replaceRefreshToken} from './salesSession.js'
 import { query } from '../connect.js';
 import { getClient } from '../connect.js';
 
@@ -98,6 +98,21 @@ describe('sales sessions', () => {
         const activeSalesSession = await getMostRecentActiveSalesSession(client);
 
         expect(activeSalesSession.orderId).toStrictEqual(orderId);
+    });
+
+    it('refresh token can be updated', async () => {
+        const {id} = await createSalesSession({
+            startDate,
+            endDate: new Date('2024-02-20T01:00:00+00:00'),
+            sessionDurationInDays: 12,
+            creatorRefreshToken: 'refreshToken',
+            active: true
+        }, client);
+
+        await replaceRefreshToken(id, 'updatedToken', client);
+        const activeSalesSession = await getMostRecentActiveSalesSession(client);
+
+        expect(activeSalesSession.creatorRefreshToken).toStrictEqual('updatedToken');
     });
 
 })

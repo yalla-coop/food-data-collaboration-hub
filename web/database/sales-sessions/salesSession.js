@@ -51,5 +51,19 @@ export async function addProducerOrder(id, orderId, client) {
   );
 
   return result.rows[0];
+}
 
+export async function replaceRefreshToken(id, creatorRefreshToken, client) {
+  const sql = `UPDATE sales_sessions set creator_refresh_token = $2 where id = $1
+               RETURNING ${returnColumns} `;
+  const result = await query(
+    sql,
+    [
+      id,
+      creatorRefreshToken
+    ],
+    client
+  );
+
+  return result.rows[0];
 }
