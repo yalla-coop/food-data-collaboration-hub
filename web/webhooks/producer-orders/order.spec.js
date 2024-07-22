@@ -1,5 +1,5 @@
 
-import { handleNewOrder } from './order'
+import { handleNewOrder, completeOrder } from './order'
 import { loadConnectorWithResources } from '../../connector/index.js';
 import { Offer, Order, OrderLine, SuppliedProduct } from '@datafoodconsortium/connector';
 import { getClient } from '../../database/connect.js';
@@ -111,7 +111,7 @@ describe('New Order', () => {
             { id: "1", numberOfPackages: 8, mappedProducerVariantId: '12345' },
             { id: "2", numberOfPackages: 10, mappedProducerVariantId: '6789' },
             { numberOfPackages: 12, mappedProducerVariantId: '999' },
-        ]));
+        ]), false);
 
         expect(axios.put).toHaveBeenCalledWith(
             'http://madeupproducer.com/api/dfc/Enterprises/made-up-shop/Orders/666',
@@ -162,11 +162,49 @@ describe('New Order', () => {
 
         expect(createUpdatedOrderGraph).toHaveBeenCalledWith('666', [
             { id: "1", numberOfPackages: 2, mappedProducerVariantId: '12345' },
-        ]);
+        ], false);
 
         expect(recordOrderLines).toHaveBeenCalledWith('1234', expect.arrayContaining([
             { quantity: 2, producerOrderLineId: '1', producerProductId: '12345' },
         ]));
+    })
+
+    it('Order can be completed', async () => {
+        const salesSession = {
+            id: '1234',
+            orderId: '666',
+            creatorRefreshToken: 'refresh',
+            startDate: new Date('2024-03-14T01:00:00+01:00'),
+            endDate: new Date('2024-03-20T01:00:00+01:00')
+        }
+
+        getNewAccessToken.mockResolvedValue('newAccessToken');
+        retrieveOrderLines.mockResolvedValue([
+            { quantity: 4, producerOrderLineId: '1', producerProductId: '12345' },
+            { quantity: 10, producerOrderLineId: '2', producerProductId: '6789' }])
+
+        createUpdatedOrderGraph.mockResolvedValue('complicated DFC order graph');
+
+        axios.put.mockResolvedValue({ data: [] });
+
+        await completeOrder(salesSession);
+
+        expect(createUpdatedOrderGraph).toHaveBeenCalledWith('666', expect.arrayContaining([
+            { id: "1", numberOfPackages: 4, mappedProducerVariantId: '12345' },
+            { id: "2", numberOfPackages: 10, mappedProducerVariantId: '6789' }
+        ]), true);
+
+        expect(axios.put).toHaveBeenCalledWith(
+            'http://madeupproducer.com/api/dfc/Enterprises/made-up-shop/Orders/666',
+            'complicated DFC order graph',
+            {
+                transformResponse: expect.anything(),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer newAccessToken'
+                }
+            }
+        );
     })
 
     async function dfcOrder(lines) {

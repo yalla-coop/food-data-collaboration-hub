@@ -31,7 +31,7 @@ export async function createNewOrderGraph(salesSession, orderLines) {
     return await connector.export([order, ...lines, salesSessionInfo]);
 }
 
-export async function createUpdatedOrderGraph(orderId, orderLines) {
+export async function createUpdatedOrderGraph(orderId, orderLines, isComplete) {
 
     const connector = await loadConnectorWithResources();
 
@@ -48,7 +48,7 @@ export async function createUpdatedOrderGraph(orderId, orderLines) {
         connector,
         semanticId: `${PRODUCER_SHOP_URL}api/dfc/Enterprises/${PRODUCER_SHOP}/Orders/${orderId}`,
         lines: lines,
-        orderStatus: connector.VOCABULARY.STATES.ORDERSTATE.HELD
+        orderStatus: isComplete ? connector.VOCABULARY.STATES.ORDERSTATE.COMPLETE : connector.VOCABULARY.STATES.ORDERSTATE.HELD
     });
 
     return await connector.export([order, ...lines]);

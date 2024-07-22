@@ -9,10 +9,28 @@ const { PRODUCER_SHOP_URL, PRODUCER_SHOP } = process.env;
 
 export async function handleNewOrder(salesSession, newItems, orderType) {
     const accessToken = await getNewAccessToken(salesSession);
-    const graph = await buildGraph(salesSession, newItems, orderType);
+    const graph = await buildGraph(salesSession, newItems, orderType, false);
 
+    const data = await sendToProducer(salesSession, graph, accessToken);
+
+    const order = await extractOrder(data);
+    const lines = await order.getLines();
+
+    await recordOrderLines(salesSession.id, await Promise.all(lines.map(extractLineInfo)));
+
+    if (!salesSession.orderId) {
+        await addProducerOrder(salesSession.id, extract(order.getSemanticId()));
+    }
+}
+
+export async function completeOrder(salesSession) {
+    const accessToken = await getNewAccessToken(salesSession);
+    const graph = await buildGraph(salesSession, [], null, true);
+    await sendToProducer(salesSession, graph, accessToken, true);
+}
+
+async function sendToProducer(salesSession, graph, accessToken) {
     const method = salesSession.orderId ? axios.put : axios.post;
-
     const { data } = await method(
         `${PRODUCER_SHOP_URL}api/dfc/Enterprises/${PRODUCER_SHOP}/Orders${salesSession.orderId ? `/${salesSession.orderId}` : ''}`,
         graph,
@@ -26,18 +44,10 @@ export async function handleNewOrder(salesSession, newItems, orderType) {
             }
         }
     );
-
-    const order = await extractOrder(data);
-    const lines = await order.getLines();
-
-    await recordOrderLines(salesSession.id, await Promise.all(lines.map(extractLineInfo)));
-
-    if (!salesSession.orderId) {
-        await addProducerOrder(salesSession.id, extract(order.getSemanticId()));
-    }
+    return data;
 }
 
-async function buildGraph(salesSession, newItems, orderType) {
+async function buildGraph(salesSession, newItems, orderType, isComplete) {
     const operation = orderType === 'cancelled' ? ((a, b) => a - b) : ((a, b) => a + b);
 
     if (!salesSession.orderId) {
@@ -56,7 +66,7 @@ async function buildGraph(salesSession, newItems, orderType) {
             }),
             ...neverSeenBeforeItems
         ].filter(({numberOfPackages}) => numberOfPackages > 0 );
-        return await createUpdatedOrderGraph(salesSession.orderId, combinedLines);
+        return await createUpdatedOrderGraph(salesSession.orderId, combinedLines, isComplete);
     }
 }
 
