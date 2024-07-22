@@ -7,9 +7,9 @@ import { addProducerOrder } from '../../database/sales-sessions/salesSession'
 
 const { PRODUCER_SHOP_URL, PRODUCER_SHOP } = process.env;
 
-export async function handleNewOrder(salesSession, newItems) {
+export async function handleNewOrder(salesSession, newItems, orderType) {
     const accessToken = await getNewAccessToken(salesSession);
-    const graph = await buildGraph(salesSession, newItems);
+    const graph = await buildGraph(salesSession, newItems, orderType);
 
     const { data } = await axios.post(
         `${PRODUCER_SHOP_URL}api/dfc/Enterprises/${PRODUCER_SHOP}/Orders`,
@@ -35,7 +35,9 @@ export async function handleNewOrder(salesSession, newItems) {
     }
 }
 
-async function buildGraph(salesSession, newItems) {
+async function buildGraph(salesSession, newItems, orderType) {
+    const operation = orderType === 'cancelled' ? ((a, b) => a - b) : ((a, b) => a + b);
+
     if (!salesSession.orderId) {
         return await createNewOrderGraph(salesSession, newItems);
     } else {
@@ -45,13 +47,13 @@ async function buildGraph(salesSession, newItems) {
             ...previouslySentLines.map(line => {
                 const additionalOrderForThisLine = newItems.find(item => item.mappedProducerVariantId === line.producerProductId);
                 return {
-                    numberOfPackages: additionalOrderForThisLine ? line.quantity + additionalOrderForThisLine.numberOfPackages : line.quantity,
+                    numberOfPackages: additionalOrderForThisLine ? operation(line.quantity, additionalOrderForThisLine.numberOfPackages) : line.quantity,
                     mappedProducerVariantId: line.producerProductId,
                     id: line.producerOrderLineId
                 }
             }),
             ...neverSeenBeforeItems
-        ];
+        ].filter(({numberOfPackages}) => numberOfPackages > 0 );
         return await createUpdatedOrderGraph(salesSession.orderId, combinedLines);
     }
 }

@@ -54,7 +54,7 @@ describe('New Order', () => {
 
         axios.post.mockResolvedValue({ data: [] });
 
-        await handleNewOrder(salesSession, lineItems);
+        await handleNewOrder(salesSession, lineItems, 'completed');
 
         expect(createNewOrderGraph).toHaveBeenCalledWith(salesSession, lineItems);
 
@@ -105,7 +105,7 @@ describe('New Order', () => {
 
         axios.post.mockResolvedValue({ data: [] });
 
-        await handleNewOrder(salesSession, newlineItems);
+        await handleNewOrder(salesSession, newlineItems, 'completed');
 
         expect(createUpdatedOrderGraph).toHaveBeenCalledWith('666', expect.arrayContaining([
             { id: "1", numberOfPackages: 8, mappedProducerVariantId: '12345' },
@@ -117,6 +117,43 @@ describe('New Order', () => {
             { quantity: 8, producerOrderLineId: '1', producerProductId: '12345' },
             { quantity: 10, producerOrderLineId: '2', producerProductId: '6789' },
             { quantity: 12, producerOrderLineId: '3', producerProductId: '999' },
+        ]));
+    });
+
+    it('When a subsequent order of a sales session is a cancel, dudcts the items from the existing items', async () => {
+        const salesSession = {
+            id: '1234',
+            orderId: '666',
+            creatorRefreshToken: 'refresh',
+            startDate: new Date('2024-03-14T01:00:00+01:00'),
+            endDate: new Date('2024-03-20T01:00:00+01:00')
+        }
+
+        const newlineItems = [
+            { numberOfPackages: 2, mappedProducerVariantId: '12345' },
+            { numberOfPackages: 10, mappedProducerVariantId: '6789' },
+        ];
+
+        getNewAccessToken.mockResolvedValue('newAccessToken');
+        retrieveOrderLines.mockResolvedValue([
+            { quantity: 4, producerOrderLineId: '1', producerProductId: '12345' },
+            { quantity: 10, producerOrderLineId: '2', producerProductId: '6789' }])
+
+        createUpdatedOrderGraph.mockResolvedValue('complicated DFC order graph');
+        extractOrder.mockResolvedValue(await dfcOrder([
+            { orderId: '666', lineId: '1', productId: '12345', quantity: 2 },
+        ]));
+
+        axios.post.mockResolvedValue({ data: [] });
+
+        await handleNewOrder(salesSession, newlineItems, 'cancelled');
+
+        expect(createUpdatedOrderGraph).toHaveBeenCalledWith('666', [
+            { id: "1", numberOfPackages: 2, mappedProducerVariantId: '12345' },
+        ]);
+
+        expect(recordOrderLines).toHaveBeenCalledWith('1234', expect.arrayContaining([
+            { quantity: 2, producerOrderLineId: '1', producerProductId: '12345' },
         ]));
     })
 

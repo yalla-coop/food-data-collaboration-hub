@@ -51,11 +51,6 @@ describe('Producer Order Lines', () => {
                 quantity: 7,
             },
             {
-                producerOrderLineId: '1002',
-                producerProductId: '9002',
-                quantity: 12,
-            },
-            {
                 producerOrderLineId: '1003',
                 producerProductId: '9003',
                 quantity: 14,
