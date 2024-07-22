@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/node';
 import updateExistingProductsUseCase from '../sales-session/use-cases/updateExistingProducts.js';
 import { getClient} from '../../database/connect.js';
 import { getMostRecentActiveSalesSession } from '../../database/sales-sessions/salesSession.js';
-import { getNewAccessToken } from './getNewAccessToken.js'
+import { getNewAccessToken } from '../authentication/getNewAccessToken.js'
 
 const updateExistingProductsCronJob = async () => {
   let client = null;
