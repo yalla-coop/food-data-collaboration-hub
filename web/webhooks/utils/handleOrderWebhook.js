@@ -5,13 +5,15 @@ import { throwError } from '../../utils/index.js';
 import { handleStockAfterOrderUpdate } from './handleStockAfterOrderUpdate.js';
 // TODO move this to utils
 import { updateCurrentVariantInventory } from '../updateCurrentVariantInventory.js';
-import { sendOrderToProducerAndUpdateSalesSessionOrderId } from './sendOrderToProducerAndUpdateSalesSessionOrderId.js';
 import { updateVariantExcessItems } from './updateVariantExcessItems.js';
-import { createHubCustomerDetails } from '../../utils/createHubCustomerDetails.js';
 import {
   addSalesSessionsOrder,
   updateSalesSessionsOrdersStatus
 } from './addUpdateSalesSessionsOrders.js';
+
+import { handleNewOrder } from '../../modules/producer-orders/order.js'
+
+import { getNewAccessToken } from '../../modules/authentication/getNewAccessToken.js';
 
 const orderStatuses = {
   PENDING: 'pending',
@@ -141,18 +143,10 @@ export const handleOrderWebhook = async ({
       };
     }
 
-    const customer = createHubCustomerDetails(shop, {});
-    // trigger the order to producer
-    const { producerRespondSuccess, newProducerOrderId } =
-      await sendOrderToProducerAndUpdateSalesSessionOrderId({
-        activeSalesSession,
-        variants: variantsToOrderFromProducer,
-        customer,
-        orderType,
-        sqlClient
-      });
-
-    if (!producerRespondSuccess || !newProducerOrderId) {
+    try {
+      const accessToken = await getNewAccessToken(activeSalesSession);
+      await handleNewOrder(activeSalesSession, variantsToOrderFromProducer, orderType, accessToken);
+    } catch (error) {
       await updateSalesSessionsOrdersStatus({
         salesSessionsOrderId,
         status: orderStatuses.PRODUCER_REJECTED,
@@ -160,11 +154,8 @@ export const handleOrderWebhook = async ({
       });
       throwError(
         'handleOrderWebhook: Error occurred while sending the order to producer'
-      );
+      )
     }
-    console.log(
-      `handleOrderWebhook: Updated sales session with order id ${newProducerOrderId} as received from producer`
-    );
 
     await updateExcessItemsAndInventory(variantsToOrderFromProducer, sqlClient);
 
