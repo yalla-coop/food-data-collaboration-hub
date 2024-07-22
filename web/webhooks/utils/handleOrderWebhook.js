@@ -60,7 +60,7 @@ export const handleOrderWebhook = async ({
   webhookId,
   orderType,
   payload,
-  activeSalesSessions,
+  activeSalesSession,
   variantsFromPayload,
   variantsFromDB
 }) => {
@@ -74,8 +74,7 @@ export const handleOrderWebhook = async ({
       `handleOrderWebhook: added webhook with id ${webhookId} to db for order number ${orderNumber}`
     );
 
-    const activeSalesSessionOrderId = activeSalesSessions?.[0].orderId;
-    const activeSalesSessionId = activeSalesSessions?.[0].id;
+    const activeSalesSessionId = activeSalesSession.id;
     const { salesSessionsOrderId } = await addSalesSessionsOrder({
       salesSessionId: activeSalesSessionId,
       webhookId,
@@ -146,9 +145,8 @@ export const handleOrderWebhook = async ({
     // trigger the order to producer
     const { producerRespondSuccess, newProducerOrderId } =
       await sendOrderToProducerAndUpdateSalesSessionOrderId({
-        activeSalesSessionOrderId,
+        activeSalesSession,
         variants: variantsToOrderFromProducer,
-        activeSalesSessionId,
         customer,
         orderType,
         sqlClient

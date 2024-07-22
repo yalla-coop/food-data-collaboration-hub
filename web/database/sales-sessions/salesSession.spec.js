@@ -76,4 +76,9 @@ describe('sales sessions', () => {
         expect(activeSalesSessions.endDate).toStrictEqual(latestSession.endDate);
     });
 
+    it('Returns undefined when no sales session', async () => {
+        const activeSalesSessions = await getMostRecentActiveSalesSession();
+        expect(activeSalesSessions).toStrictEqual(undefined);
+    });
+
 })

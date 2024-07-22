@@ -9,13 +9,14 @@ WHERE id = $2
 `;
 
 export const sendOrderToProducerAndUpdateSalesSessionOrderId = async ({
-  activeSalesSessionOrderId,
+  activeSalesSession,
   variants,
-  activeSalesSessionId,
   customer,
   orderType,
   sqlClient
 }) => {
+  const activeSalesSessionOrderId = activeSalesSession.id;
+  const activeSalesSessionId = activeSalesSession.orderId;
   let producerRespondSuccess = false;
   try {
     if (!activeSalesSessionOrderId || !variants.length) {
