@@ -3,8 +3,6 @@ import { handleNewOrder, completeOrder } from './order'
 import { loadConnectorWithResources } from '../../connector/index.js';
 import { Offer, Order, OrderLine, SuppliedProduct } from '@datafoodconsortium/connector';
 import { getClient } from '../../database/connect.js';
-jest.mock('../../modules/authentication/getNewAccessToken');
-import { getNewAccessToken } from '../../modules/authentication/getNewAccessToken'
 jest.mock('./dfc-order')
 import { createNewOrderGraph, createUpdatedOrderGraph, extractOrder } from './dfc-order'
 jest.mock('../../database/producer-order-lines/producerOrderLines')
@@ -44,8 +42,6 @@ describe('New Order', () => {
             { numberOfPackages: 10, mappedProducerVariantId: '6789' },
         ];
 
-        getNewAccessToken.mockResolvedValue('newAccessToken');
-
         createNewOrderGraph.mockResolvedValue('complicated DFC order graph');
         extractOrder.mockResolvedValue(await dfcOrder([
             { orderId: '666', lineId: '1', productId: '12345', quantity: 4 },
@@ -54,7 +50,7 @@ describe('New Order', () => {
 
         axios.post.mockResolvedValue({ data: [] });
 
-        await handleNewOrder(salesSession, lineItems, 'completed');
+        await handleNewOrder(salesSession, lineItems, 'completed', 'accessToken');
 
         expect(createNewOrderGraph).toHaveBeenCalledWith(salesSession, lineItems);
 
@@ -65,7 +61,7 @@ describe('New Order', () => {
                 transformResponse: expect.anything(),
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer newAccessToken'
+                    'Authorization': 'Bearer accessToken'
                 }
             }
         )
@@ -91,7 +87,6 @@ describe('New Order', () => {
             { numberOfPackages: 12, mappedProducerVariantId: '999' },
         ];
 
-        getNewAccessToken.mockResolvedValue('newAccessToken');
         retrieveOrderLines.mockResolvedValue([
             { quantity: 4, producerOrderLineId: '1', producerProductId: '12345' },
             { quantity: 10, producerOrderLineId: '2', producerProductId: '6789' }])
@@ -105,7 +100,7 @@ describe('New Order', () => {
 
         axios.put.mockResolvedValue({ data: [] });
 
-        await handleNewOrder(salesSession, newlineItems, 'completed');
+        await handleNewOrder(salesSession, newlineItems, 'completed', 'accessToken');
 
         expect(createUpdatedOrderGraph).toHaveBeenCalledWith('666', expect.arrayContaining([
             { id: "1", numberOfPackages: 8, mappedProducerVariantId: '12345' },
@@ -120,7 +115,7 @@ describe('New Order', () => {
                 transformResponse: expect.anything(),
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer newAccessToken'
+                    'Authorization': 'Bearer accessToken'
                 }
             }
         );
@@ -146,7 +141,6 @@ describe('New Order', () => {
             { numberOfPackages: 10, mappedProducerVariantId: '6789' },
         ];
 
-        getNewAccessToken.mockResolvedValue('newAccessToken');
         retrieveOrderLines.mockResolvedValue([
             { quantity: 4, producerOrderLineId: '1', producerProductId: '12345' },
             { quantity: 10, producerOrderLineId: '2', producerProductId: '6789' }])
@@ -158,7 +152,7 @@ describe('New Order', () => {
 
         axios.put.mockResolvedValue({ data: [] });
 
-        await handleNewOrder(salesSession, newlineItems, 'cancelled');
+        await handleNewOrder(salesSession, newlineItems, 'cancelled', 'accessToken');
 
         expect(createUpdatedOrderGraph).toHaveBeenCalledWith('666', [
             { id: "1", numberOfPackages: 2, mappedProducerVariantId: '12345' },
@@ -178,7 +172,6 @@ describe('New Order', () => {
             endDate: new Date('2024-03-20T01:00:00+01:00')
         }
 
-        getNewAccessToken.mockResolvedValue('newAccessToken');
         retrieveOrderLines.mockResolvedValue([
             { quantity: 4, producerOrderLineId: '1', producerProductId: '12345' },
             { quantity: 10, producerOrderLineId: '2', producerProductId: '6789' }])
@@ -187,7 +180,7 @@ describe('New Order', () => {
 
         axios.put.mockResolvedValue({ data: [] });
 
-        await completeOrder(salesSession);
+        await completeOrder(salesSession, 'accessToken');
 
         expect(createUpdatedOrderGraph).toHaveBeenCalledWith('666', expect.arrayContaining([
             { id: "1", numberOfPackages: 4, mappedProducerVariantId: '12345' },
@@ -201,7 +194,7 @@ describe('New Order', () => {
                 transformResponse: expect.anything(),
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer newAccessToken'
+                    'Authorization': 'Bearer accessToken'
                 }
             }
         );

@@ -1,5 +1,4 @@
 
-import { getNewAccessToken } from "../../modules/authentication/getNewAccessToken"
 import { createNewOrderGraph, createUpdatedOrderGraph, extractOrder } from "./dfc-order";
 import axios from 'axios';
 import { recordOrderLines, retrieveOrderLines } from '../../database/producer-order-lines/producerOrderLines'
@@ -7,8 +6,7 @@ import { addProducerOrder } from '../../database/sales-sessions/salesSession'
 
 const { PRODUCER_SHOP_URL, PRODUCER_SHOP } = process.env;
 
-export async function handleNewOrder(salesSession, newItems, orderType) {
-    const accessToken = await getNewAccessToken(salesSession);
+export async function handleNewOrder(salesSession, newItems, orderType, accessToken) {
     const graph = await buildGraph(salesSession, newItems, orderType, false);
 
     const data = await sendToProducer(salesSession, graph, accessToken);
@@ -23,8 +21,7 @@ export async function handleNewOrder(salesSession, newItems, orderType) {
     }
 }
 
-export async function completeOrder(salesSession) {
-    const accessToken = await getNewAccessToken(salesSession);
+export async function completeOrder(salesSession, accessToken) {
     const graph = await buildGraph(salesSession, [], null, true);
     await sendToProducer(salesSession, graph, accessToken, true);
 }
