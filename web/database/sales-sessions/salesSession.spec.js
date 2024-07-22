@@ -1,4 +1,4 @@
-import { createSalesSession, deactivateAllSalesSessions, getMostRecentActiveSalesSession} from './salesSession.js'
+import { createSalesSession, deactivateAllSalesSessions, getMostRecentActiveSalesSession, addProducerOrder} from './salesSession.js'
 import { query } from '../connect.js';
 import { getClient } from '../connect.js';
 
@@ -37,6 +37,7 @@ describe('sales sessions', () => {
             isActive: true,
             sessionDuration: 12,
             creatorRefreshToken: 'refreshToken',
+            orderId: null
         });
     });
 
@@ -46,7 +47,8 @@ describe('sales sessions', () => {
             endDate,
             sessionDurationInDays: 12,
             creatorRefreshToken: 'refreshToken',
-            active: true
+            active: true,
+            orderId: null
         }, client);
 
         const result = await deactivateAllSalesSessions(client);
@@ -71,14 +73,31 @@ describe('sales sessions', () => {
             active: true
         }, client);
 
-        const activeSalesSessions = await getMostRecentActiveSalesSession(client);
+        const activeSalesSession = await getMostRecentActiveSalesSession(client);
 
-        expect(activeSalesSessions.endDate).toStrictEqual(latestSession.endDate);
+        expect(activeSalesSession.endDate).toStrictEqual(latestSession.endDate);
     });
 
     it('Returns undefined when no sales session', async () => {
         const activeSalesSessions = await getMostRecentActiveSalesSession();
         expect(activeSalesSessions).toStrictEqual(undefined);
+    });
+
+    it('Producer order id can be recorded', async () => {
+        const {id} = await createSalesSession({
+            startDate,
+            endDate: new Date('2024-02-20T01:00:00+00:00'),
+            sessionDurationInDays: 12,
+            creatorRefreshToken: 'refreshToken',
+            active: true
+        }, client);
+
+        const orderId = '123456';
+
+        await addProducerOrder(id, orderId, client);
+        const activeSalesSession = await getMostRecentActiveSalesSession(client);
+
+        expect(activeSalesSession.orderId).toStrictEqual(orderId);
     });
 
 })
