@@ -12,6 +12,7 @@ const buildProductTable = async () => {
     );
     await readSqlFile(process.cwd() + '/web/database/webhooks/schema.sql');
     await readSqlFile(process.cwd() + '/web/database/variants/schema.sql');
+    await readSqlFile(process.cwd() + '/web/database/producer-order-lines/schema.sql');
   } catch (err) {
     throw new Error(err);
   }

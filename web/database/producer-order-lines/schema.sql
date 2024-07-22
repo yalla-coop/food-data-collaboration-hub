@@ -1,5 +1,3 @@
-alter table sales_sessions add creator_refresh_token TEXT;
-
 BEGIN;
 
 DROP TABLE IF EXISTS producer_order_lines CASCADE;
