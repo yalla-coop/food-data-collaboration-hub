@@ -1,5 +1,5 @@
 
-import { handleNewOrder } from './newOrder'
+import { handleNewOrder } from './order'
 import { loadConnectorWithResources } from '../../connector/index.js';
 import { Offer, Order, OrderLine, SuppliedProduct } from '@datafoodconsortium/connector';
 import { getClient } from '../../database/connect.js';
@@ -103,7 +103,7 @@ describe('New Order', () => {
             { orderId: '666', lineId: '3', productId: '999', quantity: 12 }
         ]));
 
-        axios.post.mockResolvedValue({ data: [] });
+        axios.put.mockResolvedValue({ data: [] });
 
         await handleNewOrder(salesSession, newlineItems, 'completed');
 
@@ -112,6 +112,18 @@ describe('New Order', () => {
             { id: "2", numberOfPackages: 10, mappedProducerVariantId: '6789' },
             { numberOfPackages: 12, mappedProducerVariantId: '999' },
         ]));
+
+        expect(axios.put).toHaveBeenCalledWith(
+            'http://madeupproducer.com/api/dfc/Enterprises/made-up-shop/Orders/666',
+            'complicated DFC order graph',
+            {
+                transformResponse: expect.anything(),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer newAccessToken'
+                }
+            }
+        );
 
         expect(recordOrderLines).toHaveBeenCalledWith('1234', expect.arrayContaining([
             { quantity: 8, producerOrderLineId: '1', producerProductId: '12345' },
@@ -144,7 +156,7 @@ describe('New Order', () => {
             { orderId: '666', lineId: '1', productId: '12345', quantity: 2 },
         ]));
 
-        axios.post.mockResolvedValue({ data: [] });
+        axios.put.mockResolvedValue({ data: [] });
 
         await handleNewOrder(salesSession, newlineItems, 'cancelled');
 

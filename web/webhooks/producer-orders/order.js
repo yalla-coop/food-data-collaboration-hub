@@ -11,8 +11,10 @@ export async function handleNewOrder(salesSession, newItems, orderType) {
     const accessToken = await getNewAccessToken(salesSession);
     const graph = await buildGraph(salesSession, newItems, orderType);
 
-    const { data } = await axios.post(
-        `${PRODUCER_SHOP_URL}api/dfc/Enterprises/${PRODUCER_SHOP}/Orders`,
+    const method = salesSession.orderId ? axios.put : axios.post;
+
+    const { data } = await method(
+        `${PRODUCER_SHOP_URL}api/dfc/Enterprises/${PRODUCER_SHOP}/Orders${salesSession.orderId ? `/${salesSession.orderId}` : ''}`,
         graph,
         {
             transformResponse: (res) => {
