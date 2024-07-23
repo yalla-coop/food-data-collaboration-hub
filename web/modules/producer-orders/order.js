@@ -50,7 +50,7 @@ async function buildGraph(salesSession, newItems, orderType, isComplete) {
     if (!salesSession.orderId) {
         return await createNewOrderGraph(salesSession, newItems);
     } else {
-        const previouslySentLines = await retrieveOrderLines(salesSession.orderId);
+        const previouslySentLines = await retrieveOrderLines(salesSession.id);
         const neverSeenBeforeItems = newItems.filter(newItem => !previouslySentLines.find(({producerProductId}) => producerProductId === newItem.mappedProducerVariantId));
         const combinedLines = [
             ...previouslySentLines.map(line => {

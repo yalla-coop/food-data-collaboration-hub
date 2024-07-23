@@ -14,6 +14,7 @@ describe('sales sessions', () => {
     })
 
     afterAll(async () => {
+        await query(`truncate table sales_sessions restart identity`, [], client)
         client.release();
     })
 

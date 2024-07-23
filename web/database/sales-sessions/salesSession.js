@@ -62,7 +62,7 @@ export async function replaceRefreshToken(id, obtainNewTokensIfNecessary) {
   try {
     await client.query('BEGIN')
 
-    const result = await client.query(`SELECT creator_refresh_token, creator_access_token, creator_access_token_expires_at from sales_sessions where id = $1`, [id])
+    const result = await client.query(`SELECT creator_refresh_token, creator_access_token, creator_access_token_expires_at from sales_sessions where id = $1 FOR UPDATE`, [id])
 
     const data = result.rows[0];
 
