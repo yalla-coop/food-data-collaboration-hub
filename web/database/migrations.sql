@@ -1,4 +1,6 @@
 alter table sales_sessions add creator_refresh_token TEXT;
+alter table sales_sessions add creator_access_token TEXT;
+alter table sales_sessions add creator_access_token_expires_at BIGINT;
 
 BEGIN;
 

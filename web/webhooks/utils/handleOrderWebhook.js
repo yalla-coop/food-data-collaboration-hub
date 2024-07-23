@@ -13,7 +13,7 @@ import {
 
 import { handleNewOrder } from '../../modules/producer-orders/order.js'
 
-import { getNewAccessToken } from '../../modules/authentication/getNewAccessToken.js';
+import { obtainValidAccessToken } from '../../modules/authentication/getNewAccessToken.js';
 
 const orderStatuses = {
   PENDING: 'pending',
@@ -144,8 +144,8 @@ export const handleOrderWebhook = async ({
     }
 
     try {
-      const accessToken = await getNewAccessToken(activeSalesSession);
-      await handleNewOrder(activeSalesSession, variantsToOrderFromProducer, orderType, accessToken);
+      const accessTokenSet = await obtainValidAccessToken(activeSalesSession);
+      await handleNewOrder(activeSalesSession, variantsToOrderFromProducer, orderType, accessTokenSet.accessToken);
     } catch (error) {
       await updateSalesSessionsOrdersStatus({
         salesSessionsOrderId,

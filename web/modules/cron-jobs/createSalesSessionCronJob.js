@@ -5,7 +5,7 @@ import { getClient } from '../../database/connect.js';
 import { getMostRecentActiveSalesSession } from '../../database/sales-sessions/salesSession.js';
 import createSalesSessionUseCase from '../sales-session/use-cases/create-sales-session.js';
 import shopify from '../../shopify.js';
-import { getNewAccessToken } from '../../modules/authentication/getNewAccessToken.js';
+import { obtainValidAccessToken } from '../../modules/authentication/getNewAccessToken.js';
 import { completeOrder } from '../../modules/producer-orders/order.js';
 dotenv.config();
 
@@ -28,7 +28,7 @@ const createSalesSessionCronJob = async () => {
     if (!session) {
       throw new Error('Shopify Session not found');
     }
-
+    
     const latestSession = await getMostRecentActiveSalesSession(client);
 
     if (latestSession) {
@@ -39,12 +39,12 @@ const createSalesSessionCronJob = async () => {
         const newStartDate = moment(latestSessionEndDate).clone();
 
         try {
-          const accessToken = await getNewAccessToken(latestSession);
+          const accessTokenSet = await obtainValidAccessToken(latestSession);
 
           const latestSessionOrder = latestSession.orderId;
 
           if (latestSessionOrder) {
-            await completeOrder(latestSession, accessToken);
+            await completeOrder(latestSession, accessTokenSet.accessToken);
           }
 
           await client.query('BEGIN');
@@ -53,10 +53,9 @@ const createSalesSessionCronJob = async () => {
             {
               startDate: newStartDate.toISOString(),
               sessionDurationInDays: latestSession.sessionDuration,
-              creatorRefreshToken: latestSession.creatorRefreshToken,
               session,
             },
-            accessToken,
+            accessTokenSet,
             client
           );
           await client.query('COMMIT');
