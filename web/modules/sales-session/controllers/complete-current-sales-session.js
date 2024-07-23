@@ -2,9 +2,12 @@ import { getMostRecentActiveSalesSession, deactivateAllSalesSessions } from '../
 import { completeOrder } from '../../producer-orders/order.js';
 const completeCurrentSalesSession = async (req, res, next) => {
   try {
-    const currentSalesSession = await getMostRecentActiveSalesSession(sqlClient)
+    const currentSalesSession = await getMostRecentActiveSalesSession();
 
-    await completeOrder(currentSalesSession, req.user.accessToken);
+    if (currentSalesSession.orderId) {
+      await completeOrder(currentSalesSession, req.user.accessToken);
+    }
+
     await deactivateAllSalesSessions();
 
     return res.status(200).json({
