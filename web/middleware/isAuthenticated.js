@@ -17,7 +17,7 @@ const isAuthenticated = async (req, res, next) => {
       });
     }
 
-    const { refreshToken } = req.user;
+    const { accessToken } = req.user;
 
     const issuer = await Issuer.discover(issuerURL);
 
@@ -26,11 +26,7 @@ const isAuthenticated = async (req, res, next) => {
       client_secret: clientSecret,
     });
 
-    const tokenSet = await client.refresh(refreshToken);
-
-    const accessTokenSet = await client.introspect(tokenSet.access_token);
-
-    req.user.accessToken = tokenSet.access_token;
+    const accessTokenSet = await client.introspect(accessToken);
 
     if (!accessTokenSet.active) {
       return res.status(403).json({
