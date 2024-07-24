@@ -28,8 +28,6 @@ export async function createNewOrderGraph(salesSession, orderLines) {
 
 export async function createUpdatedOrderGraph(orderId, orderLines, isComplete) {
 
-    console.log("Creating lines", JSON.stringify(orderLines));
-
     const connector = await loadConnectorWithResources();
 
     const lines = orderLines.flatMap(createOrderLineGraph(connector, orderId));

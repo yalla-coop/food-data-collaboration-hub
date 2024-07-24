@@ -153,7 +153,7 @@ export const handleOrderWebhook = async ({
         sqlClient
       });
       throwError(
-        'handleOrderWebhook: Error occurred while sending the order to producer'
+        'handleOrderWebhook: Error occurred while sending the order to producer', error
       )
     }
 

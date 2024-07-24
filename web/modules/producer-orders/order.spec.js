@@ -198,6 +198,22 @@ describe('New Order', () => {
                 }
             }
         );
+    });
+
+    it('Order with no line items is left as it is, for now', async () => {
+        const salesSession = {
+            id: '1234',
+            orderId: '666',
+            creatorRefreshToken: 'refresh',
+            startDate: new Date('2024-03-14T01:00:00+01:00'),
+            endDate: new Date('2024-03-20T01:00:00+01:00')
+        }
+
+        retrieveOrderLines.mockResolvedValue([])
+
+        await completeOrder(salesSession, 'accessToken');
+
+        expect(axios.put).not.toHaveBeenCalled();
     })
 
     async function dfcOrder(lines) {

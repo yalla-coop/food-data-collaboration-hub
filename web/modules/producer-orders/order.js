@@ -23,7 +23,9 @@ export async function handleNewOrder(salesSession, newItems, orderType, accessTo
 
 export async function completeOrder(salesSession, accessToken) {
     const graph = await buildGraph(salesSession, [], null, true);
-    await sendToProducer(salesSession, graph, accessToken, true);
+    if (graph) {
+        await sendToProducer(salesSession, graph, accessToken, true);
+    }
 }
 
 async function sendToProducer(salesSession, graph, accessToken) {
@@ -51,6 +53,11 @@ async function buildGraph(salesSession, newItems, orderType, isComplete) {
         return await createNewOrderGraph(salesSession, newItems);
     } else {
         const previouslySentLines = await retrieveOrderLines(salesSession.id);
+
+        if (isComplete && previouslySentLines.length == 0) {
+            return null;
+        }
+
         const neverSeenBeforeItems = newItems.filter(newItem => !previouslySentLines.find(({producerProductId}) => producerProductId === newItem.mappedProducerVariantId));
         const combinedLines = [
             ...previouslySentLines.map(line => {
