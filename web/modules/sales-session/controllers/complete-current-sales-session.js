@@ -6,7 +6,7 @@ const completeCurrentSalesSession = async (req, res, next) => {
     const currentSalesSession = await getMostRecentActiveSalesSession();
 
     if (currentSalesSession.orderId) {
-      const accessToken = await obtainValidAccessToken(req.user.id);
+      const {accessToken} = await obtainValidAccessToken(req.user.id);
       await completeOrder(currentSalesSession, accessToken);
     }
 

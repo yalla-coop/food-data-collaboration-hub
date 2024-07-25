@@ -15,7 +15,7 @@ const getFDCProducts = async (req, res, next) => {
 
   try {
 
-    const accessToken = await obtainValidAccessToken(req.user.id);
+    const {accessToken} = await obtainValidAccessToken(req.user.id);
 
     const {data} = await axios.get(
       `${PRODUCER_SHOP_URL}api/dfc/Enterprises/${PRODUCER_SHOP}/SuppliedProducts`,

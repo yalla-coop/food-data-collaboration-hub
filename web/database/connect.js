@@ -10,7 +10,7 @@ import {
 } from './utils/index.js';
 
 dotenv.config({
-  path: process.cwd() + '/web/.env'
+  path: process.cwd() + '/.env'
 });
 
 const { Pool } = pg;

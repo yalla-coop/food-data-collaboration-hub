@@ -76,7 +76,7 @@ const updateExistingProductsUseCase = async ({
     }
 
     
-    const accessToken = await obtainValidAccessToken(userId);
+    const {accessToken} = await obtainValidAccessToken(userId);
     const productsWithVariants = await getProducerProducts(accessToken);
 
     if (productsWithVariants.length === 0) {

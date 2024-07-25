@@ -33,15 +33,15 @@ export async function getUser(id, client) {
 
 export async function replaceRefreshToken(id, obtainNewTokensIfNecessary) {
 
-    const client = await getClient()
+    const client = await getClient();
 
     try {
         await client.query('BEGIN')
 
-        const result = await client.query(`SELECT refresh_token as "refreshToken", access_token as "accessToken", access_token_expires_at from users where user_id = $1 FOR UPDATE`,
+        const result = await client.query(`SELECT refresh_token as "refreshToken", access_token as "accessToken", access_token_expires_at as "accessTokenExpiresAt" from users where user_id = $1 FOR UPDATE`,
          [id])
 
-        const existingTokens = result.rows[0];
+         const existingTokens = result.rows[0];
 
         const newTokens = await obtainNewTokensIfNecessary(existingTokens);
 
