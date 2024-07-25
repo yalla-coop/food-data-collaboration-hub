@@ -8,9 +8,7 @@ CREATE TABLE IF NOT EXISTS sales_sessions (
     session_duration INTEGER NOT NULL,
     order_id TEXT,
     is_active BOOLEAN NOT NULL DEFAULT FALSE,
-    creator_refresh_token TEXT,
-    creator_access_token TEXT,
-    creator_access_token_expires_at BIGINT,
+    creator_user_id TEXT NOT NULL,
     "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
     "updated_at" TIMESTAMP NOT NULL DEFAULT NOW()
 );

@@ -48,9 +48,9 @@ const createSalesSession = async (req, res, next) => {
       {
         startDate,
         sessionDurationInDays,
-        session
+        session,
+        creatorUserId: user.id
       },
-      user,
       client
     );
 

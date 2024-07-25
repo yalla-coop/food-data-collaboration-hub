@@ -61,7 +61,7 @@ describe('New Order', () => {
                 transformResponse: expect.anything(),
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer accessToken'
+                    'Authorization': 'JWT accessToken'
                 }
             }
         )
@@ -115,7 +115,7 @@ describe('New Order', () => {
                 transformResponse: expect.anything(),
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer accessToken'
+                    'Authorization': 'JWT accessToken'
                 }
             }
         );
@@ -194,7 +194,7 @@ describe('New Order', () => {
                 transformResponse: expect.anything(),
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer accessToken'
+                    'Authorization': 'JWT accessToken'
                 }
             }
         );

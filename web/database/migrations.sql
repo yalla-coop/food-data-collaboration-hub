@@ -1,6 +1,5 @@
-alter table sales_sessions add creator_refresh_token TEXT;
-alter table sales_sessions add creator_access_token TEXT;
-alter table sales_sessions add creator_access_token_expires_at BIGINT;
+create extension if not exists pgcrypto;
+alter table sales_sessions add creator_user_id TEXT NOT NULL;
 
 BEGIN;
 
@@ -21,4 +20,17 @@ BEFORE UPDATE ON "producer_order_lines"
 FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_timestamp();
 
+COMMIT;
+
+BEGIN;
+CREATE TABLE IF NOT EXISTS users (
+    user_id TEXT PRIMARY KEY,
+    refresh_token varchar,
+    access_token varchar,
+    access_token_expires_at BIGINT,
+    "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+    "updated_at" TIMESTAMP NOT NULL DEFAULT NOW()
+);
+CREATE TRIGGER set_timestamp BEFORE
+UPDATE ON "users" FOR EACH ROW EXECUTE PROCEDURE trigger_set_timestamp();
 COMMIT;

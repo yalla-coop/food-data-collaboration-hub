@@ -6,18 +6,17 @@ import { createSalesSession, deactivateAllSalesSessions } from '../../../databas
 dotenv.config();
 
 const createSalesSessionUseCase = async (
-  { startDate: startDateValue, sessionDurationInDays},
-  {refreshToken, accessToken, accessTokenExpiresAt},
+  { startDate: startDateValue, sessionDurationInDays, creatorUserId},
   client
 ) => {
   const startDate = moment(startDateValue);
   const endDate = moment(startDate).add(sessionDurationInDays, 'days');
 
   await deactivateAllSalesSessions(client)
-  await createSalesSession({startDate, endDate, sessionDurationInDays, active: true}, {refreshToken, accessToken, accessTokenExpiresAt}, client);
+  await createSalesSession({startDate, endDate, sessionDurationInDays, active: true, creatorUserId}, client);
 
   await updateExistingProductsUseCase({
-    accessToken,
+    userId: creatorUserId,
     shouldUpdateThePrice: true
   });
 };

@@ -1,4 +1,4 @@
-import { createSalesSession, deactivateAllSalesSessions, getMostRecentActiveSalesSession, addProducerOrder, replaceRefreshToken} from './salesSession.js'
+import { createSalesSession, deactivateAllSalesSessions, getMostRecentActiveSalesSession, addProducerOrder} from './salesSession.js'
 import { query } from '../connect.js';
 import { getClient } from '../connect.js';
 
@@ -26,18 +26,14 @@ describe('sales sessions', () => {
         startDate,
         endDate,
         sessionDurationInDays: 12,
-        active: true
+        active: true,
+        creatorUserId: '1234-5678'
     };
 
-    const user = {
-        refreshToken: 'refreshToken',
-        accessToken: 'accessToken',
-        accessTokenExpiresAt: '0',
-    }
 
     it('Can be created', async () => {
         
-        const result = await createSalesSession(salesSession, user, client);
+        const result = await createSalesSession(salesSession, client);
 
         expect(result).toStrictEqual({
             id: 1,
@@ -46,14 +42,12 @@ describe('sales sessions', () => {
             isActive: true,
             sessionDuration: 12,
             orderId: null,
-            creatorRefreshToken: 'refreshToken',
-            creatorAccessToken: 'accessToken',
-            creatorAccessTokenExpiresAt: '0',
+            creatorUserId: '1234-5678'
         });
     });
 
     it('Can be deactivated', async () => {
-        await createSalesSession(salesSession, user, client);
+        await createSalesSession(salesSession, client);
 
         const result = await deactivateAllSalesSessions(client);
 
@@ -64,12 +58,12 @@ describe('sales sessions', () => {
         await createSalesSession({
             ...salesSession,
             endDate: new Date('2024-02-20T01:00:00+00:00'),
-        }, user, client);
+        }, client);
 
         const latestSession = await createSalesSession({
             ...salesSession,
             endDate: new Date('2024-02-25T01:00:00+00:00'),
-        }, user, client);
+        }, client);
 
         const activeSalesSession = await getMostRecentActiveSalesSession(client);
 
@@ -82,7 +76,7 @@ describe('sales sessions', () => {
     });
 
     it('Producer order id can be recorded', async () => {
-        const {id} = await createSalesSession(salesSession, user, client);
+        const {id} = await createSalesSession(salesSession, client);
 
         const orderId = '123456';
 
@@ -90,54 +84,6 @@ describe('sales sessions', () => {
         const activeSalesSession = await getMostRecentActiveSalesSession(client);
 
         expect(activeSalesSession.orderId).toStrictEqual(orderId);
-    });
-
-    it('Refresh token will not be replaced if not necessary', async () => {
-        const {id} = await createSalesSession(salesSession, user, client);
-
-        async function returnNothing() {
-            return Promise.resolve(null);
-        }
-
-        const tokens = await replaceRefreshToken(id, returnNothing, client);
-
-        expect(tokens).toStrictEqual({
-            accessToken: 'accessToken',
-            accessTokenExpiresAt: '0',
-            refreshToken: 'refreshToken'
-        });
-
-
-        const activeSalesSession = await getMostRecentActiveSalesSession(client);
-
-        expect(activeSalesSession.creatorAccessToken).toStrictEqual('accessToken');
-        expect(activeSalesSession.creatorAccessTokenExpiresAt).toStrictEqual('0');
-        expect(activeSalesSession.creatorRefreshToken).toStrictEqual('refreshToken');
-    });
-
-    it('Refresh token will be replaced if necessary', async () => {
-        const {id} = await createSalesSession(salesSession, user, client);
-
-        const updatedTokens = {
-            accessToken: 'updatedAccessToken',
-            accessTokenExpiresAt: '500',
-            refreshToken: 'updatedRefreshToken'
-        }
-
-        async function returnUpdatedTokens() {
-            return Promise.resolve(updatedTokens);
-        }
-
-        const tokens = await replaceRefreshToken(id, returnUpdatedTokens, client);
-
-        expect(tokens).toStrictEqual(updatedTokens);
-
-
-        const activeSalesSession = await getMostRecentActiveSalesSession(client);
-
-        expect(activeSalesSession.creatorAccessToken).toStrictEqual('updatedAccessToken');
-        expect(activeSalesSession.creatorAccessTokenExpiresAt).toStrictEqual('500');
-        expect(activeSalesSession.creatorRefreshToken).toStrictEqual('updatedRefreshToken');
     });
 
 })

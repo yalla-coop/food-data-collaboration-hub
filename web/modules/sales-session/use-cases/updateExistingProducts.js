@@ -3,6 +3,7 @@ import shopify from '../../../shopify.js';
 import getProducerProducts from './get-producer-products.js';
 import { updateCurrentVariantInventory } from '../../../webhooks/updateCurrentVariantInventory.js';
 import { throwError } from '../../../utils/index.js';
+import {obtainValidAccessToken} from '../../authentication/getNewAccessToken.js'
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ const updateSingleProduct = async ({
   session,
   storedVariants,
   producerLatestProductData,
+  accessToken,
   shouldUpdateThePrice = false
 }) => {
   const hubProduct = new shopify.api.rest.Product({
@@ -36,6 +38,7 @@ const updateSingleProduct = async ({
       producerProductData: producerLatestProductData,
       hubProductId,
       storedHubVariant: hubVariant,
+      accessToken,
       shouldUpdateThePrice
     });
     await delayFun(500);
@@ -58,7 +61,7 @@ const archiveProduct = async ({
 };
 
 const updateExistingProductsUseCase = async ({
-  accessToken,
+  userId,
   shouldUpdateThePrice = false
 }) => {
   try {
@@ -72,6 +75,8 @@ const updateExistingProductsUseCase = async ({
       );
     }
 
+    
+    const accessToken = await obtainValidAccessToken(userId);
     const productsWithVariants = await getProducerProducts(accessToken);
 
     if (productsWithVariants.length === 0) {
@@ -88,7 +93,8 @@ const updateExistingProductsUseCase = async ({
           session,
           storedVariants,
           producerLatestProductData: producerProductData,
-          shouldUpdateThePrice
+          shouldUpdateThePrice,
+          accessToken
         });
       } else {
         await archiveProduct({session, hubProductId});

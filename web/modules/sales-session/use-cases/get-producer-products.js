@@ -56,7 +56,7 @@ const getProducerProducts = async (accessToken) => {
         },
         headers: {
           Accept: 'application/json',
-          Authorization: 'Bearer ' + accessToken
+          Authorization: 'JWT ' + accessToken
         }
       }
     );

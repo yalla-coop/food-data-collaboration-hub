@@ -1,11 +1,13 @@
 import { getMostRecentActiveSalesSession, deactivateAllSalesSessions } from '../../../database/sales-sessions/salesSession.js';
 import { completeOrder } from '../../producer-orders/order.js';
+import {obtainValidAccessToken} from  '../../authentication/getNewAccessToken.js'
 const completeCurrentSalesSession = async (req, res, next) => {
   try {
     const currentSalesSession = await getMostRecentActiveSalesSession();
 
     if (currentSalesSession.orderId) {
-      await completeOrder(currentSalesSession, req.user.accessToken);
+      const accessToken = await obtainValidAccessToken(req.user.id);
+      await completeOrder(currentSalesSession, accessToken);
     }
 
     await deactivateAllSalesSessions();

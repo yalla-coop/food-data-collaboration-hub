@@ -24,7 +24,7 @@ const orderStatuses = {
     'part_internal_part_producer_confirmation'
 };
 
-const updateExcessItemsAndInventory = async (variantData, sqlClient) => {
+const updateExcessItemsAndInventory = async (variantData, sqlClient, accessToken) => {
   const updateExcessItemsPromises = variantData.map(
     async ({
       hubVariantId,
@@ -48,7 +48,8 @@ const updateExcessItemsAndInventory = async (variantData, sqlClient) => {
           numberOfExcessOrders: numberOfExcessItems
         },
         hubProductId,
-        producerProductId
+        producerProductId,
+        accessToken
       });
     }
   );
@@ -75,6 +76,8 @@ export const handleOrderWebhook = async ({
     console.log(
       `handleOrderWebhook: added webhook with id ${webhookId} to db for order number ${orderNumber}`
     );
+
+    const {accessToken} = await obtainValidAccessToken(activeSalesSession.creatorUserId);
 
     const activeSalesSessionId = activeSalesSession.id;
     const { salesSessionsOrderId } = await addSalesSessionsOrder({
@@ -120,7 +123,8 @@ export const handleOrderWebhook = async ({
     if (variantsWithSufficientExcessItems?.length > 0) {
       await updateExcessItemsAndInventory(
         variantsWithSufficientExcessItems,
-        sqlClient
+        sqlClient,
+        accessToken
       );
     }
 
@@ -144,8 +148,7 @@ export const handleOrderWebhook = async ({
     }
 
     try {
-      const accessTokenSet = await obtainValidAccessToken(activeSalesSession);
-      await handleNewOrder(activeSalesSession, variantsToOrderFromProducer, orderType, accessTokenSet.accessToken);
+      await handleNewOrder(activeSalesSession, variantsToOrderFromProducer, orderType, accessToken);
     } catch (error) {
       await updateSalesSessionsOrdersStatus({
         salesSessionsOrderId,
@@ -157,7 +160,7 @@ export const handleOrderWebhook = async ({
       )
     }
 
-    await updateExcessItemsAndInventory(variantsToOrderFromProducer, sqlClient);
+    await updateExcessItemsAndInventory(variantsToOrderFromProducer, sqlClient, accessToken);
 
     console.log(
       'handleOrderWebhook: Updated inventory for variants, all done!'

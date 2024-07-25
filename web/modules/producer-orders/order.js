@@ -39,7 +39,7 @@ async function sendToProducer(salesSession, graph, accessToken) {
             },
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + accessToken
+                'Authorization': 'JWT ' + accessToken
             }
         }
     );

@@ -39,12 +39,12 @@ const createSalesSessionCronJob = async () => {
         const newStartDate = moment(latestSessionEndDate).clone();
 
         try {
-          const accessTokenSet = await obtainValidAccessToken(latestSession);
 
           const latestSessionOrder = latestSession.orderId;
 
           if (latestSessionOrder) {
-            await completeOrder(latestSession, accessTokenSet.accessToken);
+            const {accessToken} = await obtainValidAccessToken(latestSession.creatorUserId);
+            await completeOrder(latestSession, accessToken);
           }
 
           await client.query('BEGIN');
@@ -54,8 +54,8 @@ const createSalesSessionCronJob = async () => {
               startDate: newStartDate.toISOString(),
               sessionDurationInDays: latestSession.sessionDuration,
               session,
+              creatorUserId: latestSession.creatorUserId
             },
-            accessTokenSet,
             client
           );
           await client.query('COMMIT');
