@@ -1,4 +1,5 @@
 BEGIN;
+create extension if not exists pgcrypto;
 DROP TABLE IF EXISTS users CASCADE;
 CREATE TABLE IF NOT EXISTS users (
     user_id TEXT PRIMARY KEY,

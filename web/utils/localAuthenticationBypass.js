@@ -16,7 +16,6 @@ export default async function localAuthenticationBypass(req, resp, next) {
         }
 
         if (!userSession) {
-            console.log("in here")
             userSession = {
                 ...await obtainValidAccessToken(process.env.HARD_CODED_USER_ID),
                 id: process.env.HARD_CODED_USER_ID

@@ -1,3 +1,5 @@
+create extension if not exists pgcrypto;
+
 alter table sales_sessions add creator_user_id TEXT NOT NULL;
 
 BEGIN;

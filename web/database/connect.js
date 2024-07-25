@@ -26,7 +26,7 @@ const isInsertOrUpdateRegex = new RegExp(/(UPDATE(.|\n)*SET)|(INSERT INTO)/i);
 // to the below object
 // eslint-disable-next-line no-underscore-dangle
 let __pool;
-if (env !== 'production' || connectionString.includes('localhost')) {
+if (process.env.DISABLE_DATABASE_SSL_CONNECTION) {
   __pool = new Pool({ max: 20, connectionString });
 } else {
   __pool = new Pool({
