@@ -98,7 +98,7 @@ export const updateCurrentVariantInventory = async ({
       hubVariantId,
       noOfItemsPerPackage,
       mappedVariantId,
-      numberOfExcessOrders,
+      numberOfExcessOrders
     } = storedHubVariant;
     const sessionId = shopify.api.session.getOfflineId(HUB_SHOP_NAME);
 
@@ -113,21 +113,26 @@ export const updateCurrentVariantInventory = async ({
     let wholesaleProducerProduct;
 
     if (!producerProductData) {
-      wholesaleProducerProduct = (await getLatestProducerProductData(producerProductId))?.wholesaleProduct;
+      wholesaleProducerProduct = (
+        await getLatestProducerProductData(producerProductId)
+      )?.wholesaleProduct;
     } else {
       wholesaleProducerProduct = producerProductData.wholesaleProduct;
     }
 
     if (!wholesaleProducerProduct) {
-      console.error(`Unable to load latest producer data for ${producerProductId}`);
+      console.error(
+        `Unable to load latest producer data for ${producerProductId}`
+      );
       return;
     }
 
     if (Number(wholesaleProducerProduct.id) !== Number(mappedVariantId)) {
-      console.error(`Couldn't update the inventory for hub product ${hubVariantId}. The mapped wholesale variant was different, ${mappedVariantId} in hub, ${wholesaleProducerProduct.id} from producer`);
+      console.error(
+        `Couldn't update the inventory for hub product ${hubVariantId}. The mapped wholesale variant was different, ${mappedVariantId} in hub, ${wholesaleProducerProduct.id} from producer`
+      );
       return;
     }
-
 
     if (shouldUpdateThePrice) {
       await updateCurrentVariantPrice({
@@ -143,8 +148,10 @@ export const updateCurrentVariantInventory = async ({
 
     currentHubVariant.id = hubVariantId;
 
-    currentHubVariant.inventory_policy = wholesaleProducerProduct.inventory_policy;
-    currentHubVariant.inventory_management = wholesaleProducerProduct.inventory_management || 'shopify';
+    currentHubVariant.inventoryPolicy =
+      wholesaleProducerProduct.inventoryPolicy;
+    currentHubVariant.inventoryManagement =
+      wholesaleProducerProduct.inventoryManagement || 'shopify';
     await currentHubVariant.saveAndUpdate();
 
     const inventoryItemId = currentHubVariant.inventory_item_id;
@@ -159,7 +166,7 @@ export const updateCurrentVariantInventory = async ({
     });
 
     const availableItemsInTheStore =
-      noOfItemsPerPackage * Number(wholesaleProducerProduct.inventory_quantity) +
+      noOfItemsPerPackage * Number(wholesaleProducerProduct.inventoryQuantity) +
       Number(numberOfExcessOrders);
 
     await inventoryLevel.set({
