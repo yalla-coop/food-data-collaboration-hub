@@ -18,9 +18,9 @@ describe('generateShopifyFDCProducts', () => {
       exportedDFCProducerProducts(-1)
     );
 
-    const variant = result[0].variants[0]
+    const variant = result[0].variants[0];
 
-    expect(variant.inventory_quantity).toEqual(0);
-    expect(variant.inventory_policy).toEqual('continue');
+    expect(variant.inventoryQuantity).toEqual(0);
+    expect(variant.inventoryPolicy).toEqual('continue');
   });
 });

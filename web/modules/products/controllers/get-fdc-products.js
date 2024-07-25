@@ -10,12 +10,10 @@ dotenv.config({
 const { PRODUCER_SHOP_URL, PRODUCER_SHOP } = process.env;
 
 const getFDCProducts = async (req, res, next) => {
-  const { sinceId, remainingProductsCountBeforeNextFetch } = req.query;
+  // const { sinceId, remainingProductsCountBeforeNextFetch } = req.query;
 
   try {
-
-
-    const {data} = await axios.get(
+    const { data } = await axios.get(
       `${PRODUCER_SHOP_URL}api/dfc/Enterprises/${PRODUCER_SHOP}/SuppliedProducts`,
       {
         transformResponse: (res) => {
@@ -23,7 +21,7 @@ const getFDCProducts = async (req, res, next) => {
         },
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + req.user.accessToken
+          Authorization: 'Bearer ' + req.user.accessToken
         }
       }
     );

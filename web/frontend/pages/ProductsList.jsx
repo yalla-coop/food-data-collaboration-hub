@@ -81,10 +81,7 @@ export default function ProductsList() {
 
   useLayoutEffect(() => {
     if (producerProductsData) {
-      setProducerProducts((prev) => [
-        ...prev,
-        ...producerProductsData
-      ]);
+      setProducerProducts((prev) => [...prev, ...producerProductsData]);
     }
   }, [producerProductsData]);
 
@@ -146,6 +143,7 @@ export default function ProductsList() {
   const isCurrentSalesSessionActive =
     currentSalesSessionData?.currentSalesSession?.isActive;
 
+  console.log('producer :>> ', producerProducts);
   return (
     <Box>
       <Button
@@ -291,6 +289,18 @@ export default function ProductsList() {
           }}
         >
           There is no active sales session , please create one
+        </Alert>
+      )}
+
+      {!producerProducts.length && (
+        <Alert
+          severity="warning"
+          sx={{
+            typography: 'body1',
+            fontSize: '20px'
+          }}
+        >
+          No products available
         </Alert>
       )}
 

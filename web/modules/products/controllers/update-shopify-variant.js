@@ -40,20 +40,17 @@ const updateShopifyVariant = async (req, res) => {
       price: variantsMappingData.price
     };
 
-    const response = await gqlClient.query({
-      data: {
-        query: updateVariantMutation,
-        variables: { input: variantInput }
-      }
+    const response = await gqlClient.request(updateVariantMutation, {
+      variables: { input: variantInput }
     });
 
     const { data, errors } = response;
 
     if (errors) {
-      console.error('GraphQL errors:', errors);
+      console.error('updateShopifyVariant graphQL errors:', errors);
       return res.status(500).json({
         success: false,
-        errors
+        errors: "Couldn't update Shopify product variant"
       });
     }
 
@@ -85,7 +82,7 @@ const updateShopifyVariant = async (req, res) => {
     console.error('Could not update Shopify product', error);
     return res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Could not update Shopify product'
     });
   }
 };

@@ -22,13 +22,13 @@ function VariantCard({ variant, index }) {
 
       <p>
         <strong>inventoryPolicy:</strong>
-        {variant.inventory_policy}
+        {variant.inventoryPolicy}
       </p>
 
-      {variant?.inventory_policy?.toUpperCase() !== 'CONTINUE' && (
+      {variant?.inventoryPolicy?.toUpperCase() !== 'CONTINUE' && (
         <p>
           <strong>inventory Quantity:</strong>
-          {variant.inventory_quantity}
+          {variant.inventoryQuantity}
         </p>
       )}
     </div>

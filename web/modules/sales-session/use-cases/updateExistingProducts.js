@@ -2,34 +2,56 @@ import dotenv from 'dotenv';
 import shopify from '../../../shopify.js';
 import getProducerProducts from './get-producer-products.js';
 import { updateCurrentVariantInventory } from '../../../webhooks/updateCurrentVariantInventory.js';
-import { throwError } from '../../../utils/index.js';
+import { executeGraphQLQuery, throwError } from '../../../utils/index.js';
 
 dotenv.config();
 
-const MAX_REQUESTS_PER_SECOND = 2;
+// const MAX_REQUESTS_PER_SECOND = 2;
 
-const delayFun = (ms) =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
+// const delayFun = (ms) =>
+//   new Promise((resolve) => {
+//     setTimeout(resolve, ms);
+//   });
 
 const { HUB_SHOP_NAME } = process.env;
 
+const updateProductStatusMutation = `
+mutation UpdateProductStatus($input: ProductInput!) {
+  productUpdate(input: $input) {
+    product {
+      id
+      status
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}`;
+
 const updateSingleProduct = async ({
+  gqlClient,
   hubProductId,
-  session,
   storedVariants,
   producerLatestProductData,
   shouldUpdateThePrice = false
 }) => {
-  const hubProduct = new shopify.api.rest.Product({
-    session
-  });
+  const productVariables = {
+    input: {
+      id: `gid://shopify/Product/${hubProductId}`,
+      status: 'ACTIVE'
+    }
+  };
 
-  hubProduct.id = hubProductId;
-  hubProduct.status = 'active';
+  const productUpdateData = await executeGraphQLQuery(
+    gqlClient,
+    updateProductStatusMutation,
+    productVariables
+  );
 
-  await hubProduct.saveAndUpdate();
+  if (productUpdateData.productUpdate.userErrors.length > 0) {
+    throw new Error(productUpdateData.productUpdate.userErrors[0].message);
+  }
 
   for (const hubVariant of storedVariants) {
     await updateCurrentVariantInventory({
@@ -38,23 +60,24 @@ const updateSingleProduct = async ({
       storedHubVariant: hubVariant,
       shouldUpdateThePrice
     });
-    await delayFun(500);
   }
 };
 
-const archiveProduct = async ({
-  hubProductId,
-  session
-}) => {
-  const hubProduct = new shopify.api.rest.Product({
-    session
+const archiveProduct = async ({ hubProductId, gqlClient }) => {
+  const variables = {
+    input: {
+      id: `gid://shopify/Product/${hubProductId}`,
+      status: 'ARCHIVED'
+    }
+  };
+
+  const data = executeGraphQLQuery({
+    gqlClient,
+    query: updateProductStatusMutation,
+    variables
   });
 
-  hubProduct.id = hubProductId;
-  hubProduct.status = 'archived';
-
-  await hubProduct.saveAndUpdate();
-  await delayFun(500);
+  return data.productUpdate.product;
 };
 
 const updateExistingProductsUseCase = async ({
@@ -71,6 +94,7 @@ const updateExistingProductsUseCase = async ({
         'Error from updateExistingProductsUseCase: Shopify Session not found'
       );
     }
+    const gqlClient = new shopify.api.clients.Graphql({ session });
 
     const productsWithVariants = await getProducerProducts(accessToken);
 
@@ -91,7 +115,7 @@ const updateExistingProductsUseCase = async ({
           shouldUpdateThePrice
         });
       } else {
-        await archiveProduct({session, hubProductId});
+        await archiveProduct({ hubProductId, gqlClient });
       }
     }
   } catch (e) {

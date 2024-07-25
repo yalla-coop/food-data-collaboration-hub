@@ -44,14 +44,14 @@ export function exportedDFCProducerProducts(stockLimitation = 55) {
             "dfc-b:name": "Camelina Seed"
         }
     ]
-}`
-};
+}`;
+}
 
 export const importedShopifyProductsFromDFC = [
   {
     id: '7898317750424',
     title: 'Camelina Seed',
-    body_html:
+    descriptionHtml:
       '<p><strong>Camelina, also known as Gold of Pleasure, has been grown in England for thousands of years for its tasty seeds and oil. Sprinkle on salads, use in baking, add to smoothies, or use as a vegan egg replacement. </strong></p>\n' +
       '<!-- split --><h3>Complete Product Details</h3><p>Sprinkle on salads, add to smoothies, use in baking.</p>\n' +
       '<h5 class="product-detail-title">Cooking instructions</h5>\n' +
@@ -101,12 +101,12 @@ export const importedShopifyProductsFromDFC = [
       '</tbody>\n' +
       '</table><p>Camelina Seeds are high in protein, a good source of Omega 3 oils and rich in antioxidants such as vitamin E</p><h5 class="product-detail-title">More</h5>\n' +
       '<p>Grown by Peter Fairs in Essex and Andy Howard in Kent.</p>',
-    product_type: 'Savory Snacks',
+    productType: 'Savory Snacks',
     handle: 'camelina-seed-trade',
     image: {
       id: '44001459765400',
       src: 'https://cdn.shopify.com/s/files/1/0587/9735/9256/products/Cameilna-Seeds-1800x1200_8c00a108-d8f7-4920-9bac-758a2c6a8b56.jpg?v=1706882031',
-      alt: 'Camelina Seed'
+      altText: 'Camelina Seed'
     },
     variants: [
       {
@@ -117,24 +117,24 @@ export const importedShopifyProductsFromDFC = [
         price: 2.49,
         weight: 0,
         weight_unit: 'kg',
-        inventory_quantity: 55,
+        inventoryQuantity: 55,
         sku: undefined,
         taxable: true,
         tracked: undefined,
-        inventory_policy: 'deny',
-        fulfillment_service: 'manual',
-        inventory_management: 'shopify',
+        inventoryPolicy: 'deny',
+        fulfillmentService: 'manual',
+        inventoryManagement: 'shopify',
         image: {
           id: '44001459798168',
           src: 'https://cdn.shopify.com/s/files/1/0587/9735/9256/products/37-cammalina-fron.jpg?v=1706882031',
-          alt: 'Retail pack, 300g'
+          altText: 'Retail pack, 300g'
         }
       }
     ],
     images: [
       {
         id: '44001459765400',
-        alt: 'Camelina Seed',
+        altText: 'Camelina Seed',
         position: 1,
         product_id: '7898317750424',
         admin_graphql_api_id: 'gid://shopify/ProductImage/44001459765400',
@@ -143,7 +143,7 @@ export const importedShopifyProductsFromDFC = [
       },
       {
         id: '44001459798168',
-        alt: 'Retail pack, 300g',
+        altText: 'Retail pack, 300g',
         position: 2,
         product_id: '7898317750424',
         admin_graphql_api_id: 'gid://shopify/ProductImage/44001459798168',
