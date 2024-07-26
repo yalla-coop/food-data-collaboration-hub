@@ -30,8 +30,8 @@ oidcRouter.get(
   },
 
   passport.authenticate('login.lescommuns.org', {
-    successRedirect: '/oidc/success',
-    failureRedirect: '/oidc/failure',
+    successRedirect: `/oidc/success?${new Date().getTime()}`,
+    failureRedirect: `/oidc/failure?${new Date().getTime()}`,
     failureMessage: true
   })
 );
