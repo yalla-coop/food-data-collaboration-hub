@@ -12,12 +12,14 @@ const oidcRouter = Router();
 
 oidcRouter.get('/login', passport.authenticate('login.lescommuns.org'));
 
-oidcRouter.get('/success', (_req, res) =>
+oidcRouter.get('/success', async (req, res) => {
+  console.log('User logged in', JSON.stringify(req.user));
+  await createOrUpdate(req.user);
   res
     .status(200)
     .set('Content-Type', 'text/html')
     .send(readFileSync(join(STATIC_PATH, 'success.html')))
-);
+});
 
 oidcRouter.get(
   '/callback',
@@ -35,12 +37,5 @@ oidcRouter.get(
     failureMessage: true
   })
 );
-
-oidcRouter.get('/success', async (req, res) => {
-  console.log("User has logged in", JSON.stringify(req.user));
-  await createOrUpdate(req.user);
-
-  res.json({ success: true, user: req.user });
-});
 
 export { oidcRouter };
