@@ -37,7 +37,7 @@ oidcRouter.get(
 );
 
 oidcRouter.get('/success', async (req, res) => {
-
+  console.log("User has logged in", JSON.stringify(req.user));
   await createOrUpdate(req.user);
 
   res.json({ success: true, user: req.user });
