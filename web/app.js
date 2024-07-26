@@ -31,6 +31,7 @@ import {
   updateExistingProductsCronJob
 } from './modules/cron-jobs/index.js';
 import subscribeToWebhook from './utils/subscribe-to-webhook.js';
+import localAuthenticationBypass from './utils/localAuthenticationBypass.js';
 
 if (process.env.NODE_ENV === 'development') {
   dotenv.config({
@@ -93,6 +94,8 @@ async function createApp() {
     store: sessionStore
   };
 
+  app.use(localAuthenticationBypass)
+
   app.use(
     '/', // @ts-ignore
     session({
@@ -127,6 +130,7 @@ async function createApp() {
       ) {
         userinfo.accessToken = tokenset.access_token;
         userinfo.refreshToken = tokenset.refresh_token;
+        userinfo.accessTokenExpiresAt = tokenset.expires_at;
         userinfo.idToken = tokenset.id_token;
         return done(null, userinfo);
       }
@@ -141,6 +145,7 @@ async function createApp() {
       email: user.email,
       accessToken: user.accessToken,
       refreshToken: user.refreshToken,
+      accessTokenExpiresAt: user.accessTokenExpiresAt,
       idToken: user.idToken
     });
   });

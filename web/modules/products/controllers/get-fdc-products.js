@@ -2,6 +2,7 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import { join } from 'path';
 import { generateShopifyFDCProducts } from '../../../connector/productUtils.js';
+import { obtainValidAccessToken } from '../../authentication/getNewAccessToken.js';
 
 dotenv.config({
   path: join(process.cwd(), '.env')
@@ -13,6 +14,8 @@ const getFDCProducts = async (req, res, next) => {
   // const { sinceId, remainingProductsCountBeforeNextFetch } = req.query;
 
   try {
+    const { accessToken } = await obtainValidAccessToken(req.user.id);
+
     const { data } = await axios.get(
       `${PRODUCER_SHOP_URL}api/dfc/Enterprises/${PRODUCER_SHOP}/SuppliedProducts`,
       {
@@ -21,7 +24,7 @@ const getFDCProducts = async (req, res, next) => {
         },
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + req.user.accessToken
+          Authorization: 'JWT ' + accessToken
         }
       }
     );

@@ -30,7 +30,7 @@ export const calculateThePrice = ({
   return increasedPrice;
 };
 
-const getLatestProducerProductData = async (producerProductId) => {
+const getLatestProducerProductData = async (producerProductId, accessToken) => {
   try {
     const { data } = await axios.post(
       `${PRODUCER_SHOP_URL}fdc/products/all?shop=${PRODUCER_SHOP}`,
@@ -39,7 +39,7 @@ const getLatestProducerProductData = async (producerProductId) => {
       },
       {
         headers: {
-          Authorization: `Bearer ${process.env.PRODUCER_API_KEY}`
+          Authorization: `JWT ${accessToken}`
         }
       }
     );
@@ -91,7 +91,8 @@ export const updateCurrentVariantInventory = async ({
   producerProductId,
   producerProductData,
   shouldUpdateThePrice = false,
-  storedHubVariant
+  storedHubVariant,
+  accessToken
 }) => {
   try {
     const {
@@ -114,7 +115,7 @@ export const updateCurrentVariantInventory = async ({
 
     if (!producerProductData) {
       wholesaleProducerProduct = (
-        await getLatestProducerProductData(producerProductId)
+        await getLatestProducerProductData(producerProductId, accessToken)
       )?.wholesaleProduct;
     } else {
       wholesaleProducerProduct = producerProductData.wholesaleProduct;

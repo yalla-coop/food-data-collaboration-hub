@@ -3,6 +3,7 @@ import shopify from '../../../shopify.js';
 import getProducerProducts from './get-producer-products.js';
 import { updateCurrentVariantInventory } from '../../../webhooks/updateCurrentVariantInventory.js';
 import { executeGraphQLQuery, throwError } from '../../../utils/index.js';
+import { obtainValidAccessToken } from '../../authentication/getNewAccessToken.js';
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ const updateSingleProduct = async ({
   hubProductId,
   storedVariants,
   producerLatestProductData,
+  accessToken,
   shouldUpdateThePrice = false
 }) => {
   const productVariables = {
@@ -58,6 +60,7 @@ const updateSingleProduct = async ({
       producerProductData: producerLatestProductData,
       hubProductId,
       storedHubVariant: hubVariant,
+      accessToken,
       shouldUpdateThePrice
     });
   }
@@ -81,7 +84,7 @@ const archiveProduct = async ({ hubProductId, gqlClient }) => {
 };
 
 const updateExistingProductsUseCase = async ({
-  accessToken,
+  userId,
   shouldUpdateThePrice = false
 }) => {
   try {
@@ -96,6 +99,7 @@ const updateExistingProductsUseCase = async ({
     }
     const gqlClient = new shopify.api.clients.Graphql({ session });
 
+    const { accessToken } = await obtainValidAccessToken(userId);
     const productsWithVariants = await getProducerProducts(accessToken);
 
     if (productsWithVariants.length === 0) {
@@ -112,7 +116,8 @@ const updateExistingProductsUseCase = async ({
           session,
           storedVariants,
           producerLatestProductData: producerProductData,
-          shouldUpdateThePrice
+          shouldUpdateThePrice,
+          accessToken
         });
       } else {
         await archiveProduct({ hubProductId, gqlClient });

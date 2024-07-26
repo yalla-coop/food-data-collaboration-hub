@@ -1,4 +1,5 @@
 import { query } from '../../database/connect.js';
+import { getMostRecentActiveSalesSession } from '../../database/sales-sessions/salesSession.js';
 
 const selectVariantsQuery = `
 SELECT
@@ -9,13 +10,6 @@ FROM variants as v
 INNER JOIN products as p
 ON v.product_id = p.id
 WHERE hub_variant_id = ANY($1)
-`;
-
-const selectActiveSalesSessionQuery = `
-SELECT
-  *
-FROM sales_sessions
-WHERE is_active = true
 `;
 
 export const validateLineItemsAndCallHandler = async (
@@ -29,12 +23,10 @@ export const validateLineItemsAndCallHandler = async (
         body: 'Webhook - validateLineItemsAndCallHandler: Invalid input'
       };
     }
-    const { rows: activeSalesSessions } = await query(
-      selectActiveSalesSessionQuery,
-      []
-    );
 
-    if (activeSalesSessions?.length < 1) {
+    const activeSalesSession = await getMostRecentActiveSalesSession();
+
+    if (!activeSalesSession) {
       return {
         statusCode: 200,
         body: 'Webhook - validateLineItemsAndCallHandler: No active sales session found'
@@ -62,7 +54,7 @@ export const validateLineItemsAndCallHandler = async (
     webhookCallback({
       ...webhookInputs,
       payload,
-      activeSalesSessions,
+      activeSalesSession,
       variantsFromPayload,
       variantsFromDB
     });
