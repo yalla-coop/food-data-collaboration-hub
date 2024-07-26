@@ -5,13 +5,15 @@ import { throwError } from '../../utils/index.js';
 import { handleStockAfterOrderUpdate } from './handleStockAfterOrderUpdate.js';
 // TODO move this to utils
 import { updateCurrentVariantInventory } from '../updateCurrentVariantInventory.js';
-import { sendOrderToProducerAndUpdateSalesSessionOrderId } from './sendOrderToProducerAndUpdateSalesSessionOrderId.js';
 import { updateVariantExcessItems } from './updateVariantExcessItems.js';
-import { createHubCustomerDetails } from '../../utils/createHubCustomerDetails.js';
 import {
   addSalesSessionsOrder,
   updateSalesSessionsOrdersStatus
 } from './addUpdateSalesSessionsOrders.js';
+
+import { handleNewOrder } from '../../modules/producer-orders/order.js'
+
+import { obtainValidAccessToken } from '../../modules/authentication/getNewAccessToken.js';
 
 const orderStatuses = {
   PENDING: 'pending',
@@ -22,7 +24,7 @@ const orderStatuses = {
     'part_internal_part_producer_confirmation'
 };
 
-const updateExcessItemsAndInventory = async (variantData, sqlClient) => {
+const updateExcessItemsAndInventory = async (variantData, sqlClient, accessToken) => {
   const updateExcessItemsPromises = variantData.map(
     async ({
       hubVariantId,
@@ -46,7 +48,8 @@ const updateExcessItemsAndInventory = async (variantData, sqlClient) => {
           numberOfExcessOrders: numberOfExcessItems
         },
         hubProductId,
-        producerProductId
+        producerProductId,
+        accessToken
       });
     }
   );
@@ -60,7 +63,7 @@ export const handleOrderWebhook = async ({
   webhookId,
   orderType,
   payload,
-  activeSalesSessions,
+  activeSalesSession,
   variantsFromPayload,
   variantsFromDB
 }) => {
@@ -74,8 +77,9 @@ export const handleOrderWebhook = async ({
       `handleOrderWebhook: added webhook with id ${webhookId} to db for order number ${orderNumber}`
     );
 
-    const activeSalesSessionOrderId = activeSalesSessions?.[0].orderId;
-    const activeSalesSessionId = activeSalesSessions?.[0].id;
+    const {accessToken} = await obtainValidAccessToken(activeSalesSession.creatorUserId);
+
+    const activeSalesSessionId = activeSalesSession.id;
     const { salesSessionsOrderId } = await addSalesSessionsOrder({
       salesSessionId: activeSalesSessionId,
       webhookId,
@@ -119,7 +123,8 @@ export const handleOrderWebhook = async ({
     if (variantsWithSufficientExcessItems?.length > 0) {
       await updateExcessItemsAndInventory(
         variantsWithSufficientExcessItems,
-        sqlClient
+        sqlClient,
+        accessToken
       );
     }
 
@@ -142,33 +147,20 @@ export const handleOrderWebhook = async ({
       };
     }
 
-    const customer = createHubCustomerDetails(shop, {});
-    // trigger the order to producer
-    const { producerRespondSuccess, newProducerOrderId } =
-      await sendOrderToProducerAndUpdateSalesSessionOrderId({
-        activeSalesSessionOrderId,
-        variants: variantsToOrderFromProducer,
-        activeSalesSessionId,
-        customer,
-        orderType,
-        sqlClient
-      });
-
-    if (!producerRespondSuccess || !newProducerOrderId) {
+    try {
+      await handleNewOrder(activeSalesSession, variantsToOrderFromProducer, orderType, accessToken);
+    } catch (error) {
       await updateSalesSessionsOrdersStatus({
         salesSessionsOrderId,
         status: orderStatuses.PRODUCER_REJECTED,
         sqlClient
       });
       throwError(
-        'handleOrderWebhook: Error occurred while sending the order to producer'
-      );
+        'handleOrderWebhook: Error occurred while sending the order to producer', error
+      )
     }
-    console.log(
-      `handleOrderWebhook: Updated sales session with order id ${newProducerOrderId} as received from producer`
-    );
 
-    await updateExcessItemsAndInventory(variantsToOrderFromProducer, sqlClient);
+    await updateExcessItemsAndInventory(variantsToOrderFromProducer, sqlClient, accessToken);
 
     console.log(
       'handleOrderWebhook: Updated inventory for variants, all done!'

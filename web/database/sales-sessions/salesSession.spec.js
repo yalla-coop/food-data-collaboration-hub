@@ -1,4 +1,4 @@
-import { createSalesSession, deactivateAllSalesSessions, getMostRecentActiveSalesSession} from './salesSession.js'
+import { createSalesSession, deactivateAllSalesSessions, getMostRecentActiveSalesSession, addProducerOrder} from './salesSession.js'
 import { query } from '../connect.js';
 import { getClient } from '../connect.js';
 
@@ -14,6 +14,7 @@ describe('sales sessions', () => {
     })
 
     afterAll(async () => {
+        await query(`truncate table sales_sessions restart identity`, [], client)
         client.release();
     })
 
@@ -21,14 +22,18 @@ describe('sales sessions', () => {
         await query(`truncate table sales_sessions restart identity`, [], client);
     });
 
+    const salesSession = {
+        startDate,
+        endDate,
+        sessionDurationInDays: 12,
+        active: true,
+        creatorUserId: '1234-5678'
+    };
+
+
     it('Can be created', async () => {
-        const result = await createSalesSession({
-            startDate,
-            endDate,
-            sessionDurationInDays: 12,
-            creatorRefreshToken: 'refreshToken',
-            active: true
-        }, client);
+        
+        const result = await createSalesSession(salesSession, client);
 
         expect(result).toStrictEqual({
             id: 1,
@@ -36,18 +41,13 @@ describe('sales sessions', () => {
             startDate,
             isActive: true,
             sessionDuration: 12,
-            creatorRefreshToken: 'refreshToken',
+            orderId: null,
+            creatorUserId: '1234-5678'
         });
     });
 
     it('Can be deactivated', async () => {
-        await createSalesSession({
-            startDate,
-            endDate,
-            sessionDurationInDays: 12,
-            creatorRefreshToken: 'refreshToken',
-            active: true
-        }, client);
+        await createSalesSession(salesSession, client);
 
         const result = await deactivateAllSalesSessions(client);
 
@@ -56,24 +56,34 @@ describe('sales sessions', () => {
 
     it('Can retrieve most recent active sales sessions', async () => {
         await createSalesSession({
-            startDate,
+            ...salesSession,
             endDate: new Date('2024-02-20T01:00:00+00:00'),
-            sessionDurationInDays: 12,
-            creatorRefreshToken: 'refreshToken',
-            active: true
         }, client);
 
         const latestSession = await createSalesSession({
-            startDate,
+            ...salesSession,
             endDate: new Date('2024-02-25T01:00:00+00:00'),
-            sessionDurationInDays: 12,
-            creatorRefreshToken: 'refreshToken',
-            active: true
         }, client);
 
-        const activeSalesSessions = await getMostRecentActiveSalesSession(client);
+        const activeSalesSession = await getMostRecentActiveSalesSession(client);
 
-        expect(activeSalesSessions.endDate).toStrictEqual(latestSession.endDate);
+        expect(activeSalesSession.endDate).toStrictEqual(latestSession.endDate);
+    });
+
+    it('Returns undefined when no sales session', async () => {
+        const activeSalesSessions = await getMostRecentActiveSalesSession();
+        expect(activeSalesSessions).toStrictEqual(undefined);
+    });
+
+    it('Producer order id can be recorded', async () => {
+        const {id} = await createSalesSession(salesSession, client);
+
+        const orderId = '123456';
+
+        await addProducerOrder(id, orderId, client);
+        const activeSalesSession = await getMostRecentActiveSalesSession(client);
+
+        expect(activeSalesSession.orderId).toStrictEqual(orderId);
     });
 
 })

@@ -4,6 +4,8 @@ import passport from 'passport';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
+import { createOrUpdate } from './database/users/users.js';
+
 const STATIC_PATH = `${process.cwd()}/frontend/`;
 
 const oidcRouter = Router();
@@ -34,8 +36,11 @@ oidcRouter.get(
   })
 );
 
-oidcRouter.get('/success', (req, res) =>
-  res.json({ success: true, user: req.user })
-);
+oidcRouter.get('/success', async (req, res) => {
+
+  await createOrUpdate(req.user);
+
+  res.json({ success: true, user: req.user });
+});
 
 export { oidcRouter };

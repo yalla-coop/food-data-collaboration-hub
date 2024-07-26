@@ -31,6 +31,7 @@ import {
   updateExistingProductsCronJob
 } from './modules/cron-jobs/index.js';
 import subscribeToWebhook from './utils/subscribe-to-webhook.js';
+import localAuthenticationBypass from './utils/localAuthenticationBypass.js';
 
 if (process.env.NODE_ENV === 'development') {
   dotenv.config({
@@ -92,6 +93,8 @@ async function createApp() {
     saveUninitialized: false,
     store: sessionStore
   };
+
+  app.use(localAuthenticationBypass)
 
   app.use(
     '/', // @ts-ignore
