@@ -9,9 +9,9 @@ dotenv.config();
 const { PRODUCER_SHOP_URL, PRODUCER_SHOP, HUB_SHOP_NAME } = process.env;
 
 const UPDATE_VARIANT_PRICE_MUTATION = `
-  mutation updateVariantPrice($id: ID!, $price: String!) {
-    variantUpdate(input: { id: $id, price: $price }) {
-      variant {
+  mutation updateVariantPrice($id: ID!, $price: Money!) {
+    productVariantUpdate(input: { id: $id, price: $price }) {
+      productVariant {
         id
         price
       }
@@ -24,15 +24,25 @@ const UPDATE_VARIANT_PRICE_MUTATION = `
 `;
 
 const UPDATE_INVENTORY_MUTATION = `
-  mutation updateInventory($inventoryItemId: ID!, $available: Int!, $locationId: ID!) {
-    inventoryAdjustQuantity(input: {
-      inventoryItemId: $inventoryItemId,
-      availableDelta: $available,
-      locationId: $locationId
+  mutation inventorySetQuantities($inventoryItemId: ID!, $available: Int!, $locationId: ID!) {
+    inventorySetQuantities(input: {
+      reason: "correction",
+      name: "available",
+      ignoreCompareQuantity: true
+      quantities: [
+        {
+          inventoryItemId: $inventoryItemId,
+          locationId: $locationId,
+          quantity: $available
+        }
+      ]
     }) {
-      inventoryLevel {
-        id
-        available
+      inventoryAdjustmentGroup {
+        changes {
+          delta
+          name
+          quantityAfterChange
+        }
       }
       userErrors {
         field
@@ -43,23 +53,20 @@ const UPDATE_INVENTORY_MUTATION = `
 `;
 
 const UPDATE_VARIANT_DETAILS_MUTATION = `
-  mutation updateVariantDetails($id: ID!, $inventoryPolicy: String, $inventoryManagement: String) {
-    variantUpdate(input: {
-      id: $id,
-      inventoryPolicy: $inventoryPolicy,
-      inventoryManagement: $inventoryManagement
-    }) {
-      variant {
+mutation CreateProductMutation($id: ID!, $inventoryPolicy: ProductVariantInventoryPolicy ) {
+  productVariantUpdate(input: { id: $id, inventoryPolicy: $inventoryPolicy }) {
+    productVariant {
+      id
+      inventoryItem {
         id
-        inventoryPolicy
-        inventoryManagement
-      }
-      userErrors {
-        field
-        message
       }
     }
+    userErrors {
+      field
+      message
+    }
   }
+}
 `;
 
 const GET_LOCATION_QUERY = `
@@ -161,9 +168,9 @@ const updateCurrentVariantPrice = async ({
       QUERY: UPDATE_VARIANT_PRICE_MUTATION,
       variables
     });
-    if (mutationResponse.variantUpdate.userErrors.length > 0) {
+    if (mutationResponse.productVariantUpdate.userErrors.length > 0) {
       throw new Error(
-        JSON.stringify(mutationResponse.variantUpdate.userErrors)
+        JSON.stringify(mutationResponse.productVariantUpdate.userErrors)
       );
     }
 
@@ -252,12 +259,9 @@ export const updateCurrentVariantInventory = async ({
       });
     }
 
-    const variablesForVariantUpdate = {
-      id: `gid://shopify/ProductVariant/${hubVariantId}`,
-      inventoryPolicy: wholesaleProducerProduct.inventoryPolicy,
-      inventoryManagement:
-        wholesaleProducerProduct.inventoryManagement || 'shopify'
-    };
+    const availableItemsInTheStore =
+      noOfItemsPerPackage * Number(wholesaleProducerProduct.inventoryQuantity) +
+      Number(numberOfExcessOrders);
 
     const locationQueryResponse = await executeGraphQLQuery({
       gqlClient,
@@ -265,27 +269,34 @@ export const updateCurrentVariantInventory = async ({
     });
     const locationId = locationQueryResponse.locations.edges[0].node.id;
 
+    const variablesForVariantUpdate = {
+      id: `gid://shopify/ProductVariant/${hubVariantId}`,
+      inventoryPolicy: wholesaleProducerProduct.inventoryPolicy.toUpperCase()
+    };
+
     const variantUpdatesMutationResponse = await executeGraphQLQuery({
       gqlClient,
       QUERY: UPDATE_VARIANT_DETAILS_MUTATION,
       variables: variablesForVariantUpdate
     });
 
-    if (variantUpdatesMutationResponse.variantUpdate.userErrors.length > 0) {
+    if (
+      variantUpdatesMutationResponse.productVariantUpdate.userErrors.length > 0
+    ) {
       throw new Error(
-        JSON.stringify(variantUpdatesMutationResponse.variantUpdate.userErrors)
+        JSON.stringify(
+          variantUpdatesMutationResponse.productVariantUpdate.userErrors
+        )
       );
     }
 
-    const inventoryItemId = `gid://shopify/InventoryItem/${hubVariantId}`;
-
-    const availableItemsInTheStore =
-      noOfItemsPerPackage * Number(wholesaleProducerProduct.inventoryQuantity) +
-      Number(numberOfExcessOrders);
+    const inventoryItemId =
+      variantUpdatesMutationResponse.productVariantUpdate.productVariant
+        .inventoryItem.id;
 
     const variablesForInventoryUpdate = {
       inventoryItemId,
-      available: availableItemsInTheStore || 0,
+      available: availableItemsInTheStore,
       locationId
     };
 
@@ -296,11 +307,11 @@ export const updateCurrentVariantInventory = async ({
     });
 
     if (
-      inventoryMutationResponse.inventoryAdjustQuantity.userErrors.length > 0
+      inventoryMutationResponse.inventorySetQuantities.userErrors.length > 0
     ) {
       throw new Error(
         JSON.stringify(
-          inventoryMutationResponse.inventoryAdjustQuantity.userErrors
+          inventoryMutationResponse.inventorySetQuantities.userErrors
         )
       );
     }
