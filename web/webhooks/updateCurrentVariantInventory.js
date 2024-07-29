@@ -156,11 +156,11 @@ const updateCurrentVariantPrice = async ({
       price: hubVariantNewPrice
     };
 
-    const mutationResponse = await executeGraphQLQuery(
+    const mutationResponse = await executeGraphQLQuery({
       gqlClient,
-      UPDATE_VARIANT_PRICE_MUTATION,
+      QUERY: UPDATE_VARIANT_PRICE_MUTATION,
       variables
-    );
+    });
     if (mutationResponse.variantUpdate.userErrors.length > 0) {
       throw new Error(
         JSON.stringify(mutationResponse.variantUpdate.userErrors)
@@ -259,17 +259,17 @@ export const updateCurrentVariantInventory = async ({
         wholesaleProducerProduct.inventoryManagement || 'shopify'
     };
 
-    const locationQueryResponse = await executeGraphQLQuery(
+    const locationQueryResponse = await executeGraphQLQuery({
       gqlClient,
-      GET_LOCATION_QUERY
-    );
+      QUERY: GET_LOCATION_QUERY
+    });
     const locationId = locationQueryResponse.locations.edges[0].node.id;
 
-    const variantUpdatesMutationResponse = await executeGraphQLQuery(
+    const variantUpdatesMutationResponse = await executeGraphQLQuery({
       gqlClient,
-      UPDATE_VARIANT_DETAILS_MUTATION,
-      variablesForVariantUpdate
-    );
+      QUERY: UPDATE_VARIANT_DETAILS_MUTATION,
+      variables: variablesForVariantUpdate
+    });
 
     if (variantUpdatesMutationResponse.variantUpdate.userErrors.length > 0) {
       throw new Error(
@@ -289,11 +289,11 @@ export const updateCurrentVariantInventory = async ({
       locationId
     };
 
-    const inventoryMutationResponse = await executeGraphQLQuery(
+    const inventoryMutationResponse = await executeGraphQLQuery({
       gqlClient,
-      UPDATE_INVENTORY_MUTATION,
-      variablesForInventoryUpdate
-    );
+      QUERY: UPDATE_INVENTORY_MUTATION,
+      variables: variablesForInventoryUpdate
+    });
 
     if (
       inventoryMutationResponse.inventoryAdjustQuantity.userErrors.length > 0

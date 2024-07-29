@@ -143,7 +143,8 @@ export default function ProductsList() {
   const isCurrentSalesSessionActive =
     currentSalesSessionData?.currentSalesSession?.isActive;
 
-  console.log('producer :>> ', producerProducts);
+  console.log('producerProducts :>> ', producerProducts);
+
   return (
     <Box>
       <Button

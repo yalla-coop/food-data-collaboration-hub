@@ -69,9 +69,13 @@ const createShopifyProduct = async ({
     }
   };
 
-  const data = await executeGraphQLQuery(gqlClient, createProductMutation, {
-    input: productInputs,
-    media: parentProductMediaInput
+  const data = await executeGraphQLQuery({
+    gqlClient,
+    QUERY: createProductMutation,
+    variables: {
+      input: productInputs,
+      media: parentProductMediaInput
+    }
   });
   return { addedHubProductId: data.productCreate?.product?.id };
 };
@@ -84,7 +88,10 @@ const createShopifyProductVariant = async ({
   variantsMappingDataPrice,
   variantsMappingDataNoOfItemPerCase
 }) => {
-  const locationsData = await executeGraphQLQuery(gqlClient, getLocationsQuery);
+  const locationsData = await executeGraphQLQuery({
+    gqlClient,
+    QUERY: getLocationsQuery
+  });
   const locationId = locationsData.locations.edges[0].node.id;
 
   const productVariantInputs = {
@@ -111,11 +118,11 @@ const createShopifyProductVariant = async ({
     mediaSrc: retailProduct.image.src || wholesaleProduct.image.src
   };
 
-  const data = await executeGraphQLQuery(
+  const data = await executeGraphQLQuery({
     gqlClient,
-    createProductVariantMutation,
-    { input: productVariantInputs }
-  );
+    QUERY: createProductVariantMutation,
+    variables: { input: productVariantInputs }
+  });
   return { addedHubVariantId: data.productVariantCreate?.productVariant?.id };
 };
 

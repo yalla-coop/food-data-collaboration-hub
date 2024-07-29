@@ -31,7 +31,15 @@ export function getTargetStringFromSemanticId(url, key) {
   return targetId;
 }
 
-export async function executeGraphQLQuery(gqlClient, QUERY, variables) {
+export async function executeGraphQLQuery({
+  gqlClient,
+  QUERY,
+  variables = {}
+}) {
+  if (!gqlClient || !QUERY) {
+    throw new Error('gqlClient and QUERY are required');
+  }
+
   const response = await gqlClient.request(QUERY, {
     variables
   });

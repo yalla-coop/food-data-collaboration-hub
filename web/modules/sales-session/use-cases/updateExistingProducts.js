@@ -7,13 +7,6 @@ import { obtainValidAccessToken } from '../../authentication/getNewAccessToken.j
 
 dotenv.config();
 
-// const MAX_REQUESTS_PER_SECOND = 2;
-
-// const delayFun = (ms) =>
-//   new Promise((resolve) => {
-//     setTimeout(resolve, ms);
-//   });
-
 const { HUB_SHOP_NAME } = process.env;
 
 const updateProductStatusMutation = `
@@ -45,11 +38,11 @@ const updateSingleProduct = async ({
     }
   };
 
-  const productUpdateData = await executeGraphQLQuery(
+  const productUpdateData = await executeGraphQLQuery({
     gqlClient,
-    updateProductStatusMutation,
-    productVariables
-  );
+    QUERY: updateProductStatusMutation,
+    variables: productVariables
+  });
 
   if (productUpdateData.productUpdate.userErrors.length > 0) {
     throw new Error(productUpdateData.productUpdate.userErrors[0].message);
@@ -74,9 +67,9 @@ const archiveProduct = async ({ hubProductId, gqlClient }) => {
     }
   };
 
-  const data = executeGraphQLQuery({
+  const data = await executeGraphQLQuery({
     gqlClient,
-    query: updateProductStatusMutation,
+    QUERY: updateProductStatusMutation,
     variables
   });
 
@@ -112,6 +105,7 @@ const updateExistingProductsUseCase = async ({
 
       if (producerProductData) {
         await updateSingleProduct({
+          gqlClient,
           hubProductId,
           session,
           storedVariants,
