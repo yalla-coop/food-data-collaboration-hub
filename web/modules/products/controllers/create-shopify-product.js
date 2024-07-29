@@ -7,7 +7,7 @@ import {
   executeGraphQLQuery
 } from '../../../utils/index.js';
 
-const getLocationsQuery = `
+const GET_LOCATIONS_QUERY = `
 query GetLocations {
   locations(first: 1) {
     edges {
@@ -19,7 +19,7 @@ query GetLocations {
 }
 `;
 
-const createProductMutation = `
+const CREATE_PRODUCT_MUTATION = `
 mutation CreateProductMutation($input: ProductInput!, $media: [CreateMediaInput!]!) {
   productCreate(
     input: $input
@@ -31,12 +31,14 @@ mutation CreateProductMutation($input: ProductInput!, $media: [CreateMediaInput!
   }
 }`;
 
-const createProductVariantMutation = `
-mutation CreateProductVariantMutation($input: ProductVariantInput!) {
-  productVariantCreate(
-    input: $input,
+const CREATE_PRODUCT_VARIANTS_MUTATION = `
+mutation CreateProductVariantMutation($productId: ID!, $variantsInput: [ProductVariantsBulkInput!]!) {
+  productVariantsBulkCreate(
+    productId: $productId
+    variants: $variantsInput
+    strategy: REMOVE_STANDALONE_VARIANT
   ) {
-    productVariant {
+    productVariants {
       id
       inventoryItem {
         id
@@ -61,6 +63,7 @@ const createShopifyProduct = async ({
     title: parentProduct.title,
     descriptionHtml: parentProduct.descriptionHtml,
     productType: parentProduct.productType,
+    published: true,
     metafields: {
       key: 'producer_product_id',
       namespace: 'global',
@@ -71,7 +74,7 @@ const createShopifyProduct = async ({
 
   const data = await executeGraphQLQuery({
     gqlClient,
-    QUERY: createProductMutation,
+    QUERY: CREATE_PRODUCT_MUTATION,
     variables: {
       input: productInputs,
       media: parentProductMediaInput
@@ -90,14 +93,11 @@ const createShopifyProductVariant = async ({
 }) => {
   const locationsData = await executeGraphQLQuery({
     gqlClient,
-    QUERY: getLocationsQuery
+    QUERY: GET_LOCATIONS_QUERY
   });
   const locationId = locationsData.locations.edges[0].node.id;
 
   const productVariantInputs = {
-    productId: addedHubProductId,
-    options: [retailProduct.title],
-    title: retailProduct.title,
     price: variantsMappingDataPrice,
     inventoryPolicy: wholesaleProduct.inventoryPolicy.toUpperCase(),
     inventoryItem: {
@@ -120,10 +120,16 @@ const createShopifyProductVariant = async ({
 
   const data = await executeGraphQLQuery({
     gqlClient,
-    QUERY: createProductVariantMutation,
-    variables: { input: productVariantInputs }
+    QUERY: CREATE_PRODUCT_VARIANTS_MUTATION,
+    variables: {
+      productId: addedHubProductId,
+      variantsInput: [productVariantInputs]
+    }
   });
-  return { addedHubVariantId: data.productVariantCreate?.productVariant?.id };
+
+  return {
+    addedHubVariantId: data.productVariantsBulkCreate?.productVariants?.[0]?.id
+  };
 };
 
 const insertProductAndVariants = async ({
