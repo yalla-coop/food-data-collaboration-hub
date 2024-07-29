@@ -18,7 +18,7 @@ oidcRouter.get('/success', async (req, res) => {
   res
     .status(200)
     .set('Content-Type', 'text/html')
-    .send(readFileSync(join(STATIC_PATH, 'success.html')))
+    .send(readFileSync(join(STATIC_PATH, 'success.html')));
 });
 
 oidcRouter.get(
