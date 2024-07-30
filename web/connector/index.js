@@ -4,16 +4,14 @@ import {
   OrderLine,
   Person,
   SaleSession,
-  SuppliedProduct,
-} from "@datafoodconsortium/connector";
+  SuppliedProduct
+} from '@datafoodconsortium/connector';
 
-import PlannedTransformation from "@datafoodconsortium/connector/lib/PlannedTransformation.js";
-
-import facets from "./thesaurus/facets.json" assert { type: "json" };
-import measures from "./thesaurus/measures.json" assert { type: "json" };
-import productTypes from "./thesaurus/productTypes.json" assert { type: "json" };
-import vocabulary from "./thesaurus/vocabulary.json" assert { type: "json" };
-import { throwError } from "../utils/index.js";
+import facets from './thesaurus/facets.json' assert { type: 'json' };
+import measures from './thesaurus/measures.json' assert { type: 'json' };
+import productTypes from './thesaurus/productTypes.json' assert { type: 'json' };
+import vocabulary from './thesaurus/vocabulary.json' assert { type: 'json' };
+import { throwError } from '../utils/index.js';
 
 let _connector;
 let connected = false;
@@ -41,4 +39,11 @@ const loadConnectorWithResources = async () => {
   }
 };
 
-export { loadConnectorWithResources, SuppliedProduct, Order, Person, OrderLine, SaleSession, PlannedTransformation };
+export {
+  loadConnectorWithResources,
+  SuppliedProduct,
+  Order,
+  Person,
+  OrderLine,
+  SaleSession
+};
