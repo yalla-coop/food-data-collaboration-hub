@@ -2,19 +2,227 @@
 /* eslint-disable object-curly-newline */
 import shopify from '../../../shopify.js';
 import { getClient, query } from '../../../database/connect.js';
+import {
+  convertShopifyGraphQLIdToNumber,
+  executeGraphQLQuery
+} from '../../../utils/index.js';
 
-const convertShopifyGraphQLIdToNumber = (id) => {
-  if (!id) return null;
-  if (typeof id === 'number') return id;
-  return parseInt(id.split('/').pop(), 10);
+const shopifyWeightUnits = {
+  g: 'GRAMS',
+  kg: 'KILOGRAMS',
+  oz: 'OUNCES',
+  lb: 'POUNDS'
 };
 
-const createShopifyProduct = async (req, res) => {
+const GET_LOCATIONS_QUERY = `
+query GetLocations {
+  locations(first: 1) {
+    edges {
+      node {
+        id
+      }
+    }
+  }
+}
+`;
+
+const CREATE_PRODUCT_MUTATION = `
+mutation CreateProductMutation($input: ProductInput!, $media: [CreateMediaInput!]!) {
+  productCreate(
+    input: $input
+    media: $media
+  ) {
+    product {
+      id
+    }
+  }
+}`;
+
+const CREATE_PRODUCT_VARIANTS_MUTATION = `
+mutation CreateProductVariantMutation($productId: ID!, $variantsInput: [ProductVariantsBulkInput!]!) {
+  productVariantsBulkCreate(
+    productId: $productId
+    variants: $variantsInput
+    strategy: REMOVE_STANDALONE_VARIANT
+  ) {
+    productVariants {
+      id
+      inventoryItem {
+        id
+      }
+    }
+  }
+}
+`;
+
+const createShopifyProduct = async ({
+  gqlClient,
+  parentProduct,
+  producerProductId
+}) => {
+  const parentProductMediaInput = {
+    originalSource: parentProduct.images?.[0].src,
+    mediaContentType: 'IMAGE',
+    alt: parentProduct.image.src.altText
+  };
+
+  const productInputs = {
+    title: parentProduct.title,
+    descriptionHtml: parentProduct.descriptionHtml,
+    productType: parentProduct.productType,
+    published: true,
+    metafields: {
+      key: 'producer_product_id',
+      namespace: 'global',
+      value: producerProductId,
+      type: 'single_line_text_field'
+    }
+  };
+
+  const data = await executeGraphQLQuery({
+    gqlClient,
+    QUERY: CREATE_PRODUCT_MUTATION,
+    variables: {
+      input: productInputs,
+      media: parentProductMediaInput
+    }
+  });
+  return { addedHubProductId: data.productCreate?.product?.id };
+};
+
+const createShopifyProductVariant = async ({
+  gqlClient,
+  addedHubProductId,
+  wholesaleProduct,
+  retailProduct,
+  variantsMappingDataPrice,
+  variantsMappingDataNoOfItemPerCase
+}) => {
+  const locationsData = await executeGraphQLQuery({
+    gqlClient,
+    QUERY: GET_LOCATIONS_QUERY
+  });
+  const locationId = locationsData.locations.edges[0].node.id;
+
+  const productVariantInputs = {
+    price: variantsMappingDataPrice,
+    inventoryPolicy: wholesaleProduct.inventoryPolicy.toUpperCase(),
+    inventoryItem: {
+      tracked: wholesaleProduct.tracked,
+      sku: wholesaleProduct.sku,
+      measurement: {
+        weight: {
+          value: retailProduct.weight,
+          unit: shopifyWeightUnits[retailProduct.weightUnit]
+        }
+      }
+    },
+    inventoryQuantities: {
+      availableQuantity:
+        Number(variantsMappingDataNoOfItemPerCase) *
+        Number(wholesaleProduct.inventoryQuantity),
+      locationId
+    },
+    metafields: {
+      key: 'producer_variant_id',
+      namespace: 'global',
+      value: retailProduct.id,
+      type: 'single_line_text_field'
+    },
+    mediaSrc: retailProduct.image.src || wholesaleProduct.image.src
+  };
+
+  const data = await executeGraphQLQuery({
+    gqlClient,
+    QUERY: CREATE_PRODUCT_VARIANTS_MUTATION,
+    variables: {
+      productId: addedHubProductId,
+      variantsInput: [productVariantInputs]
+    }
+  });
+
+  return {
+    addedHubVariantId: data.productVariantsBulkCreate?.productVariants?.[0]?.id
+  };
+};
+
+const insertProductAndVariants = async ({
+  client,
+  producerProductId,
+  addedHubProductId,
+  addedHubVariantId,
+  variantsMappingData
+}) => {
+  const {
+    retailProduct,
+    wholesaleProduct,
+    price,
+    addedValue,
+    addedValueMethod,
+    originalPrice,
+    noOfItemPerCase
+  } = variantsMappingData;
+
+  await client.query('BEGIN');
+
+  try {
+    const products = await query(
+      'INSERT INTO products (producer_product_id, hub_product_id) VALUES ($1, $2) RETURNING id;',
+      [producerProductId, addedHubProductId],
+      client
+    );
+
+    const { id: productId } = products.rows[0];
+
+    await query(
+      `INSERT INTO variants (
+          producer_variant_id,
+          hub_variant_id,
+          product_id,
+          price,
+          added_value,
+          added_value_method,
+          original_price,
+          no_of_items_per_package,
+          mapped_variant_id
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`,
+      [
+        convertShopifyGraphQLIdToNumber(retailProduct.id),
+        addedHubVariantId,
+        productId,
+        Number(price),
+        Number(addedValue),
+        addedValueMethod,
+        Number(originalPrice),
+        Number(noOfItemPerCase),
+        convertShopifyGraphQLIdToNumber(wholesaleProduct.id)
+      ],
+      client
+    );
+
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw new Error('Database error:', err);
+  } finally {
+    client.release();
+  }
+};
+
+const createProductAndVariants = async (req, res) => {
   try {
     const { session } = res.locals.shopify;
+    const gqlClient = new shopify.api.clients.Graphql({ session });
 
-    const { title, producerProductId, variantsMappingData } =
-      req.body;
+    const { producerProductId, variantsMappingData } = req.body;
+    const {
+      retailProduct,
+      wholesaleProduct,
+      parentProduct,
+      price,
+      noOfItemPerCase
+    } = variantsMappingData;
 
     const productExists = await query(
       `
@@ -24,143 +232,44 @@ const createShopifyProduct = async (req, res) => {
     );
 
     if (productExists.rows.length > 0) {
-      throw new Error('Product already exists');
+      return res
+        .status(400)
+        .json({ success: false, error: 'Product already exists' });
     }
 
-    const tempHubProduct = new shopify.api.rest.Product({
-      session
+    const { addedHubProductId } = await createShopifyProduct({
+      gqlClient,
+      parentProduct,
+      producerProductId
     });
 
-    const parentProduct = variantsMappingData.parentProduct;
-    const retailProduct = variantsMappingData.retailProduct;
-    const wholesaleProduct = variantsMappingData.wholesaleProduct;
-
-    tempHubProduct.title = title;
-    tempHubProduct.body_html = parentProduct.body_html;
-    tempHubProduct.images = parentProduct.images;
-
-    tempHubProduct.metafields = [
-      {
-        key: 'producer_product_id',
-        namespace: 'global',
-        value: producerProductId,
-        type: 'single_line_text_field'
-      }
-    ];
-
-    tempHubProduct.variants = [{
-      inventory_item: retailProduct.inventory_item,
-      metafields: [
-        {
-          key: 'producer_variant_id',
-          namespace: 'global',
-          value: retailProduct.id,
-          type: 'single_line_text_field'
-        }
-      ],
-
-      option1: retailProduct.title,
-      title: retailProduct.title,
-      price: variantsMappingData.price,
-      inventory_policy: wholesaleProduct.inventory_policy,
-      fulfillment_service: wholesaleProduct.fulfillment_service,
-      inventory_management: wholesaleProduct.inventory_management,
-      inventory_quantity:
-        Number(variantsMappingData.noOfItemPerCase) * Number(wholesaleProduct.inventory_quantity),
-      old_inventory_quantity: wholesaleProduct.old_inventory_quantity
-    }];
-
-    await tempHubProduct.saveAndUpdate();
-
-    const hubProduct = new shopify.api.rest.Product({
-      session
+    const { addedHubVariantId } = await createShopifyProductVariant({
+      gqlClient,
+      addedHubProductId,
+      wholesaleProduct,
+      retailProduct,
+      variantsMappingDataPrice: price,
+      variantsMappingDataNoOfItemPerCase: noOfItemPerCase
     });
-
-    hubProduct.id = tempHubProduct.id;
-
-    const exitingImageAlt = parentProduct.images[0]?.alt;
-
-    const newImageId = exitingImageAlt
-      ? tempHubProduct.images.find((i) => i.alt === exitingImageAlt)?.id
-      : null;
-
-    hubProduct.variants = [{
-      ...tempHubProduct.variants[0],
-      image_id: newImageId
-    }];
-
-    await hubProduct.saveAndUpdate();
-
-    const inventoryItem = new shopify.api.rest.InventoryItem({
-      session
-    });
-    inventoryItem.id = hubProduct.variants[0].inventory_item_id;
-    inventoryItem.tracked = true;
-    await inventoryItem.saveAndUpdate();
 
     const client = await getClient();
 
-    await client.query('BEGIN');
-
-    try {
-      const products = await query(
-        `
-      INSERT INTO products (producer_product_id,hub_product_id) VALUES ($1,$2) returning id;
-      `,
-        [convertShopifyGraphQLIdToNumber(producerProductId), hubProduct.id],
-        client
-      );
-
-      const { id: productId } = products.rows[0];
-
-      await query(
-        `INSERT INTO variants (
-            producer_variant_id,
-            hub_variant_id,
-            product_id,
-            price,
-            added_value,
-            added_value_method,
-            original_price,
-            no_of_items_per_package,
-            mapped_variant_id
-            )
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9);`,
-        [
-          convertShopifyGraphQLIdToNumber(retailProduct.id),
-          convertShopifyGraphQLIdToNumber(
-            hubProduct.variants[0].id
-          ),
-          productId,
-          Number(variantsMappingData.price),
-          Number(variantsMappingData.addedValue),
-          variantsMappingData.addedValueMethod,
-          Number(variantsMappingData.originalPrice),
-          Number(variantsMappingData.noOfItemPerCase),
-          convertShopifyGraphQLIdToNumber(wholesaleProduct.id)
-        ],
-        client
-      );
-
-      await client.query('COMMIT');
-    } catch (err) {
-      await client.query('ROLLBACK');
-      console.log('Error creating Shopify product', err);
-      throw new Error('Database error:', err);
-    } finally {
-      client.release();
-    }
-
-    return res.json({
-      success: true
+    await insertProductAndVariants({
+      client,
+      producerProductId: convertShopifyGraphQLIdToNumber(producerProductId),
+      addedHubProductId: convertShopifyGraphQLIdToNumber(addedHubProductId),
+      addedHubVariantId: convertShopifyGraphQLIdToNumber(addedHubVariantId),
+      variantsMappingData
     });
+
+    return res.json({ success: true });
   } catch (error) {
-    console.warn('Could not create Shopify product', error);
+    console.log('Could not create Shopify product', error);
     return res.status(500).json({
       success: false,
-      error: error.message
+      error: error?.response || error?.message
     });
   }
 };
 
-export default createShopifyProduct;
+export default createProductAndVariants;

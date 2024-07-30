@@ -22,15 +22,28 @@ function VariantCard({ variant, index }) {
 
       <p>
         <strong>inventoryPolicy:</strong>
-        {variant.inventory_policy}
+        {variant.inventoryPolicy}
       </p>
 
-      {variant?.inventory_policy?.toUpperCase() !== 'CONTINUE' && (
+      {/* add sku */}
+      {variant.sku && (
         <p>
-          <strong>inventory Quantity:</strong>
-          {variant.inventory_quantity}
+          <strong>sku:</strong>
+          {variant.sku}
         </p>
       )}
+      {variant?.inventoryPolicy?.toUpperCase() !== 'CONTINUE' && (
+        <p>
+          <strong>inventory Quantity:</strong>
+          {variant.inventoryQuantity}
+        </p>
+      )}
+
+      <p>
+        <strong>weight:</strong>
+        {variant.weight}
+        {variant.weightUnit}
+      </p>
     </div>
   );
 }

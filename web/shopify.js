@@ -1,6 +1,10 @@
+import '@shopify/shopify-api/adapters/node';
 import { LATEST_API_VERSION } from '@shopify/shopify-api';
 import * as dotenv from 'dotenv';
 import { join } from 'path';
+import { shopifyApp } from '@shopify/shopify-app-express';
+import { restResources } from '@shopify/shopify-api/rest/admin/2023-01';
+import { PostgreSQLSessionStorage } from '@shopify/shopify-app-session-storage-postgresql';
 
 if (['development', 'test'].includes(process.env.NODE_ENV)) {
   dotenv.config({
@@ -12,18 +16,14 @@ if (['development', 'test'].includes(process.env.NODE_ENV)) {
   });
 }
 
-import { shopifyApp } from '@shopify/shopify-app-express';
-import { restResources } from '@shopify/shopify-api/rest/admin/2023-01';
-import { PostgreSQLSessionStorage } from '@shopify/shopify-app-session-storage-postgresql';
-
 const DB_PATH = process?.env?.DATABASE_URL || '';
 
 const { SHOPIFY_API_KEY, SHOPIFY_API_SECRET_KEY } = process.env;
 
 const shopify = shopifyApp({
   api: {
-    hostName: process.env?.HOST?.replace(/https?:\/\//, '') || '',
     apiVersion: LATEST_API_VERSION,
+    hostName: process.env?.HOST?.replace(/https?:\/\//, '') || '',
     restResources,
     apiKey: SHOPIFY_API_KEY,
     apiSecretKey: SHOPIFY_API_SECRET_KEY,
@@ -34,7 +34,8 @@ const shopify = shopifyApp({
       'write_draft_orders',
       'write_inventory',
       'read_orders',
-      'write_orders'
+      'write_orders',
+      'read_locations'
     ]
   },
   auth: {
