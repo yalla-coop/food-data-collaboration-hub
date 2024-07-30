@@ -1,6 +1,6 @@
 import { getTargetStringFromSemanticId, throwError } from '../utils/index.js';
 
-import { loadConnectorWithResources, PlannedTransformation } from './index.js';
+import { loadConnectorWithResources } from './index.js';
 import { loadProductTypes, loadQuantityUnits } from './mappings.js';
 
 async function getSingleSuppliedProduct(suppliedProduct) {
@@ -108,7 +108,7 @@ async function getSuppliedProductDetailsFromImports(dfcExportsArray) {
   const dfcImports = await importSuppliedProducts(dfcExportsArray);
 
   const dfcRetailWholesalePairs = dfcImports.filter(
-    (item) => item instanceof PlannedTransformation
+    (item) => item.getSemanticType() === 'dfc-b:AsPlannedTransformation'
   );
 
   return await Promise.all(dfcRetailWholesalePairs.map(toShopifyProduct));

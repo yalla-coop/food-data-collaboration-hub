@@ -9,6 +9,7 @@ describe('generateShopifyFDCProducts', () => {
     const result = await generateShopifyFDCProducts(
       exportedDFCProducerProducts()
     );
+
     expect(result).toBeInstanceOf(Array);
     expect(result).toEqual(importedShopifyProductsFromDFC);
   }, 15000);
@@ -18,7 +19,7 @@ describe('generateShopifyFDCProducts', () => {
       exportedDFCProducerProducts(-1)
     );
 
-    const variant = result[0].variants[0];
+    const variant = result[0].parentProduct.variants[0];
 
     expect(variant.inventoryQuantity).toEqual(0);
     expect(variant.inventoryPolicy).toEqual('continue');
