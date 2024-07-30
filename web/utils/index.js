@@ -9,11 +9,7 @@ export function getShopifyIdSubstring(url) {
 }
 
 export function throwError(message, errorObj) {
-  if (errorObj) {
-    throw errorObj;
-  } else {
-    throw new Error(message);
-  }
+  throw new Error(message, errorObj ? { cause: errorObj } : null);
 }
 
 export function getTargetStringFromSemanticId(url, key) {

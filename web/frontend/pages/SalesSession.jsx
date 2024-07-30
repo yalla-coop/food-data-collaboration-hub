@@ -91,22 +91,6 @@ export default function SalesSession() {
   });
 
   const {
-    mutateAsync: editCurrentSalesSession,
-    isLoading: editCurrentSalesSessionIsLoading,
-    error: editCurrentSalesSessionError,
-  } = useAppMutation({
-    reactQueryOptions: {
-      onSuccess: async () => {
-        await queryClient.invalidateQueries("/api/sales-session");
-        setShowSuccessAlert({
-          show: true,
-          type: "updated",
-        });
-      },
-    },
-  });
-
-  const {
     mutateAsync: completeCurrentSalesSession,
     isLoading: completeCurrentSalesSessionIsLoading,
     error: completeCurrentSalesSessionError,
@@ -133,22 +117,6 @@ export default function SalesSession() {
       },
     },
   });
-
-  const handleOnEditCurrentSalesSessionClick = async () => {
-    await editCurrentSalesSession({
-      url: "/api/sales-session/current",
-      fetchInit: {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          startDate: startDate.toISOString(),
-          sessionDurationInDays: Number(sessionDurationInDays),
-        }),
-      },
-    });
-  };
 
   const handleOnFinishCurrentSalesSessionClick = async () => {
     await completeCurrentSalesSession({
@@ -317,20 +285,6 @@ export default function SalesSession() {
         <Button
           variant="contained"
           type="button"
-          onClick={handleOnEditCurrentSalesSessionClick}
-          disabled={
-            editCurrentSalesSessionIsLoading ||
-            !currentSalesSessionData?.currentSalesSession?.isActive
-          }
-        >
-          {editCurrentSalesSessionIsLoading
-            ? "Loading..."
-            : "Edit Current Sales Session"}
-        </Button>
-
-        <Button
-          variant="contained"
-          type="button"
           onClick={handleOnFinishCurrentSalesSessionClick}
           disabled={
             completeCurrentSalesSessionIsLoading ||
@@ -344,10 +298,6 @@ export default function SalesSession() {
 
         {createSalesSessionError && (
           <Alert severity="error">{createSalesSessionError.message}</Alert>
-        )}
-
-        {editCurrentSalesSessionError && (
-          <Alert severity="error">{editCurrentSalesSessionError.message}</Alert>
         )}
 
         {completeCurrentSalesSessionError && (
