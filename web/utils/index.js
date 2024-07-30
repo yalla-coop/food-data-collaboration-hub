@@ -1,4 +1,3 @@
-import * as qs from 'qs';
 
 export const convertShopifyGraphQLIdToNumber = (id) => {
   if (!id) return null;
@@ -7,11 +6,7 @@ export const convertShopifyGraphQLIdToNumber = (id) => {
 };
 
 export function throwError(message, errorObj) {
-  if (errorObj) {
-    throw errorObj;
-  } else {
-    throw new Error(message);
-  }
+  throw new Error(message, errorObj ? {cause: errorObj} : null);
 }
 
 export function getTargetStringFromSemanticId(url, key) {
