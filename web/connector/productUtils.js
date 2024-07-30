@@ -1,6 +1,6 @@
 import { getTargetStringFromSemanticId, throwError } from '../utils/index.js';
 
-import { loadConnectorWithResources } from './index.js';
+import { loadConnectorWithResources, SuppliedProduct } from './index.js';
 import { loadProductTypes, loadQuantityUnits } from './mappings.js';
 
 async function getSingleSuppliedProduct(suppliedProduct) {
@@ -104,6 +104,12 @@ async function importSuppliedProducts(dfcProducts) {
   }
 }
 
+function findUnmappedSuppliedProducts(graph, retailWholesaleProductIds) {
+  return graph.filter(
+    (item) => item instanceof SuppliedProduct && !retailWholesaleProductIds.has(getTargetStringFromSemanticId(item.getSemanticId(), 'SuppliedProducts'))
+  );
+}
+
 async function getSuppliedProductDetailsFromImports(dfcExportsArray) {
   const dfcImports = await importSuppliedProducts(dfcExportsArray);
 
@@ -111,10 +117,20 @@ async function getSuppliedProductDetailsFromImports(dfcExportsArray) {
     (item) => item.getSemanticType() === 'dfc-b:AsPlannedTransformation'
   );
 
-  return await Promise.all(dfcRetailWholesalePairs.map(toShopifyProduct));
+  const retailWholesalePairs = await Promise.all(dfcRetailWholesalePairs.map(retailWholesaleTransformationToShopifyProduct));
+
+  const retailWholesaleProductIds = new Set(retailWholesalePairs.flatMap(({ retailProduct, wholesaleProduct }) => ([retailProduct.id, wholesaleProduct.id])));
+
+  const unMappedProducts = await Promise.all(findUnmappedSuppliedProducts(dfcImports, retailWholesaleProductIds).map(suppliedProductToShopifyProduct));
+
+  return [...retailWholesalePairs, ...unMappedProducts];
 }
 
-async function toShopifyProduct(retailWholesalePair) {
+async function suppliedProductToShopifyProduct(suppliedProduct) {
+  return await createResultObject(suppliedProduct, null, 1);
+}
+
+async function retailWholesaleTransformationToShopifyProduct(retailWholesalePair) {
   const consumptionFlows =
     await retailWholesalePair.getPlannedConsumptionFlows();
   const productionFlows = await retailWholesalePair.getPlannedProductionFlows();
@@ -129,25 +145,29 @@ async function toShopifyProduct(retailWholesalePair) {
   const wholesaleProduct = await productionFlows[0].getProducedProduct();
   const retailProduct = await consumptionFlows[0].getConsumedProduct();
 
-  const retailShopifyProduct =
-    await getSingleVariantSuppliedProduct(retailProduct);
-  const wholesaleShopifyProduct =
-    await getSingleVariantSuppliedProduct(wholesaleProduct);
   const itemsPerWholesaleVariant = await await consumptionFlows[0]
     .getQuantity()
     .getQuantityValue();
+
+  return await createResultObject(retailProduct, wholesaleProduct, itemsPerWholesaleVariant);
+}
+
+async function createResultObject(retailProduct, wholesaleProduct, itemsPerWholesaleVariant) {
+  const retailShopifyProduct =
+    await getSingleVariantSuppliedProduct(retailProduct);
+  const wholesaleShopifyProduct = wholesaleProduct ? await getSingleVariantSuppliedProduct(wholesaleProduct) : retailShopifyProduct;
 
   const parentShopifyProduct = await getSingleSuppliedProduct(retailProduct);
   parentShopifyProduct.variants = [retailShopifyProduct];
 
   parentShopifyProduct.images = retailShopifyProduct.image
     ? [
-        createImageObject(
-          retailShopifyProduct.image,
-          retailShopifyProduct.id,
-          1
-        )
-      ]
+      createImageObject(
+        retailShopifyProduct.image,
+        retailShopifyProduct.id,
+        1
+      )
+    ]
     : [];
 
   return {
