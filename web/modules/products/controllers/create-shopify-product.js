@@ -7,6 +7,13 @@ import {
   executeGraphQLQuery
 } from '../../../utils/index.js';
 
+const shopifyWeightUnits = {
+  g: 'GRAMS',
+  kg: 'KILOGRAMS',
+  oz: 'OUNCES',
+  lb: 'POUNDS'
+};
+
 const GET_LOCATIONS_QUERY = `
 query GetLocations {
   locations(first: 1) {
@@ -101,7 +108,14 @@ const createShopifyProductVariant = async ({
     price: variantsMappingDataPrice,
     inventoryPolicy: wholesaleProduct.inventoryPolicy.toUpperCase(),
     inventoryItem: {
-      tracked: wholesaleProduct.tracked
+      tracked: wholesaleProduct.tracked,
+      sku: wholesaleProduct.sku,
+      measurement: {
+        weight: {
+          value: retailProduct.weight,
+          unit: shopifyWeightUnits[retailProduct.weightUnit]
+        }
+      }
     },
     inventoryQuantities: {
       availableQuantity:

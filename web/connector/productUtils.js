@@ -68,15 +68,12 @@ async function getSingleVariantSuppliedProduct(suppliedProduct) {
       title: productName,
       price: priceValue,
       weight: quantityValue,
-      weight_unit: quantityUnitsObj[quantityUnit],
+      weightUnit: quantityUnitsObj[quantityUnit],
       inventoryQuantity: isContinueSelling ? 0 : stockLimitation,
       sku,
       taxable: hasVat,
       tracked: true,
-      inventoryPolicy: isContinueSelling ? 'continue' : 'deny',
-      // TODO check if these are needed and make these dynamic
-      fulfillmentService: 'manual',
-      inventoryManagement: 'shopify'
+      inventoryPolicy: isContinueSelling ? 'continue' : 'deny'
     };
 
     if (images.length) {

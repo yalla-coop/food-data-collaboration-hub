@@ -25,12 +25,25 @@ function VariantCard({ variant, index }) {
         {variant.inventoryPolicy}
       </p>
 
+      {/* add sku */}
+      {variant.sku && (
+        <p>
+          <strong>sku:</strong>
+          {variant.sku}
+        </p>
+      )}
       {variant?.inventoryPolicy?.toUpperCase() !== 'CONTINUE' && (
         <p>
           <strong>inventory Quantity:</strong>
           {variant.inventoryQuantity}
         </p>
       )}
+
+      <p>
+        <strong>weight:</strong>
+        {variant.weight}
+        {variant.weightUnit}
+      </p>
     </div>
   );
 }

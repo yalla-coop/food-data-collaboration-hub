@@ -116,7 +116,7 @@ export const importedShopifyProductsFromDFC = [
         title: 'Retail pack, 300g',
         price: 2.49,
         weight: 0,
-        weight_unit: 'kg',
+        weightUnit: 'kg',
         inventoryQuantity: 55,
         sku: undefined,
         taxable: true,
