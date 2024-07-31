@@ -1,6 +1,7 @@
 import {
   exportedDFCProducerProducts,
-  importedShopifyProductsFromDFC
+  importedShopifyProductsFromDFC,
+  exportedSingleTransformlessProducts
 } from './mocks';
 import { generateShopifyFDCProducts } from './productUtils';
 
@@ -24,4 +25,17 @@ describe('generateShopifyFDCProducts', () => {
     expect(variant.inventoryQuantity).toEqual(0);
     expect(variant.inventoryPolicy).toEqual('continue');
   });
+
+  it('Can import single products that dont appear on transformations', async () => {
+    const result = await generateShopifyFDCProducts(exportedSingleTransformlessProducts);
+
+    expect(result).toHaveLength(3);
+
+    expect(result[0].retailProduct.title).toEqual('Botanical Flour, #2 Meadow Blend - Catering, kilo, 1kg');
+    expect(result[0].wholesaleProduct.title).toEqual('Botanical Flour, #2 Meadow Blend - Catering, kilo, 1kg');
+    expect(result[1].retailProduct.title).toEqual('Botanical Flour, #2 Meadow Blend - Case, 6 x 1kg');
+    expect(result[1].wholesaleProduct.title).toEqual('Botanical Flour, #2 Meadow Blend - Case, 6 x 1kg');
+    expect(result[2].retailProduct.title).toEqual('Botanical Flour, #2 Meadow Blend - Catering, small, 3kg');
+    expect(result[2].wholesaleProduct.title).toEqual('Botanical Flour, #2 Meadow Blend - Catering, small, 3kg');
+  }, 15000)
 });

@@ -108,6 +108,120 @@ export function exportedDFCProducerProducts(stockLimitation = 55) {
   }`;
 }
 
+export const exportedSingleTransformlessProducts = `{
+  "@context": "https://www.datafoodconsortium.org",
+  "@graph": [
+      {
+          "@id": "_:b228",
+          "@type": "dfc-b:QuantitativeValue",
+          "dfc-b:hasUnit": "dfc-m:Kilogram",
+          "dfc-b:value": "1"
+      },
+      {
+          "@id": "_:b229",
+          "@type": "dfc-b:Price",
+          "dfc-b:VATrate": "0",
+          "dfc-b:hasUnit": "dfc-m:Euro",
+          "dfc-b:value": "5.99"
+      },
+      {
+          "@id": "_:b230",
+          "@type": "dfc-b:QuantitativeValue",
+          "dfc-b:hasUnit": "dfc-m:Kilogram",
+          "dfc-b:value": "6"
+      },
+      {
+          "@id": "_:b231",
+          "@type": "dfc-b:Price",
+          "dfc-b:VATrate": "0",
+          "dfc-b:hasUnit": "dfc-m:Euro",
+          "dfc-b:value": "27.00"
+      },
+      {
+          "@id": "_:b232",
+          "@type": "dfc-b:QuantitativeValue",
+          "dfc-b:hasUnit": "dfc-m:Kilogram",
+          "dfc-b:value": "3"
+      },
+      {
+          "@id": "_:b233",
+          "@type": "dfc-b:Price",
+          "dfc-b:VATrate": "0",
+          "dfc-b:hasUnit": "dfc-m:Euro",
+          "dfc-b:value": "15.99"
+      },
+      {
+          "@id": "http://localhost:3629/api/dfc/Enterprises/alex-fdc-producer/SuppliedProducts/44518236913913",
+          "@type": "dfc-b:SuppliedProduct",
+          "dfc-b:description": "<span>hello</span>",
+          "dfc-b:hasQuantity": "_:b228",
+          "dfc-b:image": "https://cdn.shopify.com/s/files/1/0694/6491/6217/products/image_5611ad7e-65bf-4c16-b54f-9086acff0892.jpg?v=1710254054",
+          "dfc-b:name": "Botanical Flour, #2 Meadow Blend - Catering, kilo, 1kg",
+          "dfc-b:referencedBy": "http://localhost:3629/api/dfc/Enterprises/alex-fdc-producer/SuppliedProducts/44518236913913/CatalogItem"
+      },
+      {
+          "@id": "http://localhost:3629/api/dfc/Enterprises/alex-fdc-producer/SuppliedProducts/44518236913913/CatalogItem",
+          "@type": "dfc-b:CatalogItem",
+          "dfc-b:offeredThrough": "http://localhost:3629/api/dfc/Enterprises/alex-fdc-producer/SuppliedProducts/44518236913913/Offer",
+          "dfc-b:sku": "NFB2/1K",
+          "dfc-b:stockLimitation": "-3"
+      },
+      {
+          "@id": "http://localhost:3629/api/dfc/Enterprises/alex-fdc-producer/SuppliedProducts/44518236913913/Offer",
+          "@type": "dfc-b:Offer",
+          "dfc-b:hasPrice": {
+              "@id": "_:b229"
+          }
+      },
+      {
+          "@id": "http://localhost:3629/api/dfc/Enterprises/alex-fdc-producer/SuppliedProducts/44518236946681",
+          "@type": "dfc-b:SuppliedProduct",
+          "dfc-b:description": "<span>hello</span>",
+          "dfc-b:hasQuantity": "_:b230",
+          "dfc-b:image": "https://cdn.shopify.com/s/files/1/0694/6491/6217/products/image_5611ad7e-65bf-4c16-b54f-9086acff0892.jpg?v=1710254054",
+          "dfc-b:name": "Botanical Flour, #2 Meadow Blend - Case, 6 x 1kg",
+          "dfc-b:referencedBy": "http://localhost:3629/api/dfc/Enterprises/alex-fdc-producer/SuppliedProducts/44518236946681/CatalogItem"
+      },
+      {
+          "@id": "http://localhost:3629/api/dfc/Enterprises/alex-fdc-producer/SuppliedProducts/44518236946681/CatalogItem",
+          "@type": "dfc-b:CatalogItem",
+          "dfc-b:offeredThrough": "http://localhost:3629/api/dfc/Enterprises/alex-fdc-producer/SuppliedProducts/44518236946681/Offer",
+          "dfc-b:sku": "NFB2/C6",
+          "dfc-b:stockLimitation": "-2"
+      },
+      {
+          "@id": "http://localhost:3629/api/dfc/Enterprises/alex-fdc-producer/SuppliedProducts/44518236946681/Offer",
+          "@type": "dfc-b:Offer",
+          "dfc-b:hasPrice": {
+              "@id": "_:b231"
+          }
+      },
+      {
+          "@id": "http://localhost:3629/api/dfc/Enterprises/alex-fdc-producer/SuppliedProducts/44518236979449",
+          "@type": "dfc-b:SuppliedProduct",
+          "dfc-b:description": "<span>hello</span>",
+          "dfc-b:hasQuantity": "_:b232",
+          "dfc-b:image": "https://cdn.shopify.com/s/files/1/0694/6491/6217/products/image_5611ad7e-65bf-4c16-b54f-9086acff0892.jpg?v=1710254054",
+          "dfc-b:name": "Botanical Flour, #2 Meadow Blend - Catering, small, 3kg",
+          "dfc-b:referencedBy": "http://localhost:3629/api/dfc/Enterprises/alex-fdc-producer/SuppliedProducts/44518236979449/CatalogItem"
+      },
+      {
+          "@id": "http://localhost:3629/api/dfc/Enterprises/alex-fdc-producer/SuppliedProducts/44518236979449/CatalogItem",
+          "@type": "dfc-b:CatalogItem",
+          "dfc-b:offeredThrough": "http://localhost:3629/api/dfc/Enterprises/alex-fdc-producer/SuppliedProducts/44518236979449/Offer",
+          "dfc-b:sku": "NFB2/3K",
+          "dfc-b:stockLimitation": "-7"
+      },
+      {
+          "@id": "http://localhost:3629/api/dfc/Enterprises/alex-fdc-producer/SuppliedProducts/44518236979449/Offer",
+          "@type": "dfc-b:Offer",
+          "dfc-b:hasPrice": {
+              "@id": "_:b233"
+          }
+      }
+  ]
+}`;
+
 export const importedShopifyProductsFromDFC = [
   {
     parentProduct: {
