@@ -5,15 +5,8 @@ import Stack from '@mui/material/Stack';
 import { Redirect } from '@shopify/app-bridge/actions';
 import Button from '@mui/material/Button';
 import { useAppBridge } from '@shopify/app-bridge-react';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import {
-  Alert,
-  Box,
-  CircularProgress,
-  List,
-  ListItem,
-  ListItemText
-} from '@mui/material';
+
+import { Alert, Box, CircularProgress } from '@mui/material';
 
 import { useAppMutation, useAppQuery } from '../hooks';
 import { useAuth } from '../components/providers/AuthProvider';
@@ -79,6 +72,54 @@ export default function ProductsList() {
     getProductDataError?.message?.includes('access denied') ||
     getProductDataError?.stack?.includes('403');
 
+  const isServerError =
+    getProductDataError?.message?.includes('500') ||
+    getProductDataError?.stack?.includes('500');
+
+  const isUnauthorizedError =
+    getProductDataError?.message?.includes('401') ||
+    getProductDataError?.stack?.includes('401');
+
+  const handleGetProductDataError = () => {
+    if (isAccessPermissionDeniedError) {
+      return (
+        <Alert severity="error">
+          You must be authorised by the Producer to view their products, please
+          check back again shortly or contact your producer to confirm your
+          access.
+          {getProductDataError?.message && (
+            <div>Message: {getProductDataError?.message}</div>
+          )}
+        </Alert>
+      );
+    } else if (isUnauthorizedError) {
+      return (
+        <Alert severity="error">
+          You need to login to be able to see the Product List.{' '}
+          <Link to="/" replace>
+            Click here
+          </Link>{' '}
+          to login to your account
+          <div>Message: {getProductDataError?.message}</div>
+        </Alert>
+      );
+    } else if (isServerError) {
+      return (
+        <Alert severity="error">
+          There was an error fetching the products. Please try again later.
+          <div>Message: {getProductDataError?.message}</div>
+        </Alert>
+      );
+    } else {
+      return (
+        <Alert severity="error">
+          An unexpected error occurred. Please try again later.
+          <div>Message: {getProductDataError?.message}</div>
+        </Alert>
+      );
+    }
+  };
+
   useLayoutEffect(() => {
     if (producerProductsData) {
       setProducerProducts((prev) => [...prev, ...producerProductsData]);
@@ -102,29 +143,7 @@ export default function ProductsList() {
       </Stack>
     );
   } else if (getProductDataError) {
-    if (isAccessPermissionDeniedError) {
-      return (
-        <>
-          <Typography variant="h6">
-            You must be authorised by the Producer to view their products,
-            please check back again shortly or contact your producer to confirm
-            your access.
-          </Typography>
-        </>
-      );
-    } else {
-      return (
-        <>
-          <Typography variant="h6">
-            You need to login to be able to see the Product List.{' '}
-            <Link to="/" replace>
-              Click here
-            </Link>{' '}
-            to login to your account
-          </Typography>
-        </>
-      );
-    }
+    return handleGetProductDataError();
   }
 
   const handleShowMore = () => {
