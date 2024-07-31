@@ -347,7 +347,9 @@ export default function ProductsList() {
           type="button"
           onClick={handleShowMore}
           disabled={
-            isLoading || producerProductsData?.remainingProductsCountAfter === 0
+            isLoading ||
+            producerProductsData?.remainingProductsCountAfter === 0 ||
+            !producerProductsData.remainingProductsCountAfter
           }
         >
           {isLoading
