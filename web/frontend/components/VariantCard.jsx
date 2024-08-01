@@ -3,44 +3,41 @@ function VariantCard({ variant, index }) {
     <div
       key={variant.id}
       style={{
-        flexGrow: 1,
-        border: '1px solid black',
+        border: '1px solid #ddd',
+        margin: '10px',
         borderRadius: '8px',
         padding: '10px',
-        backgroundColor: index % 2 === 0 ? 'lightgray' : 'white'
+        backgroundColor: index % 2 === 0 ? '#f9f9f9' : '#fff',
+        listStyleType: 'none',
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
       }}
     >
-      <p>
-        <strong>title:</strong>
-        {variant.title}
+      <p style={{ margin: '10px 0', fontSize: '16px', fontWeight: 'bold' }}>
+        <strong>Title:</strong> {variant.title}
       </p>
 
-      <p>
-        <strong>price:</strong>
-        {variant.price}
+      <p style={{ margin: '10px 0', fontSize: '16px' }}>
+        <strong>Price:</strong> {variant.price}
       </p>
 
-      <p>
-        <strong>inventoryPolicy:</strong>
-        {variant.inventoryPolicy}
+      <p style={{ margin: '10px 0', fontSize: '16px' }}>
+        <strong>Inventory Policy:</strong> {variant.inventoryPolicy}
       </p>
-
       {/* add sku */}
       {variant.sku && (
-        <p>
-          <strong>sku:</strong>
+        <p style={{ margin: '10px 0', fontSize: '16px' }}>
+          <strong>SKU:</strong>
           {variant.sku}
         </p>
       )}
       {variant?.inventoryPolicy?.toUpperCase() !== 'CONTINUE' && (
-        <p>
-          <strong>inventory Quantity:</strong>
+        <p style={{ margin: '10px 0', fontSize: '16px' }}>
+          <strong>Inventory Quantity:</strong>
           {variant.inventoryQuantity}
         </p>
       )}
-
-      <p>
-        <strong>weight:</strong>
+      <p style={{ margin: '10px 0', fontSize: '16px' }}>
+        <strong>Weight:</strong>
         {variant.weight}
         {variant.weightUnit}
       </p>
