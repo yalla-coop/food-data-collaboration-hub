@@ -80,45 +80,41 @@ const updateExistingProductsUseCase = async ({
   userId,
   shouldUpdateThePrice = false
 }) => {
-  try {
-    const sessionId = shopify.api.session.getOfflineId(HUB_SHOP_NAME);
+  const sessionId = shopify.api.session.getOfflineId(HUB_SHOP_NAME);
 
-    const session = await shopify.config.sessionStorage.loadSession(sessionId);
+  const session = await shopify.config.sessionStorage.loadSession(sessionId);
 
-    if (!session) {
-      throwError(
-        'Error from updateExistingProductsUseCase: Shopify Session not found'
-      );
+  if (!session) {
+    throwError(
+      'Error from updateExistingProductsUseCase: Shopify Session not found'
+    );
+  }
+  const gqlClient = new shopify.api.clients.Graphql({ session });
+
+  const { accessToken } = await obtainValidAccessToken(userId);
+  const productsWithVariants = await getProducerProducts(accessToken);
+
+  if (productsWithVariants.length === 0) {
+    return;
+  }
+
+  for (const product of productsWithVariants) {
+    const { hubProductId, producerProductData } = product;
+    const storedVariants = product.variants;
+
+    if (producerProductData) {
+      await updateSingleProduct({
+        gqlClient,
+        hubProductId,
+        session,
+        storedVariants,
+        producerLatestProductData: producerProductData,
+        shouldUpdateThePrice,
+        accessToken
+      });
+    } else {
+      await archiveProduct({ hubProductId, gqlClient });
     }
-    const gqlClient = new shopify.api.clients.Graphql({ session });
-
-    const { accessToken } = await obtainValidAccessToken(userId);
-    const productsWithVariants = await getProducerProducts(accessToken);
-
-    if (productsWithVariants.length === 0) {
-      return;
-    }
-
-    for (const product of productsWithVariants) {
-      const { hubProductId, producerProductData } = product;
-      const storedVariants = product.variants;
-
-      if (producerProductData) {
-        await updateSingleProduct({
-          gqlClient,
-          hubProductId,
-          session,
-          storedVariants,
-          producerLatestProductData: producerProductData,
-          shouldUpdateThePrice,
-          accessToken
-        });
-      } else {
-        await archiveProduct({ hubProductId, gqlClient });
-      }
-    }
-  } catch (e) {
-    throwError('Error from updateExistingProductsUseCase', e);
   }
 };
 

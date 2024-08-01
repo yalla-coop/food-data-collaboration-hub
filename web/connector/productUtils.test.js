@@ -23,7 +23,7 @@ describe('generateShopifyFDCProducts', () => {
     const variant = result[0].parentProduct.variants[0];
 
     expect(variant.inventoryQuantity).toEqual(0);
-    expect(variant.inventoryPolicy).toEqual('continue');
+    expect(variant.inventoryPolicy).toEqual('CONTINUE');
   });
 
   it('Can import single products that dont appear on transformations', async () => {

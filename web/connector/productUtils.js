@@ -73,7 +73,7 @@ async function getSingleVariantSuppliedProduct(suppliedProduct) {
       sku,
       taxable: hasVat,
       tracked: true,
-      inventoryPolicy: isContinueSelling ? 'continue' : 'deny'
+      inventoryPolicy: isContinueSelling ? 'CONTINUE' : 'DENY'
     };
 
     if (images.length) {
