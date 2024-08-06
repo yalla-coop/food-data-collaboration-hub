@@ -1,5 +1,13 @@
 # Getting Started / How to Run the App Locally
 
+## Pre-Requirements 
+
+1. You must [download and install Node.js](https://nodejs.org/en/download/) if you don't already have it.
+1. You must [create a Shopify partner account](https://partners.shopify.com/signup) if you don’t have one.
+1. You must [create a development store](https://help.shopify.com/en/partners/dashboard/development-stores#create-a-development-store) if you don’t have one.
+
+## Running a local version of this app
+
 1. **Read the Main Product Readme**: Familiarize yourself with the project by reading the [main Product Readme](https://github.com/yalla-coop/food-data-collaboration/blob/main/README.md).
 
 2. **Clone the Repository**: Clone this repository to your local machine.
