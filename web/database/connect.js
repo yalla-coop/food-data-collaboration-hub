@@ -17,13 +17,9 @@ const { Pool } = pg;
 
 const connectionString = process.env.DATABASE_URL;
 
-const env = process.env.NODE_ENV;
 // eslint-disable-next-line prefer-regex-literals
 const isInsertOrUpdateRegex = new RegExp(/(UPDATE(.|\n)*SET)|(INSERT INTO)/i);
 
-// if you want to connect to heroku database you need to add:
-// ssl: { rejectUnauthorized: false }
-// to the below object
 // eslint-disable-next-line no-underscore-dangle
 let __pool;
 if (process.env.DISABLE_DATABASE_SSL_CONNECTION) {
@@ -70,7 +66,10 @@ const getClient = async (label) => {
 
   // set a timeout of 5 seconds, after which we will log this client's last query
   const timeout = setTimeout(() => {
-    console.log('A client has been checked out for more than 5 seconds!', label);
+    console.log(
+      'A client has been checked out for more than 5 seconds!',
+      label
+    );
     console.log(
       `The last executed query on this client was: ${client.lastQuery}`
     );
