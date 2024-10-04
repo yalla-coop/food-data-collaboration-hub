@@ -2,7 +2,7 @@ name: Create and publish a Docker image
 
 on:
   push:
-    branches: ['main']
+    branches: ["main"]
 
 jobs:
   build-and-push-image:
@@ -11,8 +11,7 @@ jobs:
       packages: write
       attestations: write
       id-token: write
-    uses: ./.github/workflows/build-and-deploy.yml
+    uses: ./.github/workflows/build-and-deploy-prod.yml
     with:
       jelastic_env: fdc-hub
     secrets: inherit
-      
