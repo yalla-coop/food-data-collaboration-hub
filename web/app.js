@@ -51,20 +51,22 @@ const STATIC_PATH =
 async function createApp() {
   const app = express();
 
-  Sentry.init({
-    dsn: process.env.SENTRY_DNS,
-    integrations: [
-      dedupeIntegration(),
-      // enable HTTP calls tracing
-      new Sentry.Integrations.Http({ tracing: true }), // enable Express.js middleware tracing
-      new Sentry.Integrations.Express({ app }),
-      new ProfilingIntegration(),
-    ],
-    enabled: process.env.NODE_ENV === "production", // Performance Monitoring
-    tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
-    // Set sampling rate for profiling - this is relative to tracesSampleRate
-    profilesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
-  });
+  if (process.env.SENTRY_DISABLED !== "true") {
+    Sentry.init({
+      dsn: process.env.SENTRY_DNS,
+      integrations: [
+        dedupeIntegration(),
+        // enable HTTP calls tracing
+        new Sentry.Integrations.Http({ tracing: true }), // enable Express.js middleware tracing
+        new Sentry.Integrations.Express({ app }),
+        new ProfilingIntegration(),
+      ],
+      enabled: process.env.NODE_ENV === "production", // Performance Monitoring
+      tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
+      // Set sampling rate for profiling - this is relative to tracesSampleRate
+      profilesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
+    });
+  }
 
   // The request handler must be the first middleware on the app
   app.use(Sentry.Handlers.requestHandler());
