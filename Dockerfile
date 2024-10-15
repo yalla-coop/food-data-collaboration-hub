@@ -8,7 +8,7 @@ WORKDIR /app
 COPY web .
 RUN apk update && apk upgrade && \
     apk add --no-cache bash git openssh
-RUN ssh-keyscan github.com >> etc/ssh/known_hosts
+RUN ssh-keyscan github.com >> /etc/ssh/known_hosts
 RUN yarn
 RUN cd frontend && yarn && yarn run build
 CMD ["yarn", "run", "serve"]
