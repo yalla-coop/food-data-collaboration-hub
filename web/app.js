@@ -127,6 +127,9 @@ async function createApp() {
       {
         client: client,
         usePKCE: true,
+        params: {
+          scope: "offline_access",
+        },
       },
       function authCallback(tokenset, userinfo, done) {
         userinfo.accessToken = tokenset.access_token;
