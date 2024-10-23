@@ -52,3 +52,9 @@ yarn dev
 ```bash
 const address = `${AppUrlFromShopify}/api/webhooks`;
 ```
+
+## Useful Resources
+
+- [Main Product Readme](https://github.com/yalla-coop/food-data-collaboration-hub/blob/staging/README_MAIN_PRODUCT.md)
+- [Database Overview](https://github.com/yalla-coop/food-data-collaboration-hub/blob/c1993eb828fcf6452854ff79d33021370ce054c9/DATABASE_OVERVIEW.md)
+- [Deployment Strategy](https://github.com/yalla-coop/food-data-collaboration-hub/blob/c1993eb828fcf6452854ff79d33021370ce054c9/DEPLOYMENT_STRATEGY.md)

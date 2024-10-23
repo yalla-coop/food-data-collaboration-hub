@@ -13,6 +13,16 @@ export async function obtainValidAccessToken(userId) {
   })
 }
 
+export async function obtainValidAccessTokenOrDeleteSessionOnFailure(req) {
+  try {
+    const {accessToken} = await obtainValidAccessToken(req.user.id);
+    return accessToken;
+  } catch(error) {
+    req.session.destroy();
+    throw error;
+  }
+}
+
 async function refresh(refreshToken) {
   const issuer = await Issuer.discover(process.env.OIDC_ISSUER);
 

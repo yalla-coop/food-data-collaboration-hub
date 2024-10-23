@@ -1,70 +1,72 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable prefer-arrow-callback */
 // @ts-nocheck
-import axios from 'axios';
-import * as dotenv from 'dotenv';
-import { join } from 'path';
-import * as Sentry from '@sentry/node';
-import { ProfilingIntegration } from '@sentry/profiling-node';
+import axios from "axios";
+import * as dotenv from "dotenv";
+import { join } from "path";
+import * as Sentry from "@sentry/node";
+import { ProfilingIntegration } from "@sentry/profiling-node";
+import { dedupeIntegration } from "@sentry/integrations";
+import cron from "node-cron";
 
-import cron from 'node-cron';
+import cookieParser from "cookie-parser";
 
-import cookieParser from 'cookie-parser';
+import session from "express-session";
+import passport from "passport";
+import { Issuer, Strategy } from "openid-client";
+import connectSQLite from "connect-sqlite3";
 
-import session from 'express-session';
-import passport from 'passport';
-import { Issuer, Strategy } from 'openid-client'
-import connectSQLite from 'connect-sqlite3';
+import { readFileSync } from "fs";
+import express from "express";
+import serveStatic from "serve-static";
 
-import { readFileSync } from 'fs';
-import express from 'express';
-import serveStatic from 'serve-static';
+import apiRouters from "./modules/api-routers.js";
+import { oidcRouter } from "./oidc-router.js";
 
-import apiRouters from './modules/api-routers.js';
-import { oidcRouter } from './oidc-router.js';
-
-import shopify from './shopify.js';
-import webhookHandlers from './webhooks/webhooks-handlers.js';
-import isAuthenticated from './middleware/isAuthenticated.js';
+import shopify from "./shopify.js";
+import webhookHandlers from "./webhooks/webhooks-handlers.js";
+import isAuthenticated from "./middleware/isAuthenticated.js";
 import {
   createSalesSessionCronJob,
-  updateExistingProductsCronJob
-} from './modules/cron-jobs/index.js';
-import subscribeToWebhook from './utils/subscribe-to-webhook.js';
-import localAuthenticationBypass from './utils/localAuthenticationBypass.js';
+  updateExistingProductsCronJob,
+} from "./modules/cron-jobs/index.js";
+import subscribeToWebhook from "./utils/subscribe-to-webhook.js";
+import localAuthenticationBypass from "./utils/localAuthenticationBypass.js";
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === "development") {
   dotenv.config({
-    path: join(process.cwd(), '.env.test')
+    path: join(process.cwd(), ".env.test"),
   });
 } else {
   dotenv.config({
-    path: join(process.cwd(), '.env')
+    path: join(process.cwd(), ".env"),
   });
 }
 
 const STATIC_PATH =
-  process.env.NODE_ENV === 'production'
+  process.env.NODE_ENV === "production"
     ? `${process.cwd()}/frontend/dist`
     : `${process.cwd()}/frontend/`;
 
 async function createApp() {
-
   const app = express();
 
-  Sentry.init({
-    dsn: process.env.SENTRY_DNS,
-    integrations: [
-      // enable HTTP calls tracing
-      new Sentry.Integrations.Http({ tracing: true }), // enable Express.js middleware tracing
-      new Sentry.Integrations.Express({ app }),
-      new ProfilingIntegration()
-    ],
-    enabled: process.env.NODE_ENV === 'production', // Performance Monitoring
-    tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
-    // Set sampling rate for profiling - this is relative to tracesSampleRate
-    profilesSampleRate: 1.0 // Capture 100% of the transactions, reduce in production!
-  });
+  if (process.env.SENTRY_DISABLED !== "true") {
+    Sentry.init({
+      dsn: process.env.SENTRY_DNS,
+      integrations: [
+        dedupeIntegration(),
+        // enable HTTP calls tracing
+        new Sentry.Integrations.Http({ tracing: true }), // enable Express.js middleware tracing
+        new Sentry.Integrations.Express({ app }),
+        new ProfilingIntegration(),
+      ],
+      enabled: process.env.NODE_ENV === "production", // Performance Monitoring
+      tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
+      // Set sampling rate for profiling - this is relative to tracesSampleRate
+      profilesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
+    });
+  }
 
   // The request handler must be the first middleware on the app
   app.use(Sentry.Handlers.requestHandler());
@@ -75,38 +77,38 @@ async function createApp() {
   app.post(
     shopify.config.webhooks.path,
     shopify.processWebhooks({
-      webhookHandlers
+      webhookHandlers,
     })
   );
 
   const SQLiteStore = connectSQLite(session);
 
   const sessionStore = new SQLiteStore({
-    db: 'sessions.sqlite',
-    dir: '.', // @ts-ignore
-    concurrentDB: true
+    db: "sessions.sqlite",
+    dir: ".", // @ts-ignore
+    concurrentDB: true,
   });
 
   const sessionObject = {
     secret: process.env.SESSION_SIGNING_KEY,
     resave: false, // don't save session if unmodified
     saveUninitialized: false,
-    store: sessionStore
+    store: sessionStore,
   };
 
-  app.use(localAuthenticationBypass)
+  app.use(localAuthenticationBypass);
 
   app.use(
-    '/', // @ts-ignore
+    "/", // @ts-ignore
     session({
       ...sessionObject,
       proxy: true,
       cookie: {
         secure: true, // Set to true if you're using HTTPS
         httpOnly: true, // Ensures the cookie is only accessible via HTTP/HTTPS
-        maxAge: 1000 * 60 * 60 * 24 * 7, // Sets cookie to expire in 7 days,
-        sameSite: 'none' // Can be 'strict', 'lax', 'none', or boolean (true)
-      }
+        maxAge: 1000 * 60 * 60 * 8, // Sets cookie to expire in 8 hours,
+        sameSite: "none", // Can be 'strict', 'lax', 'none', or boolean (true)
+      },
     })
   );
 
@@ -115,19 +117,21 @@ async function createApp() {
   const client = new issuer.Client({
     client_id: process.env.OIDC_CLIENT_ID,
     client_secret: process.env.OIDC_CLIENT_SECRET,
-    respose_types: ['code'],
+    respose_types: ["code"],
     redirect_uris: [process.env.OIDC_CALLBACK_URL],
   });
 
   app.use(cookieParser());
   passport.use(
-    new Strategy({
-      client: client,
-      usePKCE: true,
-    },
-      function authCallback(
-        tokenset, userinfo, done
-      ) {
+    new Strategy(
+      {
+        client: client,
+        usePKCE: true,
+        params: {
+          scope: "openid offline_access",
+        },
+      },
+      function authCallback(tokenset, userinfo, done) {
         userinfo.accessToken = tokenset.access_token;
         userinfo.refreshToken = tokenset.refresh_token;
         userinfo.accessTokenExpiresAt = tokenset.expires_at;
@@ -146,15 +150,15 @@ async function createApp() {
       accessToken: user.accessToken,
       refreshToken: user.refreshToken,
       accessTokenExpiresAt: user.accessTokenExpiresAt,
-      idToken: user.idToken
+      idToken: user.idToken,
     });
   });
   passport.deserializeUser(function deserializeUserFunction(user, cb) {
     return cb(null, user);
   });
 
-  app.use('/*', passport.initialize());
-  app.use('/*', passport.session());
+  app.use("/*", passport.initialize());
+  app.use("/*", passport.session());
 
   app.get(shopify.config.auth.path, shopify.auth.begin());
 
@@ -166,22 +170,22 @@ async function createApp() {
       try {
         await Promise.allSettled([
           [
-            'products/delete',
-            'orders/paid',
-            'orders/cancelled',
-            'carts/create',
-            'carts/update',
-            'checkouts/create',
-            'checkouts/update',
-            'products/update'
+            "products/delete",
+            "orders/paid",
+            "orders/cancelled",
+            "carts/create",
+            "carts/update",
+            "checkouts/create",
+            "checkouts/update",
+            "products/update",
           ].map(async (topic) => {
             await subscribeToWebhook({
               session: res.locals.shopify.session,
               HOST: process.env.HOST,
               topic,
-              shopify
+              shopify,
             });
-          })
+          }),
         ]);
 
         return next();
@@ -192,14 +196,14 @@ async function createApp() {
     shopify.redirectToShopifyOrAppRoot()
   );
 
-  app.use('/api/*', shopify.validateAuthenticatedSession());
+  app.use("/api/*", shopify.validateAuthenticatedSession());
 
-  app.post('/api/user/logout', isAuthenticated, async (req, res) => {
+  app.post("/api/user/logout", isAuthenticated, async (req, res) => {
     const url = process.env.OIDC_LOGOUT_URL;
 
     const queryParams = new URLSearchParams({
       id_token_hint: req.user.idToken,
-      post_logout_redirect_uri: `${process.env.HOST}oidc/logout`
+      post_logout_redirect_uri: `${process.env.HOST}oidc/logout`,
     });
 
     try {
@@ -208,32 +212,32 @@ async function createApp() {
       console.log(e.message);
     }
 
-    res.redirect('/');
+    res.redirect("/");
   });
 
-  app.get('/api/user/check', isAuthenticated, (req, res) =>
+  app.get("/api/user/check", isAuthenticated, (req, res) =>
     res.json({
       success: true,
       user: req.user,
-      isAuthenticated: true
+      isAuthenticated: true,
     })
   );
 
-  app.use('/api', express.json(), isAuthenticated, apiRouters);
+  app.use("/api", express.json(), isAuthenticated, apiRouters);
 
   app.use(express.json());
-  app.use('/oidc', oidcRouter);
+  app.use("/oidc", oidcRouter);
 
   app.use(serveStatic(STATIC_PATH, { index: false }));
 
-  app.use('/*', shopify.ensureInstalledOnShop(), async (_req, res) =>
+  app.use("/*", shopify.ensureInstalledOnShop(), async (_req, res) =>
     res
       .status(200)
-      .set('Content-Type', 'text/html')
-      .send(readFileSync(join(STATIC_PATH, 'index.html')))
+      .set("Content-Type", "text/html")
+      .send(readFileSync(join(STATIC_PATH, "index.html")))
   );
 
-  cron.schedule('* * * * *', async () => {
+  cron.schedule("* * * * *", async () => {
     await updateExistingProductsCronJob();
     await createSalesSessionCronJob();
   });
@@ -243,10 +247,10 @@ async function createApp() {
 
   // eslint-disable-next-line no-unused-vars
   app.use((err, _req, res, _next) => {
-    if (err.name === 'ValidationError') {
+    if (err.name === "ValidationError") {
       return res.status(400).json({
         success: false,
-        message: err.message
+        message: err.message,
       });
     }
 
@@ -254,11 +258,10 @@ async function createApp() {
 
     return res.status(errorStatus).json({
       message: err.response?.data?.message || err.message,
-      stack: err.stack
+      stack: err.stack,
     });
   });
   return app;
 }
-
 
 export default createApp;
