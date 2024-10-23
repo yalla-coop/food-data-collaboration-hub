@@ -128,7 +128,7 @@ async function createApp() {
         client: client,
         usePKCE: true,
         params: {
-          scope: "offline_access",
+          scope: "openid offline_access",
         },
       },
       function authCallback(tokenset, userinfo, done) {
